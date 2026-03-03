@@ -233,15 +233,14 @@ async function parseJsonRequest(request: NextRequest): Promise<{ request: Compos
   // If no backgroundUrl but has backgroundPrompt, generate with Gemini
   if (!backgroundUrl && body.backgroundPrompt) {
     console.log(`[compose] Generating background with prompt: ${body.backgroundPrompt.slice(0, 50)}...`);
-    const result = await generateImageNanoBanana({
+    const result = await generateBackground({
       prompt: body.backgroundPrompt,
       aspectRatio: body.aspectRatio || "4:5",
     });
-    backgroundUrl = `data:${result.mimeType};base64,${result.base64}`;
+    backgroundUrl = `data:image/png;base64,${result.toString("base64")}`;
     generatedBackground = true;
     debugInfo.backgroundSource = "prompt";
-    // Estimate bytes from base64
-    debugInfo.backgroundBytes = Math.round(result.base64.length * 0.75);
+    debugInfo.backgroundBytes = result.length;
     console.log(`[compose] Background generated successfully`);
   } else if (backgroundUrl) {
     debugInfo.backgroundSource = "url";
