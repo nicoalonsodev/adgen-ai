@@ -37,7 +37,7 @@ export function useUserTokens() {
         if (supabaseError) throw supabaseError
         setTokens(data)
       } catch (err) {
-        setError(err.message)
+        setError(err instanceof Error ? err.message : String(err))
       } finally {
         setLoading(false)
       }
