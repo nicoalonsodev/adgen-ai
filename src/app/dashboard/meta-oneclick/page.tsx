@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import DevComposePanel from "./DevComposePanel";
 
@@ -67,7 +67,7 @@ interface GenerateResponse {
   };
 }
 
-export default function MetaOneclickPage() {
+function MetaOneclickContent() {
   const searchParams = useSearchParams();
   const isDevMode = searchParams.get("dev") === "1";
 
@@ -673,5 +673,13 @@ export default function MetaOneclickPage() {
         )}
       </div>
     </main>
+  );
+}
+
+export default function MetaOneclickPage() {
+  return (
+    <Suspense fallback={null}>
+      <MetaOneclickContent />
+    </Suspense>
   );
 }
