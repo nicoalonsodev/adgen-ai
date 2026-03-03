@@ -28,7 +28,7 @@ export async function POST(req: Request) {
           role: "user",
           // multimodal: image + prompt
           content: [
-            { type: "input_image", image_url: imageDataUrl },
+            { type: "input_image", image_url: imageDataUrl, detail: "auto" },
             { type: "input_text", text: prompt },
           ],
         },
