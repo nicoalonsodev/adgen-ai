@@ -47,6 +47,12 @@ export const PlacementHintSchema = z.object({
 
   /** Maximum height as fraction of background */
   maxHeightRatio: z.number().min(0.1).max(1).optional(),
+
+  /** Absolute width in pixels (overrides scale) */
+  width: z.number().positive().optional(),
+
+  /** Absolute height in pixels (overrides scale) */
+  height: z.number().positive().optional(),
 });
 
 export type PlacementHint = z.infer<typeof PlacementHintSchema>;
