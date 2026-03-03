@@ -138,6 +138,20 @@ export const TEMPLATE_METADATA: Record<TemplateId, TemplateMetadata> = {
     requiredFields: ["proof.quote", "cta"],
     optionalFields: ["proof.author", "headline", "sticker", "logo"],
   },
+  T_LIFESTYLE_HERO_V1: {
+    id: "T_LIFESTYLE_HERO_V1",
+    name: "Lifestyle Hero",
+    description: "Full-bleed lifestyle scene with hero copy overlay.",
+    requiredFields: ["headline", "cta"],
+    optionalFields: ["subheadline", "logo"],
+  },
+  T_NARRATIVE_HERO_V1: {
+    id: "T_NARRATIVE_HERO_V1",
+    name: "Narrative Hero",
+    description: "Story-driven layout with narrative copy and product.",
+    requiredFields: ["headline", "cta"],
+    optionalFields: ["subheadline", "logo"],
+  },
 };
 
 /**
