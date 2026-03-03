@@ -59,6 +59,7 @@ export const ProductAnchorEnum = z.enum([
   "center_right",
   "top_center",
   "floating",
+  "custom",
 ]);
 
 export const ProductPlacementSchema = z.object({
