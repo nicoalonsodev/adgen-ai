@@ -68,6 +68,7 @@ interface ComposeJsonBody {
     disclaimer?: string;
   };
 
+  style?: ComposeRequest["style"];
   autoLayoutOptions?: { /* ... */ };
   smartUsageOptions?: { /* ... */ };
   presetOptions?: { /* ... */ };
