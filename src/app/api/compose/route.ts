@@ -43,19 +43,7 @@ interface DebugInfo {
 }
 
 interface ComposeJsonBody {
-  mode?: "STANDARD" | "AUTO_LAYOUT" | "SMART_USAGE_V1" | "PRESET" | "PRODUCT_IA" | "TEMPLATE_BETA"; // ← agregar TEMPLATE_BETA
-  // ... resto igual
-  
-  // Agregar también las opciones del template al final del interface:
-  templateBetaOptions?: {
-    templateId?: string;
-    canvas?: { width: number; height: number };
-    includeLayoutSpec?: boolean;
-  };
-}
-
-interface ComposeJsonBody {
-  mode?: "STANDARD" | "AUTO_LAYOUT" | "SMART_USAGE_V1" | "PRESET" | "PRODUCT_IA";
+  mode?: "STANDARD" | "AUTO_LAYOUT" | "SMART_USAGE_V1" | "PRESET" | "PRODUCT_IA" | "TEMPLATE_BETA";
   backgroundUrl?: string;
   backgroundPrompt?: string;
   aspectRatio?: "1:1" | "4:5" | "9:16" | "16:9";
@@ -90,6 +78,12 @@ interface ComposeJsonBody {
     forceSize?: { width: number; height: number };
     includeLayoutSpec?: boolean;
     splitComparison?: boolean;
+  };
+
+  templateBetaOptions?: {
+    templateId?: string;
+    canvas?: { width: number; height: number };
+    includeLayoutSpec?: boolean;
   };
 
   outputFormat?: "png" | "webp" | "jpeg";
