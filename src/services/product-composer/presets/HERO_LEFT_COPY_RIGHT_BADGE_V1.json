@@ -1,0 +1,158 @@
+{
+  "id": "HERO_LEFT_COPY_RIGHT_BADGE_V1",
+  "name": "Hero Left + Copy Right + Badge",
+  "description": "Producto destacado a la izquierda, copy (headline/subheadline) a la derecha, badge centrado en zona inferior",
+  "version": "1.0.0",
+  "tags": ["hero", "split", "badge", "product-left"],
+  "supports": ["4:5", "1:1"],
+  
+  "safePadding": 72,
+  
+  "product": {
+    "anchor": "left_center",
+"zone": { "x": 8, "y": 18, "w": 44, "h": 64 },
+"scaleRange": { "min": 0.45, "max": 0.70 },
+    "shadow": {
+      "drop": {
+        "enabled": true,
+        "blur": 30,
+        "opacity": 0.35,
+        "offsetY": 18
+      },
+      "contact": {
+        "enabled": true,
+        "blur": 25,
+        "opacity": 0.25
+      }
+    }
+  },
+  
+  "textBlocks": [
+    {
+      "id": "headline",
+      "zone": {
+        "x": 52,
+        "y": 25,
+        "w": 44,
+        "h": 30
+      },
+      "align": "left",
+      "baseFontSize": 56,
+      "maxLines": 3,
+      "autoShrinkMin": 0.55,
+      "lineHeight": 1.1,
+      "fontWeight": "800",
+      "fontFamily": "Inter",
+      "color": "#FFFFFF",
+      "letterSpacing": -0.02,
+      "textTransform": "none"
+    },
+    {
+      "id": "subheadline",
+      "zone": {
+        "x": 52,
+        "y": 56,
+        "w": 44,
+        "h": 15
+      },
+      "align": "left",
+      "baseFontSize": 24,
+      "maxLines": 2,
+      "autoShrinkMin": 0.65,
+      "lineHeight": 1.35,
+      "fontWeight": "500",
+      "fontFamily": "Inter",
+      "color": "#E0E0E0",
+      "letterSpacing": 0,
+      "textTransform": "none"
+    }
+  ],
+  
+  "badge": {
+    "id": "badge",
+    "zone": {
+      "x": 25,
+      "y": 82,
+      "w": 50,
+      "h": 10
+    },
+    "position": "center",
+    "style": {
+      "type": "pill",
+      "backgroundColor": "#2563EB",
+      "textColor": "#FFFFFF",
+      "borderRadius": 24,
+      "paddingX": 28,
+      "paddingY": 14
+    },
+    "font": {
+      "size": 18,
+      "weight": "700",
+      "family": "Inter",
+      "letterSpacing": 0.03,
+      "textTransform": "uppercase"
+    },
+    "autoFit": true
+  },
+  
+  "overlays": [
+    {
+      "type": "linearGradient",
+      "zone": {
+        "x": 45,
+        "y": 0,
+        "w": 55,
+        "h": 100
+      },
+      "direction": "left",
+     "strength": 0.22,
+      "color": "rgba(0,0,0,1)"
+    }
+  ],
+  
+  "variants": [
+    {
+      "aspectRatio": "4:5",
+      "canvasWidth": 1080,
+      "canvasHeight": 1350
+    },
+    {
+      "aspectRatio": "1:1",
+      "canvasWidth": 1080,
+      "canvasHeight": 1080,
+      "overrides": {
+        "product": {
+          "zone": {
+            "x": 3,
+            "y": 15,
+            "w": 48,
+            "h": 60
+          }
+        },
+        "textBlocks": [
+          {
+            "id": "headline",
+            "zone": {
+              "y": 20,
+              "h": 35
+            },
+            "baseFontSize": 48
+          },
+          {
+            "id": "subheadline",
+            "zone": {
+              "y": 56,
+              "h": 18
+            },
+            "baseFontSize": 22
+          }
+        ],
+        "badge": {
+          "zone": {
+            "y": 80
+          }
+        }
+      }
+    }
+  ]
+}
