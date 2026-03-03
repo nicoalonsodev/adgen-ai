@@ -191,6 +191,8 @@ export const PresetOptionsSchema = z.object({
   renderText: z.boolean().default(true),
   /** Return the LayoutSpec in the response */
   includeLayoutSpec: z.boolean().default(true),
+  /** Aspect ratio override for the output canvas */
+  aspectRatio: z.enum(["1:1", "4:5", "9:16", "16:9"]).optional(),
 });
 export type PresetOptions = z.infer<typeof PresetOptionsSchema>;
 
