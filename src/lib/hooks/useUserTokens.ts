@@ -31,7 +31,7 @@ export function useUserTokens() {
         const { data, error: supabaseError } = await supabase
           .from('user_tokens_current')
           .select('*')
-          .eq('user_id', session.user.id)
+          .eq('user_id', session!.user!.id)
           .single()
 
         if (supabaseError) throw supabaseError
