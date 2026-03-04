@@ -1366,66 +1366,11 @@ export default function FabricaDeContenido() {
         })
       );
 
-      // Step 2: Generate one background per template+angle combination in parallel
-      setVariantsProgress("Generando fondos...");
-      const allBgFiles = await Promise.all(
-        selectedTemplates.map(async (templateId, ti) => {
-          const tplDef = TEMPLATES.find((t) => t.id === templateId);
-          const _userCategory = (businessProfile?.category as string) ?? "";
-          const basePrompt =
-            (_userCategory && tplDef?.categoryBackgroundPrompts?.[_userCategory]) ??
-            tplDef?.defaultBackgroundPrompt ??
-            "Fondo minimalista neutro, tonos beige y crema, iluminación suave, sin objetos, sin texto, sin personas.";
-          const isNoProductLayer = tplDef?.noProductLayer === true;
-
-          // Generate a separate background for each angle of this template
-          const useRawBgAngles = (tplDef as any)?.rawBackgroundPrompt === true;
-          return Promise.all(
-            allCopies[ti].map(async (angleCopy, ai) => {
-              const colorHint = (angleCopy?.backgroundColorHint as string) ?? "";
-              const bgPrompt = useRawBgAngles
-                ? basePrompt
-                : isNoProductLayer
-                  ? `${basePrompt}${angleCopy?.backgroundPrompt ? ` Context: ${angleCopy.backgroundPrompt}` : ""}`
-                  : ((angleCopy?.backgroundPrompt as string) ||
-                      (colorHint
-                        ? basePrompt.replace(/tonos? [^,.]+/i, colorHint) || `${basePrompt}. Paleta de color: ${colorHint}`
-                        : basePrompt));
-              const bgRes = await fetch("/api/compose", {
-                method: "POST",
-                headers: { "Content-Type": "application/json", Accept: "application/json" },
-                body: JSON.stringify({
-                  mode: "GENERATE_BACKGROUND",
-                  prompt: bgPrompt,
-                  aspectRatio: "1:1",
-                  primaryColor: useRawBgAngles ? undefined : ((angleCopy?.primaryColor as string) || undefined),
-                  rawBackground: useRawBgAngles ? true : undefined,
-                }),
-              });
-              const bgData = await bgRes.json();
-              if (!bgRes.ok) throw new Error(bgData.error || `Error ${bgRes.status}`);
-              const bgDataUrl = bgData.data?.image as string;
-              if (!bgDataUrl) {
-                const meta = TEMPLATES.find((t) => t.id === templateId);
-                throw new Error(
-                  `No se generó fondo para ${meta ? `${meta.icon} ${meta.name}` : templateId} ángulo ${ai + 1}`
-                );
-              }
-              const bgBlob = await fetch(bgDataUrl).then((r) => r.blob());
-              return { bgDataUrl, bgFile: new File([bgBlob], `bg-${ti}-${ai}.png`, { type: "image/png" }), bgPrompt };
-            })
-          );
-        })
-      );
-
-      // Step 3: Build flat task list
+      // Step 2: Build task list — background se genera dentro de cada pipeline individual
       interface TaskItem {
         templateId: string;
         angleIndex: number;
         copy: Record<string, unknown>;
-        bgFile: File;
-        bgDataUrl: string;
-        bgPrompt: string;
       }
       const taskList: TaskItem[] = [];
       for (let ti = 0; ti < selectedTemplates.length; ti++) {
@@ -1434,9 +1379,6 @@ export default function FabricaDeContenido() {
             templateId: selectedTemplates[ti],
             angleIndex: ai,
             copy: allCopies[ti][ai],
-            bgFile: allBgFiles[ti][ai].bgFile,
-            bgDataUrl: allBgFiles[ti][ai].bgDataUrl,
-            bgPrompt: allBgFiles[ti][ai].bgPrompt,
           });
         }
       }
@@ -1448,12 +1390,53 @@ export default function FabricaDeContenido() {
       // Accumulator for incremental display as tasks complete
       const variantAccumulator: GeneratedVariant[] = [];
 
-      // Step 4: Run all TEMPLATE_BETA + PRODUCT_IA tasks with controlled concurrency
-      const tasks = taskList.map(({ templateId, angleIndex, copy, bgFile, bgDataUrl, bgPrompt }) =>
+      // Step 3: Pipeline completo por creativo con concurrencia CONCURRENCY.
+      // Cada tarea genera su fondo y lo compone de forma independiente.
+      // Los creativos aparecen en pantalla a medida que terminan, sin esperar a los demás.
+      const tasks = taskList.map(({ templateId, angleIndex, copy }) =>
         async (): Promise<GeneratedVariant> => {
           const angleName = ANGLE_NAMES[angleIndex] ?? `Ángulo ${angleIndex + 1}`;
-
           const tplMeta = TEMPLATES.find((t) => t.id === templateId);
+
+          // 1. Generar fondo para este creativo específico
+          const _userCat = (businessProfile?.category as string) ?? "";
+          const _basePrompt =
+            (_userCat && tplMeta?.categoryBackgroundPrompts?.[_userCat]) ??
+            tplMeta?.defaultBackgroundPrompt ??
+            "Fondo minimalista neutro, tonos beige y crema, iluminación suave, sin objetos, sin texto, sin personas.";
+          const _isNoProdLayer = tplMeta?.noProductLayer === true;
+          const _useRawBg = (tplMeta as any)?.rawBackgroundPrompt === true;
+          const _colorHint = (copy?.backgroundColorHint as string) ?? "";
+          const bgPrompt = _useRawBg
+            ? _basePrompt
+            : _isNoProdLayer
+              ? `${_basePrompt}${copy?.backgroundPrompt ? ` Context: ${copy.backgroundPrompt}` : ""}`
+              : ((copy?.backgroundPrompt as string) ||
+                  (_colorHint
+                    ? _basePrompt.replace(/tonos? [^,.]+/i, _colorHint) || `${_basePrompt}. Paleta de color: ${_colorHint}`
+                    : _basePrompt));
+          const _bgRes = await fetch("/api/compose", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            body: JSON.stringify({
+              mode: "GENERATE_BACKGROUND",
+              prompt: bgPrompt,
+              aspectRatio: "1:1",
+              primaryColor: _useRawBg ? undefined : ((copy?.primaryColor as string) || undefined),
+              rawBackground: _useRawBg ? true : undefined,
+            }),
+          });
+          const _bgData = await _bgRes.json();
+          if (!_bgRes.ok) throw new Error(_bgData.error || `Error ${_bgRes.status}`);
+          const bgDataUrl = _bgData.data?.image as string;
+          if (!bgDataUrl) {
+            const _m = TEMPLATES.find((t) => t.id === templateId);
+            throw new Error(`No se generó fondo para ${_m ? `${_m.icon} ${_m.name}` : templateId} ángulo ${angleIndex + 1}`);
+          }
+          const _bgBlob = await fetch(bgDataUrl).then((r) => r.blob());
+          const bgFile = new File([_bgBlob], `bg-${templateId}-${angleIndex}.png`, { type: "image/png" });
+
+          // 2. Componer template + producto/escena
           const _sceneWithProductAngles = tplMeta?.sceneWithProduct === true;
           const isSceneWithProductFlowAngles = _sceneWithProductAngles && !!avatarFile && templateNeedsSceneOrProduct(templateId);
 

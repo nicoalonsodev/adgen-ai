@@ -30,6 +30,10 @@ const metrics = createMetrics();
 export const runtime = "nodejs";
 export const maxDuration = 180; // 3 minutes — Gemini image generation can be slow
 
+// ─── Token gate ───────────────────────────────────────────────────────────────
+// Cambiar a true para activar verificación y consumo de tokens.
+const TOKENS_ENABLED = false;
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
@@ -334,8 +338,8 @@ export async function POST(request: NextRequest) {
     const tokensNeeded = calculateTokensForOperation(operation, payload);
 
     // Single DB call: fetch user tokens and verify balance in one query
-    const cachedUserTokens = tokensNeeded > 0 ? await getUserWithTokens(userId) : null;
-    if (tokensNeeded > 0) {
+    const cachedUserTokens = TOKENS_ENABLED && tokensNeeded > 0 ? await getUserWithTokens(userId) : null;
+    if (TOKENS_ENABLED && tokensNeeded > 0) {
       const tokensRemaining = Number(cachedUserTokens?.tokens_remaining ?? 0);
       if (tokensRemaining < tokensNeeded) {
         return NextResponse.json({ success: false, error: "Insufficient tokens" }, { status: 402 });
