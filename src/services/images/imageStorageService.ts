@@ -41,13 +41,18 @@ export async function uploadCreativeImages(
     .webp({ quality: 82 })
     .toBuffer();
 
-  const originalPath = `${basePath}/original.png`;
+  // Comprimir original a WebP para evitar uploads de 10-20MB que generan Bad Gateway en Supabase
+  const originalCompressed = await sharp(imageBuffer)
+    .webp({ quality: 92, effort: 4 })
+    .toBuffer();
+
+  const originalPath = `${basePath}/original.webp`;
   const thumbnailPath = `${basePath}/thumbnail.webp`;
 
   // Subir original + thumbnail en paralelo
   const [originalResult, thumbnailResult] = await Promise.all([
-    supabaseAdmin.storage.from(BUCKET).upload(originalPath, imageBuffer, {
-      contentType: "image/png",
+    supabaseAdmin.storage.from(BUCKET).upload(originalPath, originalCompressed, {
+      contentType: "image/webp",
       upsert: true,
     }),
     supabaseAdmin.storage.from(BUCKET).upload(thumbnailPath, thumbnailBuffer, {
@@ -91,7 +96,7 @@ export async function generateCompressedImage(
 
   const { data: originalFile, error: downloadError } = await supabaseAdmin.storage
     .from(BUCKET)
-    .download(`${basePath}/original.png`);
+    .download(`${basePath}/original.webp`);
 
   if (downloadError || !originalFile)
     throw new Error(`No se pudo descargar la original: ${downloadError?.message}`);

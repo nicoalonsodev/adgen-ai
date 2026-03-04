@@ -32,7 +32,7 @@ export function buildProductoHeroTopLayout(
   const headlineText = (copy.headline || copy.badge || "Brand Name").toUpperCase();
   const charWidthFactor = 0.72;
   const maxFontByWidth = Math.floor(HL_W / (headlineText.length * charWidthFactor));
-  const HL_FONT = Math.max(24, Math.min(Math.round(CW * 0.058), maxFontByWidth));
+const HL_FONT = Math.max(24, Math.min(Math.round(CW * 0.075), maxFontByWidth));
 
   const HL_H = Math.ceil(HL_FONT * 1.2) + 8;
 
@@ -86,7 +86,7 @@ export function buildProductoHeroTopLayout(
         letterSpacing: 0.04,
         maxLines: 1,
         textTransform: "uppercase",
-        textStroke: { color: "#000000", width: 1 },
+        textStroke: { color: "#00000033", width: 0.5 },
       },
 
       // ── SUBHEADLINE: benefit tagline, below headline ───────────────────────

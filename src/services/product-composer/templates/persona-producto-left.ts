@@ -73,7 +73,7 @@ export function buildPersonaProductoLeftLayout(
   const estimatedLines = Math.min(5, Math.max(1, simLines));
   const HL_H_rendered  = Math.ceil(HL_FONT * 1.15 * estimatedLines) + 12;
   const SUB_GAP        = Math.round(CH * 0.04); // ~43px breathing room
-  const SUB_Y = Math.max(Math.round(CH * 0.55), HL_Y + HL_H_rendered + SUB_GAP);
+ const SUB_Y = HL_Y + HL_H_rendered + SUB_GAP;
   const SUB_H = Math.ceil(SUB_FONT * 1.4 * 3) + 8;
 
   // ── CTA: pill button — bottom-left ───────────────────────────────────────
@@ -174,7 +174,7 @@ export function buildPersonaProductoLeftLayout(
               h: SUB_H,
               align: "left" as const,
               fontFamily: "Montserrat",
-              fontWeight: "400" as const,
+              fontWeight: "500" as const,
               boldWeight: "700",
               fontSize: SUB_FONT,
               color: "#E8E8E8",

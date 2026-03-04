@@ -779,6 +779,7 @@ interface GeneratedVariant {
   slideNumber?: number;
   slideRole?: string;
   promptsUsed?: PromptsUsed;
+  timings?: Record<string, number>;
 }
 
 const SLIDE_ROLE_COLORS: Record<string, { bg: string; text: string }> = {
@@ -894,6 +895,7 @@ export default function FabricaDeContenido() {
   const [error, setError] = useState<string | null>(null);
   const [resultImage, setResultImage] = useState<string | null>(null);
   const [variants, setVariants] = useState<GeneratedVariant[]>([]);
+  const [singleTimings, setSingleTimings] = useState<Record<string, number> | null>(null);
 
   // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -1023,6 +1025,9 @@ export default function FabricaDeContenido() {
     setError(null);
     setResultImage(null);
     setVariants([]);
+    setSingleTimings(null);
+    const _t0 = Date.now();
+    const _timings: Record<string, number> = {};
 
     try {
       const copyRes = await fetch("/api/compose", {
@@ -1051,8 +1056,10 @@ export default function FabricaDeContenido() {
       if (!copyRes.ok) throw new Error(copyData.error || `Error ${copyRes.status}`);
       const copy = copyData.data?.copy;
       if (!copy) throw new Error("No se generó copy");
+      _timings["Copy"] = Date.now() - _t0;
 
       setAutoStep("Generando background...");
+      const _t1 = Date.now();
       const templateDef = TEMPLATES.find((t) => t.id === primaryTemplate);
       const colorHint = (copy.backgroundColorHint as string) ?? "";
       const userCategory = (businessProfile?.category as string) ?? "";
@@ -1085,6 +1092,7 @@ export default function FabricaDeContenido() {
       if (!bgRes.ok) throw new Error(bgData.error || `Error ${bgRes.status}`);
       const bgDataUrl = bgData.data?.image;
       if (!bgDataUrl) throw new Error("No se generó background");
+      _timings["Background"] = Date.now() - _t1;
       const bgBlob = await fetch(bgDataUrl).then((r) => r.blob());
       const bgFile = new File([bgBlob], "generated-bg.png", { type: "image/png" });
 
@@ -1151,6 +1159,7 @@ export default function FabricaDeContenido() {
             sharpProductOverlay: (templateMeta as any)?.sharpProductOverlay ?? undefined,
           },
         }));
+        const _t2 = Date.now();
         const productRes = await fetch("/api/compose", {
           method: "POST",
           headers: { Accept: "application/json" },
@@ -1158,6 +1167,7 @@ export default function FabricaDeContenido() {
         });
         const productData = await productRes.json();
         if (!productRes.ok) throw new Error(productData.error || `Error ${productRes.status}`);
+        _timings["Escena"] = Date.now() - _t2;
         const sceneDataUrl = productData.data?.image || productData.data?.imageUrl;
         if (sceneDataUrl) setResultImage(sceneDataUrl); // show intermediate
 
@@ -1168,6 +1178,7 @@ export default function FabricaDeContenido() {
           const sceneBlob = await fetch(sceneDataUrl).then((r) => r.blob());
           sceneBgFile = new File([sceneBlob], "scene-bg.png", { type: "image/png" });
         }
+        const _t3 = Date.now();
         const templateRes = await fetch("/api/compose", {
           method: "POST",
           headers: { Accept: "application/json" },
@@ -1175,9 +1186,12 @@ export default function FabricaDeContenido() {
         });
         const templateData = await templateRes.json();
         if (!templateRes.ok) throw new Error(templateData.error || `Error ${templateRes.status}`);
+        _timings["Template"] = Date.now() - _t3;
         const finalImage = templateData.data?.image || templateData.data?.imageUrl;
         if (finalImage) {
           setResultImage(finalImage);
+          _timings["Total"] = Date.now() - _t0;
+          setSingleTimings({ ..._timings });
           const promptsUsed: PromptsUsed = {
             layers: [
               { name: "Copy", model: "gpt-4o-mini", prompt: `Schema: ${getTemplateSchema(primaryTemplate).join(", ")}`, status: "completed" },
@@ -1191,6 +1205,7 @@ export default function FabricaDeContenido() {
       } else {
         // ── ORIGINAL ORDER: TEMPLATE_BETA (text on bg) → PRODUCT_IA (product/scene) ──
         setAutoStep("Componiendo template...");
+        const _t2 = Date.now();
         const templateRes = await fetch("/api/compose", {
           method: "POST",
           headers: { Accept: "application/json" },
@@ -1198,6 +1213,7 @@ export default function FabricaDeContenido() {
         });
         const templateData = await templateRes.json();
         if (!templateRes.ok) throw new Error(templateData.error || `Error ${templateRes.status}`);
+        _timings["Template"] = Date.now() - _t2;
         const templateResultImage = templateData.data?.image || templateData.data?.imageUrl;
         if (templateResultImage) setResultImage(templateResultImage);
 
@@ -1250,6 +1266,7 @@ export default function FabricaDeContenido() {
               sharpProductOverlay: (templateMeta as any)?.sharpProductOverlay ?? undefined,
             },
           }));
+          const _t3 = Date.now();
           const productRes = await fetch("/api/compose", {
             method: "POST",
             headers: { Accept: "application/json" },
@@ -1257,9 +1274,12 @@ export default function FabricaDeContenido() {
           });
           const productData = await productRes.json();
           if (!productRes.ok) throw new Error(productData.error || `Error ${productRes.status}`);
+          _timings["Producto"] = Date.now() - _t3;
           const finalImage = productData.data?.image || productData.data?.imageUrl;
           if (finalImage) {
             setResultImage(finalImage);
+            _timings["Total"] = Date.now() - _t0;
+            setSingleTimings({ ..._timings });
             const promptsUsed: PromptsUsed = {
               layers: [
                 { name: "Copy", model: "gpt-4o-mini", prompt: `Schema: ${getTemplateSchema(primaryTemplate).join(", ")}`, status: "completed" },
@@ -1271,6 +1291,8 @@ export default function FabricaDeContenido() {
             saveCreativo(finalImage, primaryTemplate, undefined, copy, undefined, undefined, promptsUsed);
           }
         } else if (templateResultImage) {
+          _timings["Total"] = Date.now() - _t0;
+          setSingleTimings({ ..._timings });
           const promptsUsed: PromptsUsed = {
             layers: [
               { name: "Copy", model: "gpt-4o-mini", prompt: `Schema: ${getTemplateSchema(primaryTemplate).join(", ")}`, status: "completed" },
@@ -1490,6 +1512,9 @@ export default function FabricaDeContenido() {
                 sharpProductOverlay: (tplMeta as any)?.sharpProductOverlay ?? undefined,
               },
             }));
+            const _tTask = Date.now();
+            const _taskTimings: Record<string, number> = {};
+            const _tScene = Date.now();
             const productRes = await fetch("/api/compose", {
               method: "POST",
               headers: { Accept: "application/json" },
@@ -1497,6 +1522,7 @@ export default function FabricaDeContenido() {
             });
             const productData = await productRes.json();
             if (!productRes.ok) throw new Error(productData.error || `Error ${productRes.status}`);
+            _taskTimings["Escena"] = Date.now() - _tScene;
             const sceneDataUrl = productData.data?.image || productData.data?.imageUrl;
 
             // TEMPLATE_BETA: apply text overlay on top of the Gemini scene
@@ -1505,6 +1531,7 @@ export default function FabricaDeContenido() {
               const sceneBlob = await fetch(sceneDataUrl).then((r) => r.blob());
               sceneBgFile = new File([sceneBlob], `scene-${templateId}-${angleIndex}.png`, { type: "image/png" });
             }
+            const _tTpl = Date.now();
             const templateRes = await fetch("/api/compose", {
               method: "POST",
               headers: { Accept: "application/json" },
@@ -1512,6 +1539,8 @@ export default function FabricaDeContenido() {
             });
             const templateData = await templateRes.json();
             if (!templateRes.ok) throw new Error(templateData.error || `Error ${templateRes.status}`);
+            _taskTimings["Template"] = Date.now() - _tTpl;
+            _taskTimings["Total"] = Date.now() - _tTask;
             const finalImg = (templateData.data?.image || templateData.data?.imageUrl || sceneDataUrl) as string;
 
             const promptsUsed: PromptsUsed = {
@@ -1522,7 +1551,7 @@ export default function FabricaDeContenido() {
                 { name: "Template", prompt: templateId, status: "completed" },
               ],
             };
-            const variant: GeneratedVariant = { copy, backgroundImage: bgDataUrl, resultImage: finalImg, template: templateId, angle: angleIndex, angleName, promptsUsed };
+            const variant: GeneratedVariant = { copy, backgroundImage: bgDataUrl, resultImage: finalImg, template: templateId, angle: angleIndex, angleName, promptsUsed, timings: _taskTimings };
             variantAccumulator.push(variant);
             setVariants([...variantAccumulator]);
             saveCreativo(finalImg, templateId, angleName, copy, undefined, undefined, promptsUsed);
@@ -1531,6 +1560,9 @@ export default function FabricaDeContenido() {
 
           // ── ORIGINAL ORDER: TEMPLATE_BETA → PRODUCT_IA ───────────────────────────────
           // TEMPLATE_BETA
+          const _tTask = Date.now();
+          const _taskTimings: Record<string, number> = {};
+          const _tTpl = Date.now();
           const templateRes = await fetch("/api/compose", {
             method: "POST",
             headers: { Accept: "application/json" },
@@ -1539,6 +1571,7 @@ export default function FabricaDeContenido() {
           const templateData = await templateRes.json();
           if (!templateRes.ok)
             throw new Error(templateData.error || `Error ${templateRes.status}`);
+          _taskTimings["Template"] = Date.now() - _tTpl;
           const resultImg = (templateData.data?.image || templateData.data?.imageUrl) as string;
           if (!resultImg) {
             throw new Error(
@@ -1591,6 +1624,7 @@ export default function FabricaDeContenido() {
                 sharpProductOverlay: (tplMeta as any)?.sharpProductOverlay ?? undefined,
               },
             }));
+            const _tProd = Date.now();
             const productRes = await fetch("/api/compose", {
               method: "POST",
               headers: { Accept: "application/json" },
@@ -1598,6 +1632,8 @@ export default function FabricaDeContenido() {
             });
             const productData = await productRes.json();
             if (!productRes.ok) throw new Error(productData.error || `Error ${productRes.status}`);
+            _taskTimings["Producto"] = Date.now() - _tProd;
+            _taskTimings["Total"] = Date.now() - _tTask;
             finalImg = productData.data?.image || productData.data?.imageUrl || resultImg;
             const promptsUsed: PromptsUsed = {
               layers: [
@@ -1607,13 +1643,14 @@ export default function FabricaDeContenido() {
                 { name: "Producto/Escena", model: "gemini", prompt: productData.data?.promptUsed, status: "completed" },
               ],
             };
-            const variant: GeneratedVariant = { copy, backgroundImage: bgDataUrl, resultImage: finalImg, template: templateId, angle: angleIndex, angleName, promptsUsed };
+            const variant: GeneratedVariant = { copy, backgroundImage: bgDataUrl, resultImage: finalImg, template: templateId, angle: angleIndex, angleName, promptsUsed, timings: _taskTimings };
             variantAccumulator.push(variant);
             setVariants([...variantAccumulator]);
             saveCreativo(finalImg, templateId, angleName, copy, undefined, undefined, promptsUsed);
             return variant;
           }
 
+          _taskTimings["Total"] = Date.now() - _tTask;
           const promptsUsedNoProduct: PromptsUsed = {
             layers: [
               { name: "Copy", model: "gpt-4o-mini", prompt: `Schema: ${getTemplateSchema(templateId).join(", ")}`, status: "completed" },
@@ -1622,7 +1659,7 @@ export default function FabricaDeContenido() {
               { name: "Producto/Escena", status: "skipped" },
             ],
           };
-          const variant: GeneratedVariant = { copy, backgroundImage: bgDataUrl, resultImage: finalImg, template: templateId, angle: angleIndex, angleName, promptsUsed: promptsUsedNoProduct };
+          const variant: GeneratedVariant = { copy, backgroundImage: bgDataUrl, resultImage: finalImg, template: templateId, angle: angleIndex, angleName, promptsUsed: promptsUsedNoProduct, timings: _taskTimings };
           variantAccumulator.push(variant);
           setVariants([...variantAccumulator]);
           saveCreativo(finalImg, templateId, angleName, copy, undefined, undefined, promptsUsedNoProduct);
@@ -2110,6 +2147,7 @@ Full body or 3/4 shot. Natural lighting. Hyper-realistic. No text, no objects, n
             onBack={() => setStep(2)}
             creationMode={creationMode}
             sequenceCount={sequenceCount}
+            singleTimings={singleTimings}
           />
         )}
       </div>
@@ -3279,6 +3317,7 @@ function StepGenerar({
   onBack,
   creationMode,
   sequenceCount,
+  singleTimings,
 }: {
   bizProduct: string;
   bizOffer: string;
@@ -3306,6 +3345,7 @@ function StepGenerar({
   onBack: () => void;
   creationMode: "independiente" | "secuencia" | "sorteo";
   sequenceCount: number;
+  singleTimings: Record<string, number> | null;
 }) {
   const isGenerating = autoGenerating || variantsGenerating;
   const showSingleResult = resultImage && !variantsGenerating && variants.length === 0;
@@ -3502,6 +3542,11 @@ function StepGenerar({
             className="w-full rounded-xl"
             style={{ maxWidth: "540px", margin: "0 auto", display: "block" }}
           />
+          {singleTimings && (
+            <div style={{ maxWidth: "540px", margin: "12px auto 0" }}>
+              <TimingBar timings={singleTimings} />
+            </div>
+          )}
         </div>
       )}
 
@@ -3567,6 +3612,28 @@ function SummaryItem({
         {label}
       </div>
       <div className="text-sm font-medium truncate">{value}</div>
+    </div>
+  );
+}
+
+function TimingBar({ timings }: { timings: Record<string, number> }) {
+  const fmt = (ms: number) =>
+    ms >= 60000 ? `${(ms / 60000).toFixed(1)}m` : ms >= 1000 ? `${(ms / 1000).toFixed(1)}s` : `${ms}ms`;
+  return (
+    <div className="flex flex-wrap gap-1 mt-2">
+      {Object.entries(timings).map(([key, ms]) => (
+        <span
+          key={key}
+          className="text-xs px-1.5 py-0.5 rounded font-mono"
+          style={{
+            background: key === "Total" ? "rgba(52,199,89,0.08)" : "#1A1A1A",
+            color: key === "Total" ? "#34C759" : "#86868B",
+            border: `1px solid ${key === "Total" ? "rgba(52,199,89,0.2)" : "#2A2A2A"}`,
+          }}
+        >
+          {key} {fmt(ms)}
+        </span>
+      ))}
     </div>
   );
 }
@@ -3695,6 +3762,7 @@ function AngleCard({ variant, productFile }: { variant: GeneratedVariant; produc
           </button>
         </div>
         {variant.promptsUsed && <PromptsPanel prompts={variant.promptsUsed} />}
+        {variant.timings && <TimingBar timings={variant.timings} />}
         {analysis && <CreativeAnalysisPanel analysis={analysis} />}
       </div>
     </div>
@@ -3801,6 +3869,7 @@ function SlideCard({ variant, productFile }: { variant: GeneratedVariant; produc
           </button>
         </div>
         {variant.promptsUsed && <PromptsPanel prompts={variant.promptsUsed} />}
+        {variant.timings && <TimingBar timings={variant.timings} />}
         {analysis && <CreativeAnalysisPanel analysis={analysis} />}
       </div>
     </div>
