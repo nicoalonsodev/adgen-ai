@@ -23,7 +23,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         console.log('SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 40))
         console.log('ANON_KEY existe:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
 
-        // Usar fetch directo a la API REST de Supabase (bypass del cliente JS)
+        // Usar fetch directo a la API REST de Supabase (bypass del cliente JS).
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/token?grant_type=password`,
           {
