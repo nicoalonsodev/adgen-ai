@@ -28,7 +28,7 @@ export function buildPersonaHeroBottomLayout(
   // ── White top panel height ────────────────────────────────────────────────
   const PANEL_H = Math.round(CH * 0.42);
 
-  // ── HEADLINE: bold centered claim — max 2 lines, below logo area ─────────
+  // ── HEADLINE: bold centered claim — smart line split ─────────────────────
   const headlineWords = (copy.headline ?? "").trim().split(/\s+/).filter(Boolean).length;
   const HL_FONT = Math.round(
     CW * (headlineWords <= 3 ? 0.068 : headlineWords <= 5 ? 0.057 : 0.047),
@@ -36,13 +36,31 @@ export function buildPersonaHeroBottomLayout(
   const HL_W = Math.round(CW * 0.88);
   const HL_X = Math.round((CW - HL_W) / 2);
   const HL_Y = Math.round(CH * 0.13); // ~176px — safely below logo at top
-  const HL_H = Math.ceil(HL_FONT * 1.12 * 2) + 12; // max 2 lines
 
-  // ── SUBHEADLINE: centered below headline ──────────────────────────────────
+  // Smart split: if fits on 1 line → keep as-is; if needs 2 → find most balanced word split.
+  // This avoids both `textBalance` (which splits even short headlines) and random wrapping.
+  const approxHeadlineWidth = (copy.headline?.length ?? 0) * HL_FONT * 0.52;
+  const headlineContent = (() => {
+    const raw = (copy.headline ?? "").trim();
+    if (approxHeadlineWidth <= HL_W) return raw; // fits on 1 line
+    const words = raw.split(/\s+/);
+    if (words.length < 2) return raw;
+    let bestSplit = Math.ceil(words.length / 2);
+    let bestDiff = Infinity;
+    for (let i = 1; i < words.length; i++) {
+      const diff = Math.abs(words.slice(0, i).join(" ").length - words.slice(i).join(" ").length);
+      if (diff < bestDiff) { bestDiff = diff; bestSplit = i; }
+    }
+    return words.slice(0, bestSplit).join(" ") + "\n" + words.slice(bestSplit).join(" ");
+  })();
+  const HL_LINES = headlineContent.includes("\n") ? 2 : 1;
+  const HL_H = Math.ceil(HL_FONT * 1.12 * HL_LINES) + 12;
+
+  // ── SUBHEADLINE: anchored right below headline (not fixed Y) ─────────────
   const SUB_FONT = Math.round(CW * 0.030); // ~32px
   const SUB_W    = Math.round(CW * 0.78);
   const SUB_X    = Math.round((CW - SUB_W) / 2);
-  const SUB_Y    = Math.round(CH * 0.295); // ~398px at 1350
+  const SUB_Y    = HL_Y + HL_H + 18; // 18px gap below headline box
   const SUB_H    = Math.ceil(SUB_FONT * 1.4 * 2) + 8;
 
   // ── CTA: pill button — centered at bottom of scene ───────────────────────
@@ -88,7 +106,7 @@ export function buildPersonaHeroBottomLayout(
         ? [
             {
               id: "headline" as const,
-              content: copy.headline,
+              content: headlineContent,
               x: HL_X,
               y: HL_Y,
               w: HL_W,
@@ -102,7 +120,6 @@ export function buildPersonaHeroBottomLayout(
               letterSpacing: -0.02,
               maxLines: 2,
               textTransform: "none" as const,
-              textBalance: true,
             },
           ]
         : []),
@@ -126,7 +143,6 @@ export function buildPersonaHeroBottomLayout(
               letterSpacing: 0,
               maxLines: 2,
               textTransform: "none" as const,
-              textBalance: true,
             },
           ]
         : []),

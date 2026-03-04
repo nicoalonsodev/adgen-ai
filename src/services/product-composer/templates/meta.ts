@@ -442,8 +442,6 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
     requiresSceneGeneration: true,
     sceneWithProduct: true,
     supportsSequence: false,
-
-
     recommendedFor: ["alimentos-bebidas", "fitness-deporte", "salud-bienestar", "belleza-cosmetica", "moda-indumentaria", "tecnologia"],
     defaultBackgroundPrompt:
       "Warm, inviting modern interior — kitchen, open living space, or studio with large windows. Soft natural light from the side, warm neutral tones (light wood, cream walls). Slightly blurred background with shallow depth of field bokeh. No people, no text, no logos, no products visible. Clean, premium lifestyle brand aesthetic.",
@@ -451,8 +449,6 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
     rawProductPrompt: true,
     defaultProductPrompt:
       "You receive TWO images: (1) the background — which already has a WHITE PANEL covering the TOP 42% of the canvas containing brand text and logo, all finalized; (2) the product photo to integrate.\n\nYOUR TASK: Generate a LIFESTYLE SCENE in the BOTTOM portion of the canvas showing 2-3 real people naturally using or holding this specific product. The white top panel and its text are PRE-RENDERED and must remain 100% intact.\n\nCRITICAL ZONE RULE — ABSOLUTE AND NON-NEGOTIABLE:\n- Your working area is STRICTLY the BOTTOM 58% of the image (below the white panel boundary).\n- The TOP 42% MUST remain exactly as the background — completely untouched.\n- NO person's head, hair, shoulders, arms, hands, or any body part may appear above the 42% line from the top.\n- If a person would be too tall, show them from the torso down — but keep ALL body parts strictly below the white panel boundary.\n- Cast NO shadows into the white panel area.\n\nSCENE COMPOSITION:\n- 2-3 real, diverse people authentically using, holding, or enjoying this product in a natural lifestyle moment.\n- Choose a setting that genuinely matches the product's world: kitchen or café for food/drink, gym or outdoors for fitness, bathroom or vanity for beauty, home office for tech.\n- The product must be clearly visible and recognizable — in someone's hands or actively in use.\n- Warm, cinematic, natural lighting. Candid and genuine — never stock-photo stiff.\n- Wide, full-bleed composition filling the entire bottom zone from edge to edge.\n\nABSOLUTE PROHIBITIONS:\n- Do NOT let any person, object, or shadow enter the top 40% of the canvas.\n- Do NOT erase, modify, fade, blur, or overlay the white panel or its text in any way.\n- Do NOT add text, logos, watermarks, badges, or graphic decorations of any kind.",
-
-
   },
 ];
 
