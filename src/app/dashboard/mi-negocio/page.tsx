@@ -431,6 +431,9 @@ export default function MiNegocioPage() {
         urgente: "urgente", inspiracional: "inspiracional",
       };
       if (d.tono && tonoMap[d.tono]) setTonos([tonoMap[d.tono]]);
+      if (Array.isArray(d.coloresMarca) && d.coloresMarca.length > 0) {
+        setColoresMarca((d.coloresMarca as string[]).slice(0, 4));
+      }
       if (!scraperUrl.includes(sitioWeb) && scraperUrl) setSitioWeb(scraperUrl.trim());
       setScraperSuccess(true);
       setTimeout(() => setScraperSuccess(false), 4000);
