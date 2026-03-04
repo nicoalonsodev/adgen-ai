@@ -13,7 +13,6 @@
     "@auth/supabase-adapter": "^1.11.1",
     "@google/genai": "^1.40.0",
     "@napi-rs/canvas": "^0.1.90",
-    "@napi-rs/canvas-win32-x64-msvc": "^0.1.92",
     "@supabase/supabase-js": "^2.97.0",
     "mammoth": "^1.11.0",
     "next": "16.1.6",
@@ -22,6 +21,7 @@
     "pdf-parse": "^2.4.5",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "sharp": "^0.34.5",
     "zod": "^4.3.6"
   },
   "devDependencies": {
@@ -33,7 +33,6 @@
     "cross-env": "^10.1.0",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
-    "sharp": "^0.34.5",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
