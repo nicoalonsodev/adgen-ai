@@ -347,6 +347,12 @@ export default function MiNegocioPage() {
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [toastVisible, setToastVisible] = useState(false);
   const [logoFile, setLogoFile] = useState<File | null>(null);
+
+  // Scraper state
+  const [scraperUrl, setScraperUrl] = useState("");
+  const [scraperLoading, setScraperLoading] = useState(false);
+  const [scraperError, setScraperError] = useState("");
+  const [scraperSuccess, setScraperSuccess] = useState(false);
   const [logoPreview, setLogoPreview] = useState<string>("");
 
   // Load: primero Supabase, fallback a localStorage
@@ -392,6 +398,48 @@ export default function MiNegocioPage() {
       r.onerror = rej;
       r.readAsDataURL(file);
     });
+
+  async function handleScrape() {
+    if (!scraperUrl.trim()) return;
+    setScraperLoading(true);
+    setScraperError("");
+    setScraperSuccess(false);
+    try {
+      const res = await fetch("/api/scrape-business", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: scraperUrl.trim() }),
+      });
+      const json = await res.json();
+      if (!json.ok) {
+        setScraperError(json.error ?? "Error al analizar el sitio");
+        return;
+      }
+      const d = json.data ?? {};
+      if (d.nombre) setNombre(d.nombre);
+      if (d.rubro) setRubro(d.rubro);
+      if (d.queVendes) setQueVendes(d.queVendes);
+      if (d.diferenciacion) setDiferenciacion(d.diferenciacion);
+      if (d.propuestaUnica) setPropuestaUnica(d.propuestaUnica);
+      if (d.clienteIdeal) setClienteIdeal(d.clienteIdeal);
+      if (d.dolores) setDolores(d.dolores);
+      if (d.motivadores) setMotivadores(d.motivadores);
+      if (d.palabrasSi) setPalabrasSi(d.palabrasSi);
+      if (d.palabrasNo) setPalabrasNo(d.palabrasNo);
+      const tonoMap: Record<string, Tone> = {
+        emocional: "emocional", tecnico: "tecnico",
+        urgente: "urgente", inspiracional: "inspiracional",
+      };
+      if (d.tono && tonoMap[d.tono]) setTonos([tonoMap[d.tono]]);
+      if (!scraperUrl.includes(sitioWeb) && scraperUrl) setSitioWeb(scraperUrl.trim());
+      setScraperSuccess(true);
+      setTimeout(() => setScraperSuccess(false), 4000);
+    } catch {
+      setScraperError("No se pudo conectar con el servidor");
+    } finally {
+      setScraperLoading(false);
+    }
+  }
 
   async function handleSave() {
     const now = new Date().toISOString()
@@ -460,6 +508,79 @@ export default function MiNegocioPage() {
 
         {/* Form */}
         <div className="space-y-5">
+
+          {/* Section: Completar con IA desde web */}
+          <div
+            style={{
+              background: "linear-gradient(135deg, #0D1F1F 0%, #141414 100%)",
+              border: `1px solid ${S.accent}33`,
+              borderRadius: 16,
+              padding: "20px 24px",
+            }}
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <span style={{ fontSize: 18 }}>✨</span>
+              <span style={{ color: S.accent, fontWeight: 600, fontSize: 14 }}>
+                Completar con IA desde tu sitio web
+              </span>
+            </div>
+            <p style={{ color: S.muted, fontSize: 12, marginBottom: 14, lineHeight: 1.5 }}>
+              Pegá la URL de tu sitio y la IA va a analizar el contenido para completar
+              automáticamente los campos de tu perfil.
+            </p>
+            <div className="flex gap-2">
+              <input
+                type="url"
+                value={scraperUrl}
+                onChange={(e) => setScraperUrl(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && !scraperLoading && handleScrape()}
+                placeholder="https://www.minegocio.com"
+                disabled={scraperLoading}
+                style={{
+                  flex: 1,
+                  background: S.inputBg,
+                  border: `1px solid ${scraperError ? "#FF453A" : S.border}`,
+                  color: S.text,
+                  borderRadius: 10,
+                  padding: "10px 14px",
+                  fontSize: 13,
+                  outline: "none",
+                }}
+                onFocus={(e) => (e.currentTarget.style.borderColor = S.accent)}
+                onBlur={(e) => (e.currentTarget.style.borderColor = scraperError ? "#FF453A" : S.border)}
+              />
+              <button
+                type="button"
+                onClick={handleScrape}
+                disabled={scraperLoading || !scraperUrl.trim()}
+                style={{
+                  background: scraperLoading || !scraperUrl.trim() ? "#1C1C1E" : S.accent,
+                  color: scraperLoading || !scraperUrl.trim() ? S.muted : "#fff",
+                  border: "none",
+                  borderRadius: 10,
+                  padding: "10px 18px",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: scraperLoading || !scraperUrl.trim() ? "not-allowed" : "pointer",
+                  whiteSpace: "nowrap",
+                  transition: "background 0.2s",
+                  minWidth: 120,
+                }}
+              >
+                {scraperLoading ? "Analizando..." : "Analizar web"}
+              </button>
+            </div>
+            {scraperError && (
+              <p style={{ color: "#FF453A", fontSize: 12, marginTop: 8 }}>
+                ⚠ {scraperError}
+              </p>
+            )}
+            {scraperSuccess && (
+              <p style={{ color: "#30D158", fontSize: 12, marginTop: 8 }}>
+                ✅ Perfil completado. Revisá los campos y guardá los cambios.
+              </p>
+            )}
+          </div>
 
           {/* Section 0: Identidad de marca */}
           <Card>
