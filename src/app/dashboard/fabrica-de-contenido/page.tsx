@@ -623,12 +623,12 @@ function getTemplateHint(templateId: string): string | undefined {
     Examples for a skincare: "Glowing skin starts here."
     Examples for a supplement: "La energía que necesitás, cuando la necesitás."
 
-  - subheadline: 1-2 sentences that reinforce the headline with a specific product benefit. Max 100 chars.
+  - subheadline: 1-2 sentences that reinforce the headline with a specific product benefit. Max 45 chars.
     Must relate directly to what this product does for the user.
-    Example for protein: "Fórmula completa con 26 vitaminas y minerales esenciales."
-    Example for skincare: "Hidratación profunda con ácido hialurónico y vitamina C."
+    Example for protein: "Fórmula completa con 26 vitaminas."
+    Example for skincare: "Hidratación profunda con vitamina C."
 
-  - title: CTA button text (pill at the bottom of the scene). Max 25 chars.
+  - title: CTA button text (pill at the bottom of the scene). Max 14 chars.
     Example: "Shop Now" or "Quiero el mío" or "Empezá hoy" or "Ver producto"
 
   - productPrompt: This prompt goes DIRECTLY to an image generation AI. Write it as a self-contained image generation prompt.
@@ -1232,6 +1232,7 @@ export default function FabricaDeContenido() {
             productFormData.append("useAvatarAsScene", "true");
           }
           const templateMeta = TEMPLATES.find((t) => t.id === primaryTemplate);
+          const hasRawProductPrompt = (templateMeta as any)?.rawProductPrompt === true;
           const templateDefault = templateMeta?.defaultProductPrompt;
           const effectiveProductPrompt = templateDefault || (copy.productPrompt as string) || "";
           const zoneSide: "left" | "right" | "bottom" | "top" | "center" = (
@@ -1247,7 +1248,7 @@ export default function FabricaDeContenido() {
                 : zoneSide === "center"
                   ? "Person fills the canvas naturally."
                   : "Person on the RIGHT side only. Left side stays clean.";
-          const scenePrompt = isSceneTemplate
+          const scenePrompt = (isSceneTemplate && !hasRawProductPrompt)
             ? `Show a real person experiencing this situation: ${(copy.sceneAction as string) ?? (copy.productPrompt as string) ?? ""}. IMPORTANT: No products, no objects, no items of any kind. Only a person in a natural candid moment. ${zoneInstruction} CRITICAL: Do NOT erase, modify, blur, or cover ANY existing text, stars, or graphic elements in the image. All pre-existing text must remain perfectly intact and legible.`
             : effectiveProductPrompt;
           productFormData.append("config", JSON.stringify({
@@ -1260,9 +1261,9 @@ export default function FabricaDeContenido() {
               copyZone: zoneSide,
               includeLayoutSpec: false,
               skipTextRender: true,
-              sceneMode: isSceneTemplate && !avatarFile,
+              sceneMode: isSceneTemplate && !avatarFile && !hasRawProductPrompt,
               splitComparison: primaryTemplate === "comparacion-split",
-              rawProductPrompt: (templateMeta as any)?.rawProductPrompt === true ? true : undefined,
+              rawProductPrompt: hasRawProductPrompt ? true : undefined,
               sharpProductOverlay: (templateMeta as any)?.sharpProductOverlay ?? undefined,
             },
           }));
@@ -1576,6 +1577,7 @@ export default function FabricaDeContenido() {
               productForm.append("avatarFile", avatarFile);
               productForm.append("useAvatarAsScene", "true");
             }
+            const hasRawProductPromptAngles = (tplMeta as any)?.rawProductPrompt === true;
             const templateDefault = tplMeta?.defaultProductPrompt;
             const effectiveProductPrompt = templateDefault || (copy.productPrompt as string) || "";
             const zoneSide = TEMPLATE_COPY_ZONES[templateId] ?? "left";
@@ -1588,7 +1590,7 @@ export default function FabricaDeContenido() {
                   : zoneSide === "center"
                     ? "Person fills the canvas naturally."
                     : "Person on the RIGHT side only. Left side stays clean.";
-            const scenePrompt = isSceneTemplate
+            const scenePrompt = (isSceneTemplate && !hasRawProductPromptAngles)
               ? `Show a real person experiencing this situation: ${(copy.sceneAction as string) ?? (copy.productPrompt as string) ?? ""}. IMPORTANT: No products, no objects, no items of any kind. Only a person in a natural candid moment. ${zoneInstruction} CRITICAL: Do NOT erase, modify, blur, or cover ANY existing text, stars, or graphic elements in the image. All pre-existing text must remain perfectly intact and legible.`
               : effectiveProductPrompt;
             productForm.append("config", JSON.stringify({
@@ -1601,9 +1603,9 @@ export default function FabricaDeContenido() {
                 copyZone: TEMPLATE_COPY_ZONES[templateId],
                 includeLayoutSpec: false,
                 skipTextRender: true,
-                sceneMode: isSceneTemplate && !avatarFile,
+                sceneMode: isSceneTemplate && !avatarFile && !hasRawProductPromptAngles,
                 splitComparison: templateId === "comparacion-split",
-                rawProductPrompt: (tplMeta as any)?.rawProductPrompt === true ? true : undefined,
+                rawProductPrompt: hasRawProductPromptAngles ? true : undefined,
                 sharpProductOverlay: (tplMeta as any)?.sharpProductOverlay ?? undefined,
               },
             }));
