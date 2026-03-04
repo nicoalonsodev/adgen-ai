@@ -21,7 +21,7 @@ import { generateTemplateCopyOpenAI, analyzeCreativeReference, generateSequenceC
 import { listPresets } from "@/services/product-composer/presets";
 import { createLogger, generateRequestId } from "@/lib/logger";
 import { createMetrics } from "@/lib/metrics";
-import { consumeTokens, getUserWithTokens, logTokenConsumption } from "@/lib/supabase/server";
+import { getUserWithTokens, consumeTokensWithData } from "@/lib/supabase/server";
 import { calculateTokensForOperation } from "@/lib/tokens/tokenCalculator";
 
 const logger = createLogger({ service: "api:compose" });
@@ -306,18 +306,6 @@ async function parseOperationFromRequest(
   return { operation: "STANDARD", payload: {} };
 }
 
-async function checkTokenBalance(userId: string, needed: number) {
-  if (needed <= 0) return;
-
-  const userTokens = await getUserWithTokens(userId);
-  const tokensRemaining = Number(userTokens?.tokens_remaining ?? 0);
-
-  if (tokensRemaining < needed) {
-    const error = new Error("Insufficient tokens");
-    (error as Error & { status?: number }).status = 402;
-    throw error;
-  }
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Route Handler
@@ -344,7 +332,15 @@ export async function POST(request: NextRequest) {
     }
 
     const tokensNeeded = calculateTokensForOperation(operation, payload);
-    await checkTokenBalance(userId, tokensNeeded);
+
+    // Single DB call: fetch user tokens and verify balance in one query
+    const cachedUserTokens = tokensNeeded > 0 ? await getUserWithTokens(userId) : null;
+    if (tokensNeeded > 0) {
+      const tokensRemaining = Number(cachedUserTokens?.tokens_remaining ?? 0);
+      if (tokensRemaining < tokensNeeded) {
+        return NextResponse.json({ success: false, error: "Insufficient tokens" }, { status: 402 });
+      }
+    }
 
     let composeRequest: ComposeRequest;
     let generatedBackground = false;
@@ -402,8 +398,7 @@ export async function POST(request: NextRequest) {
           }
         }
         const buffer = await generateBackground({ prompt, aspectRatio, primaryColor, backgroundColorHint, rawMode: rawBackground });
-        await consumeTokens(userId, tokensNeeded);
-        await logTokenConsumption(userId, tokensNeeded, operation);
+        if (cachedUserTokens) await consumeTokensWithData(cachedUserTokens, tokensNeeded, operation);
         return NextResponse.json({
           success: true,
           requestId,
@@ -432,8 +427,7 @@ export async function POST(request: NextRequest) {
             backgroundStyleGuide: body.backgroundStyleGuide,
             sorteoData: body.sorteoData,
           });
-          await consumeTokens(userId, tokensNeeded);
-          await logTokenConsumption(userId, tokensNeeded, operation);
+          if (cachedUserTokens) await consumeTokensWithData(cachedUserTokens, tokensNeeded, operation);
           return NextResponse.json({ success: true, data: { copy: result, promptUsed: `Schema: ${(body.templateSchema ?? []).join(", ")}` } });
         } catch (err) {
           const message = err instanceof Error ? err.message : "Unknown error";
@@ -459,8 +453,7 @@ export async function POST(request: NextRequest) {
             sceneWithProduct: body.sceneWithProduct === true,
             businessProfile: body.businessProfile,
           });
-          await consumeTokens(userId, tokensNeeded);
-          await logTokenConsumption(userId, tokensNeeded, operation);
+          if (cachedUserTokens) await consumeTokensWithData(cachedUserTokens, tokensNeeded, operation);
           return NextResponse.json({ success: true, data: { slides: result } });
         } catch (err) {
           const message = err instanceof Error ? err.message : "Unknown error";
@@ -485,8 +478,7 @@ export async function POST(request: NextRequest) {
             productPng: product,
             copy: (body.copy as Record<string, unknown>) ?? {},
           });
-          await consumeTokens(userId, tokensNeeded);
-          await logTokenConsumption(userId, tokensNeeded, operation);
+          if (cachedUserTokens) await consumeTokensWithData(cachedUserTokens, tokensNeeded, operation);
           return NextResponse.json({ success: true, data: result });
         } catch (err) {
           const message = err instanceof Error ? err.message : "Unknown error";
@@ -500,8 +492,7 @@ export async function POST(request: NextRequest) {
             imageBase64: body.imageBase64 ?? "",
             mimeType: body.mimeType ?? "",
           });
-          await consumeTokens(userId, tokensNeeded);
-          await logTokenConsumption(userId, tokensNeeded, operation);
+          if (cachedUserTokens) await consumeTokensWithData(cachedUserTokens, tokensNeeded, operation);
           return NextResponse.json({ success: true, data: { analysis: result } });
         } catch (err) {
           const message = err instanceof Error ? err.message : "Unknown error";
@@ -607,8 +598,7 @@ if (validated.mode === "SMART_USAGE_V1") {
             ? `data:image/png;base64,${result.buffer.toString("base64")}`
             : undefined));
 
-      await consumeTokens(userId, tokensNeeded);
-      await logTokenConsumption(userId, tokensNeeded, operation);
+      if (cachedUserTokens) await consumeTokensWithData(cachedUserTokens, tokensNeeded, operation);
 
       return NextResponse.json({
         success: true,
@@ -657,8 +647,7 @@ if (validated.mode === "SMART_USAGE_V1") {
         validated.outputFormat === "jpeg" ? "image/jpeg" :
         validated.outputFormat === "webp" ? "image/webp" : "image/png";
 
-      await consumeTokens(userId, tokensNeeded);
-      await logTokenConsumption(userId, tokensNeeded, operation);
+      if (cachedUserTokens) await consumeTokensWithData(cachedUserTokens, tokensNeeded, operation);
 
       return new NextResponse(new Uint8Array(outputBuffer), {
         status: 200,

@@ -53,6 +53,35 @@ export async function consumeTokens(
   })
 }
 
+/**
+ * Versión optimizada de consumeTokens que acepta datos ya cacheados de getUserWithTokens.
+ * Evita un SELECT redundante cuando el llamador ya verificó el balance previamente.
+ * El log se hace fire-and-forget para no bloquear la respuesta al usuario.
+ */
+export async function consumeTokensWithData(
+  userTokens: NonNullable<Awaited<ReturnType<typeof getUserWithTokens>>>,
+  amount: number,
+  operation: string = 'UNKNOWN'
+) {
+  if (amount <= 0) return
+
+  const { error } = await supabaseAdmin
+    .from('user_tokens')
+    .update({
+      tokens_used: userTokens.tokens_used + amount,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', userTokens.id)
+
+  if (error) throw new Error(error.message)
+
+  // Fire-and-forget: no bloquea la respuesta al usuario
+  logTokenConsumption(userTokens.user_id, amount, operation, {
+    tokens_before: userTokens.tokens_remaining,
+    tokens_after: userTokens.tokens_remaining - amount,
+  }).catch(e => console.error('[tokens] Log error:', e))
+}
+
 export async function logTokenConsumption(
   userId: string,
   amount: number,
