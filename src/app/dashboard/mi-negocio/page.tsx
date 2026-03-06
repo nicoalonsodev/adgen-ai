@@ -2,7 +2,22 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { BUSINESS_CATEGORIES } from "@/lib/businessCategories";
-import { generateBrandPalette, isValidHex, getTextColorForBackground, type BrandPalette } from "@/lib/colorUtils";
+import { generateBrandPalette, isValidHex, getTextColorForBackground } from "@/lib/colorUtils";
+
+// ─── Color roles del sistema de marca ─────────────────────────────────────────
+// El orden del array determina el índice en coloresMarca[]:
+// [0] primary, [1] primaryLight, [2] primaryDark, [3] primaryPale,
+// [4] accent, [5] accentLight, [6] accentDark
+
+const COLOR_ROLES = [
+  { role: "primary",      name: "Principal",        usage: "CTAs, botones, logo" },
+  { role: "primaryLight", name: "Principal Claro",  usage: "Fondos de secciones, áreas destacadas" },
+  { role: "primaryDark",  name: "Principal Oscuro", usage: "Textos, headers, peso visual" },
+  { role: "primaryPale",  name: "Principal Suave",  usage: "Fondos sutiles, cards, hovers" },
+  { role: "accent",       name: "Color Acento",     usage: "CTA secundario, highlights, badge" },
+  { role: "accentLight",  name: "Acento Claro",     usage: "Badges, tags, chips" },
+  { role: "accentDark",   name: "Acento Oscuro",    usage: "Texto sobre fondos claros" },
+] as const;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -344,8 +359,7 @@ export default function MiNegocioPage() {
   const [tonos, setTonos] = useState<Tone[]>(["emocional"]);
   const [palabrasSi, setPalabrasSi] = useState("");
   const [palabrasNo, setPalabrasNo] = useState("");
-  const [coloresMarca, setColoresMarca] = useState<string[]>(["#E8D5C0"]);
-  const [brandPalette, setBrandPalette] = useState<BrandPalette | null>(null);
+  const [coloresMarca, setColoresMarca] = useState<string[]>(["#E8D5C0", "", "", "", "", "", ""]);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [toastVisible, setToastVisible] = useState(false);
   const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -378,7 +392,26 @@ export default function MiNegocioPage() {
       if (Array.isArray(data.tonos) && data.tonos.length > 0) setTonos(data.tonos)
       if (data.palabrasSi !== undefined) setPalabrasSi(data.palabrasSi)
       if (data.palabrasNo !== undefined) setPalabrasNo(data.palabrasNo)
-      if (Array.isArray(data.coloresMarca) && data.coloresMarca.length > 0) setColoresMarca(data.coloresMarca)
+      if (Array.isArray(data.coloresMarca) && data.coloresMarca.length > 0) {
+        const loaded = [...data.coloresMarca];
+        // Si tiene menos de 7 (datos viejos), regenerar desde el color principal
+        if (loaded.length < 7 && loaded[0] && isValidHex(loaded[0])) {
+          const palette = generateBrandPalette(loaded[0]);
+          setColoresMarca([
+            palette.primary.hex,
+            palette.primaryLight.hex,
+            palette.primaryDark.hex,
+            palette.primaryPale.hex,
+            palette.accent.hex,
+            palette.accentLight.hex,
+            palette.accentDark.hex,
+          ]);
+        } else {
+          // Asegurar 7 slots
+          while (loaded.length < 7) loaded.push("");
+          setColoresMarca(loaded);
+        }
+      }
       if (data.updatedAt) setLastUpdated(data.updatedAt)
       if (data.logoBase64) {
         setLogoPreview(`data:${data.logoMimeType ?? 'image/png'};base64,${data.logoBase64}`)
@@ -388,27 +421,22 @@ export default function MiNegocioPage() {
   }, []);
 
   const handlePrimaryColorChange = useCallback((hex: string) => {
-    const next = [...coloresMarca];
-    next[0] = hex;
-    setColoresMarca(next);
-
     if (!isValidHex(hex)) {
-      setBrandPalette(null);
+      setColoresMarca((prev) => { const n = [...prev]; n[0] = hex; return n; });
       return;
     }
 
     const palette = generateBrandPalette(hex);
-    setBrandPalette(palette);
-
-    // Autocompletar colores restantes con la paleta generada
-    const suggested = [
+    setColoresMarca([
       palette.primary.hex,
       palette.primaryLight.hex,
       palette.primaryDark.hex,
+      palette.primaryPale.hex,
       palette.accent.hex,
-    ];
-    setColoresMarca(suggested);
-  }, [coloresMarca]);
+      palette.accentLight.hex,
+      palette.accentDark.hex,
+    ]);
+  }, []);
 
   function toggleTone(t: Tone) {
     setTonos((prev) =>
@@ -488,7 +516,7 @@ export default function MiNegocioPage() {
       nombre, category: category || undefined, rubro, sitioWeb, queVendes,
       diferenciacion, propuestaUnica, clienteIdeal, dolores, motivadores,
       tonos, palabrasSi, palabrasNo, updatedAt: now,
-      coloresMarca: coloresMarca.length > 0 ? coloresMarca : undefined,
+      coloresMarca: coloresMarca.some((c) => c && isValidHex(c)) ? coloresMarca : undefined,
       ...(logoBase64 ? { logoBase64, logoMimeType: logoMimeType ?? 'image/png' } : {}),
     }
 
@@ -851,172 +879,137 @@ export default function MiNegocioPage() {
 
             {/* Brand colors */}
             <div>
-              <FieldLabel>Color principal de marca</FieldLabel>
-              <p style={{ color: S.muted, fontSize: 12, marginBottom: 10, marginTop: -4 }}>
-                Elegí tu color principal y se generará automáticamente una paleta completa.
+              <FieldLabel>Colores de marca</FieldLabel>
+              <p style={{ color: S.muted, fontSize: 12, marginBottom: 14, marginTop: -4, lineHeight: 1.5 }}>
+                Elegí tu color <strong style={{ color: S.text }}>Principal</strong> y se generará la paleta completa automáticamente.
+                Podés personalizar cada color individualmente.
               </p>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-                <input
-                  type="color"
-                  value={coloresMarca[0] || "#E8D5C0"}
-                  onChange={(e) => handlePrimaryColorChange(e.target.value)}
-                  style={{
-                    width: 56,
-                    height: 56,
-                    border: `2px solid ${S.accent}`,
-                    borderRadius: 12,
-                    cursor: "pointer",
-                    padding: 3,
-                    background: S.inputBg,
-                  }}
-                />
-                <div>
-                  <span style={{ color: S.text, fontSize: 13, fontWeight: 500 }}>Principal</span>
-                  <span style={{ color: S.muted, fontSize: 11, fontFamily: "monospace", display: "block" }}>
-                    {(coloresMarca[0] || "#E8D5C0").toUpperCase()}
-                  </span>
-                </div>
-              </div>
 
-              {/* Paleta generada */}
-              {brandPalette && (
-                <div>
-                  <FieldLabel>Paleta sugerida</FieldLabel>
-                  <p style={{ color: S.muted, fontSize: 11, marginBottom: 10, marginTop: -4 }}>
-                    Podés editar cada color manualmente si lo necesitás.
-                  </p>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-                    {([
-                      brandPalette.primary,
-                      brandPalette.primaryLight,
-                      brandPalette.primaryDark,
-                      brandPalette.primaryPale,
-                      brandPalette.accent,
-                      brandPalette.accentLight,
-                      brandPalette.accentDark,
-                    ] as const).map((cr) => (
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {COLOR_ROLES.map((role, idx) => {
+                  const hex = coloresMarca[idx] || "#888888";
+                  const isValid = isValidHex(hex);
+                  const isPrimary = idx === 0;
+                  const hasDivider = idx === 4; // separador antes del bloque acento
+
+                  return (
+                    <div key={role.role}>
+                      {hasDivider && (
+                        <div style={{ height: 1, background: S.border, margin: "8px 0" }} />
+                      )}
                       <div
-                        key={cr.role}
                         style={{
                           display: "flex",
-                          flexDirection: "column",
                           alignItems: "center",
-                          gap: 4,
-                          minWidth: 70,
+                          gap: 12,
+                          padding: "10px 12px",
+                          borderRadius: 10,
+                          background: isPrimary ? `${S.accent}0D` : "transparent",
+                          border: `1px solid ${isPrimary ? `${S.accent}33` : "transparent"}`,
+                          transition: "background 0.15s",
                         }}
                       >
-                        <div
-                          style={{
-                            width: 48,
-                            height: 48,
-                            borderRadius: 10,
-                            background: cr.hex,
-                            border: `1px solid ${S.border}`,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontSize: 10,
-                            fontWeight: 600,
-                            color: getTextColorForBackground(cr.hex),
-                          }}
-                        >
-                          Aa
-                        </div>
-                        <span style={{ color: S.text, fontSize: 10, fontWeight: 500, textAlign: "center" }}>
-                          {cr.name}
-                        </span>
-                        <span style={{ color: S.muted, fontSize: 9, fontFamily: "monospace" }}>
-                          {cr.hex.toUpperCase()}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Colores editables */}
-              <div style={{ marginTop: 16 }}>
-                <FieldLabel>Colores guardados</FieldLabel>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}>
-                  {coloresMarca.map((color, idx) => (
-                    <div key={idx} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-                      <div style={{ position: "relative" }}>
+                        {/* Color picker */}
                         <input
                           type="color"
-                          value={color}
+                          value={isValid ? hex : "#888888"}
                           onChange={(e) => {
-                            if (idx === 0) {
+                            if (isPrimary) {
                               handlePrimaryColorChange(e.target.value);
                             } else {
-                              const next = [...coloresMarca];
-                              next[idx] = e.target.value;
-                              setColoresMarca(next);
+                              setColoresMarca((prev) => {
+                                const next = [...prev];
+                                while (next.length < 7) next.push("");
+                                next[idx] = e.target.value;
+                                return next;
+                              });
                             }
                           }}
                           style={{
-                            width: 44,
-                            height: 44,
-                            border: `2px solid ${idx === 0 ? S.accent : S.border}`,
-                            borderRadius: 10,
+                            width: isPrimary ? 48 : 40,
+                            height: isPrimary ? 48 : 40,
+                            border: `2px solid ${isPrimary ? S.accent : S.border}`,
+                            borderRadius: isPrimary ? 12 : 10,
                             cursor: "pointer",
                             padding: 2,
                             background: S.inputBg,
+                            flexShrink: 0,
                           }}
                         />
-                        {coloresMarca.length > 1 && idx > 0 && (
-                          <button
-                            type="button"
-                            onClick={() => setColoresMarca((prev) => prev.filter((_, i) => i !== idx))}
+
+                        {/* Swatch preview */}
+                        {isValid && (
+                          <div
                             style={{
-                              position: "absolute",
-                              top: -7,
-                              right: -7,
-                              width: 18,
-                              height: 18,
-                              borderRadius: "50%",
-                              background: "#555",
-                              border: "none",
-                              color: "#fff",
-                              fontSize: 11,
-                              cursor: "pointer",
+                              width: isPrimary ? 48 : 40,
+                              height: isPrimary ? 48 : 40,
+                              borderRadius: isPrimary ? 12 : 10,
+                              background: hex,
+                              border: `1px solid ${S.border}`,
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
-                              lineHeight: 1,
+                              fontSize: isPrimary ? 11 : 9,
+                              fontWeight: 700,
+                              color: getTextColorForBackground(hex),
+                              flexShrink: 0,
+                              letterSpacing: "-0.01em",
                             }}
                           >
-                            ×
-                          </button>
+                            Aa
+                          </div>
                         )}
+
+                        {/* Labels */}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{
+                            color: S.text,
+                            fontSize: isPrimary ? 13 : 12,
+                            fontWeight: isPrimary ? 600 : 500,
+                          }}>
+                            {role.name}
+                            {isPrimary && (
+                              <span style={{
+                                marginLeft: 8,
+                                fontSize: 9,
+                                fontWeight: 600,
+                                color: S.accent,
+                                background: `${S.accent}1A`,
+                                border: `1px solid ${S.accent}44`,
+                                borderRadius: 4,
+                                padding: "1px 6px",
+                                textTransform: "uppercase",
+                                letterSpacing: "0.05em",
+                              }}>
+                                Base
+                              </span>
+                            )}
+                          </div>
+                          <div style={{ color: S.muted, fontSize: 10, marginTop: 1 }}>{role.usage}</div>
+                        </div>
+
+                        {/* Hex value */}
+                        <span style={{
+                          color: S.muted,
+                          fontSize: 11,
+                          fontFamily: "monospace",
+                          flexShrink: 0,
+                          background: S.inputBg,
+                          border: `1px solid ${S.border}`,
+                          borderRadius: 6,
+                          padding: "3px 8px",
+                        }}>
+                          {isValid ? hex.toUpperCase() : "—"}
+                        </span>
                       </div>
-                      <span style={{ color: S.muted, fontSize: 9, fontFamily: "monospace" }}>
-                        {color.toUpperCase()}
-                      </span>
                     </div>
-                  ))}
-                  {coloresMarca.length < 7 && (
-                    <button
-                      type="button"
-                      onClick={() => setColoresMarca((prev) => [...prev, "#FFFFFF"])}
-                      style={{
-                        width: 44,
-                        height: 44,
-                        border: `2px dashed ${S.border}`,
-                        borderRadius: 10,
-                        background: "transparent",
-                        color: S.muted,
-                        fontSize: 22,
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      +
-                    </button>
-                  )}
-                </div>
+                  );
+                })}
               </div>
+
+              <p style={{ color: S.muted, fontSize: 11, marginTop: 12, lineHeight: 1.5 }}>
+                Estos colores se aplican automáticamente a los templates de tus anuncios.
+              </p>
             </div>
           </Card>
 
