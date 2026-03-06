@@ -952,64 +952,50 @@ export default function MiNegocioPage() {
                               fontSize: isPrimary ? 11 : 9,
                               fontWeight: 700,
                               color: getTextColorForBackground(hex),
-                              flexShrink: 0,
-                              letterSpacing: "-0.01em",
+                              letterSpacing: "0.02em",
                             }}
                           >
-                            Aa
+                            {hex.toUpperCase()}
                           </div>
                         )}
 
-                        {/* Labels */}
+                        {/* Role info */}
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{
-                            color: S.text,
-                            fontSize: isPrimary ? 13 : 12,
-                            fontWeight: isPrimary ? 600 : 500,
-                          }}>
+                          <div
+                            style={{
+                              fontSize: isPrimary ? 14 : 13,
+                              fontWeight: isPrimary ? 600 : 400,
+                              color: S.text,
+                              marginBottom: 2,
+                            }}
+                          >
                             {role.name}
                             {isPrimary && (
-                              <span style={{
-                                marginLeft: 8,
-                                fontSize: 9,
-                                fontWeight: 600,
-                                color: S.accent,
-                                background: `${S.accent}1A`,
-                                border: `1px solid ${S.accent}44`,
-                                borderRadius: 4,
-                                padding: "1px 6px",
-                                textTransform: "uppercase",
-                                letterSpacing: "0.05em",
-                              }}>
-                                Base
+                              <span
+                                style={{
+                                  marginLeft: 8,
+                                  fontSize: 10,
+                                  fontWeight: 600,
+                                  background: S.accent,
+                                  color: "#fff",
+                                  borderRadius: 6,
+                                  padding: "2px 7px",
+                                  verticalAlign: "middle",
+                                }}
+                              >
+                                Principal
                               </span>
                             )}
                           </div>
-                          <div style={{ color: S.muted, fontSize: 10, marginTop: 1 }}>{role.usage}</div>
+                          <div style={{ fontSize: 11, color: S.muted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                            {role.usage}
+                          </div>
                         </div>
-
-                        {/* Hex value */}
-                        <span style={{
-                          color: S.muted,
-                          fontSize: 11,
-                          fontFamily: "monospace",
-                          flexShrink: 0,
-                          background: S.inputBg,
-                          border: `1px solid ${S.border}`,
-                          borderRadius: 6,
-                          padding: "3px 8px",
-                        }}>
-                          {isValid ? hex.toUpperCase() : "—"}
-                        </span>
                       </div>
                     </div>
                   );
                 })}
               </div>
-
-              <p style={{ color: S.muted, fontSize: 11, marginTop: 12, lineHeight: 1.5 }}>
-                Estos colores se aplican automáticamente a los templates de tus anuncios.
-              </p>
             </div>
           </Card>
 
