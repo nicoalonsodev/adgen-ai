@@ -1,7 +1,32 @@
 import { GoogleGenAI } from "@google/genai";
 import sharp from "sharp";
+import { ABSOLUTE_RULES_SCENE, ABSOLUTE_RULES_PRODUCT_INJECT } from "./promptRules";
 
-const MODEL_NANO_BANANA = "gemini-3.1-flash-image-preview";
+const MODEL_NANO_BANANA = "gemini-2.5-flash-image";
+
+/** Semaphore to limit concurrent Gemini API calls and avoid mass timeouts */
+const GEMINI_MAX_CONCURRENT = 2;
+let _geminiActive = 0;
+const _geminiQueue: Array<() => void> = [];
+
+async function acquireGeminiSlot(): Promise<void> {
+  if (_geminiActive < GEMINI_MAX_CONCURRENT) {
+    _geminiActive++;
+    return;
+  }
+  return new Promise<void>((resolve) => {
+    _geminiQueue.push(() => {
+      _geminiActive++;
+      resolve();
+    });
+  });
+}
+
+function releaseGeminiSlot(): void {
+  _geminiActive--;
+  const next = _geminiQueue.shift();
+  if (next) next();
+}
 
 function getClient() {
   return new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
@@ -54,8 +79,10 @@ function collectTextParts(response: any): string {
   return chunks.join("\n");
 }
 
-/** Hard timeout per individual Gemini call — prevents indefinite hangs */
-const GEMINI_CALL_TIMEOUT_MS = 150_000; // 150 seconds (API suele tardar 90s bajo carga)
+/** Hard timeout per individual Gemini call.
+ * Set to 80s so we can fit 2 retries within the 180s route limit.
+ * Normal Gemini image generation takes 30-60s; if it hasn't responded by 80s it's stuck. */
+const GEMINI_CALL_TIMEOUT_MS = 80_000;
 
 /**
  * Compress a background buffer to JPEG before sending to Gemini.
@@ -105,24 +132,29 @@ async function generateContentWithRetry(
   options: { maxAttempts?: number; baseDelayMs?: number; timeoutMs?: number } = {},
 ) {
   const maxAttempts = options.maxAttempts ?? 3;
-  const baseDelayMs = options.baseDelayMs ?? 450;
+  const baseDelayMs = options.baseDelayMs ?? 2000;
   const timeoutMs = options.timeoutMs ?? GEMINI_CALL_TIMEOUT_MS;
 
   let lastError: unknown;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    await acquireGeminiSlot();
     try {
-      return await withTimeout(
+      const result = await withTimeout(
         ai.models.generateContent(request),
         timeoutMs,
         `intento ${attempt}/${maxAttempts}`,
       );
+      releaseGeminiSlot();
+      return result;
     } catch (error) {
+      releaseGeminiSlot();
       lastError = error;
       console.error(`[gemini] Error en intento ${attempt}/${maxAttempts}:`, JSON.stringify(error, Object.getOwnPropertyNames(error)));
       const shouldRetry = attempt < maxAttempts && isTransientGeminiError(error);
       if (!shouldRetry) break;
-      const jitter = Math.floor(Math.random() * 120);
-      await sleep(baseDelayMs * attempt + jitter);
+      // Exponential backoff with large jitter to stagger parallel retries
+      const jitter = Math.floor(Math.random() * 3000);
+      await sleep(baseDelayMs * Math.pow(2, attempt - 1) + jitter);
     }
   }
 
@@ -192,156 +224,54 @@ export async function nanoBananaInjectProduct(args: {
 export async function generateBackground(args: {
   prompt: string;
   aspectRatio?: string;
-  primaryColor?: string;
-  backgroundColorHint?: string;
-  /** true = send the prompt to Gemini exactly as-is, without any role wrapper or rules */
-  rawMode?: boolean;
 }): Promise<Buffer> {
   const ai = getClient();
 
-  let builtPrompt: string;
-
-  if (args.rawMode) {
-    // Template has rawBackgroundPrompt: true — trust the prompt completely, no wrapper
-    builtPrompt = args.prompt;
-  } else {
-    const colorInstruction = args.backgroundColorHint
-      ? `\n\nCOLOR ADJUSTMENT: Shift the palette so that "${args.backgroundColorHint}" becomes the dominant tone. Keep all other details — lighting, textures, surfaces, composition — exactly as described above. The result must remain compatible with dark typography.`
-      : args.primaryColor
-      ? `\n\nCOLOR ACCENT: The brand's primary color is ${args.primaryColor} — incorporate it as a subtle tonal presence while keeping overall tones light and compatible with dark typography.`
-      : "";
-
-    // gemini.ts sets the professional role and absolute prohibitions.
-    // The creative brief comes entirely from the template's defaultBackgroundPrompt.
-    builtPrompt = `You are a senior advertising art director and product photographer creating premium commercial background imagery for a digital ad.
-
-CREATIVE BRIEF:
-${args.prompt}${colorInstruction}
-
-ABSOLUTE RULES — these are non-negotiable and override nothing in the brief, they simply exclude:
-- No text, letters, numbers, words, or typography of any kind
-- No people, faces, hands, or body parts
-- No finished products, bottles, jars, tubes, packaging, or branded objects`;
-  }
-
-  const fallbackPrompt = "You are a senior advertising art director. Generate a clean, minimal photorealistic background for a product ad — soft gradient, studio lighting. No text, no people, no products, no packaging.";
-
-  let lastModelText = "";
-  for (const prompt of [builtPrompt, fallbackPrompt]) {
-    console.log(`[gemini:generateBackground] model=${MODEL_NANO_BANANA} prompt_chars=${prompt.length}\n${prompt.slice(0, 300)}`);
-    const response = await generateContentWithRetry(ai, {
-      model: MODEL_NANO_BANANA,
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: prompt }],
-        },
-      ],
-      config: {
-        imageConfig: {
-          aspectRatio: args.aspectRatio ?? "1:1",
-          imageSize: "1K",
-        },
-        responseModalities: ["IMAGE"],
+  console.log(`[gemini:generateBackground] model=${MODEL_NANO_BANANA} prompt_chars=${args.prompt.length}\n${args.prompt.slice(0, 300)}`);
+  const response = await generateContentWithRetry(ai, {
+    model: MODEL_NANO_BANANA,
+    contents: [
+      {
+        role: "user",
+        parts: [{ text: args.prompt }],
       },
-    });
+    ],
+    config: {
+      imageConfig: {
+        aspectRatio: args.aspectRatio ?? "1:1",
+        imageSize: "1K",
+      },
+      responseModalities: ["IMAGE"],
+    },
+  });
 
-    const imagePart = findImagePart(response);
-    if (imagePart?.inlineData?.data) {
-      return Buffer.from(imagePart.inlineData.data as string, "base64");
-    }
-
-    const text = collectTextParts(response);
-    if (text) lastModelText = text;
+  const imagePart = findImagePart(response);
+  if (imagePart?.inlineData?.data) {
+    return Buffer.from(imagePart.inlineData.data as string, "base64");
   }
 
-  throw new Error(lastModelText || "Gemini no devolvió imagen de fondo.");
+  const text = collectTextParts(response);
+  throw new Error(text || "Gemini no devolvió imagen de fondo.");
 }
 
 export async function generateScene(args: {
   backgroundPng: Buffer;
   prompt: string;
   aspectRatio?: string;
-  zoneHint?: "left" | "right" | "top" | "bottom" | "center";
 }): Promise<Buffer> {
   const ai = getClient();
 
-  // Build zone-specific placement instructions based on where the TEXT lives.
-  // zoneHint tells us where the COPY is, so the person goes on the OTHER side.
-  // Margins are intentionally conservative: keep person well inside the scene zone
-  // so the feathered blend (applied after) never touches the subject.
-  let zonePlacement: string;
-  switch (args.zoneHint) {
-    case "right":
-      zonePlacement = `PLACEMENT ZONE — hard constraint:
-- The person must be positioned ENTIRELY within the LEFT 42% of the image (left edge to 42% width).
-- A clear gap of at least 8% must exist between the right edge of the person and the center line.
-- The RIGHT 58% of the image must remain COMPLETELY UNCHANGED — no person, no arm, no hair, no shadow, no alteration of any kind.`;
-      break;
-    case "top":
-      zonePlacement = `PLACEMENT ZONE — hard constraint:
-- The person must be positioned STRICTLY in the BOTTOM 45% of the image ONLY (below 55% vertical).
-- The person's head (top of hair) must NOT go above the 55% vertical line of the image.
-- The person MUST be CENTERED HORIZONTALLY.
-- The TOP 55% of the image MUST remain COMPLETELY UNTOUCHED — all existing text and decorations preserved pixel-perfect.`;
-      break;
-    case "bottom":
-      zonePlacement = `PLACEMENT ZONE — hard constraint:
-- The person must be positioned ENTIRELY within the TOP 42% of the image.
-- The BOTTOM 58% must remain exactly as the background — no person, no shadow extending there.`;
-      break;
-    case "center":
-      zonePlacement = `PLACEMENT ZONE — guidance:
-- The person can be placed centrally, but should be large and prominent.
-- Keep the overall composition balanced. Avoid covering any existing text or graphic elements.`;
-      break;
-    case "left":
-    default:
-      zonePlacement = `PLACEMENT ZONE — hard constraint:
-- The person must be positioned ENTIRELY within the RIGHT 42% of the image (from 58% to 100% width).
-- A clear gap of at least 8% must exist between the left edge of the person and the center line.
-- The LEFT 58% of the image must remain COMPLETELY UNCHANGED — no person, no arm, no hair, no shadow, no alteration of any kind.`;
-      break;
-  }
+  const bg = await compressBgForGemini(args.backgroundPng);
 
-  // For zoneHint="top" (testimonio-review), allow the person to hold a product naturally.
-  // For all other zones, hands must be empty (product is composited separately via Sharp).
-  const holdingRule = args.zoneHint === "top"
-    ? `- The person CAN hold a small beauty/wellness product naturally in their hands — this is intentional and expected.`
-    : `- DO NOT show anything being held. The person's hands must be empty or in a natural resting pose.`;
-
-  const wrappedPrompt = `You are a professional advertising image compositor. Your task is to add a person to a background scene.
-
-STEP 1 — ANALYZE THE IMAGE FIRST:
-Before making any changes, examine the background image carefully and identify:
-• Where existing text, labels, badges, icons, or graphic elements are located — these are protected zones, the person must NEVER overlap them
-• Where the open, empty space is available for placing the person
-• The dominant lighting direction and color temperature of the scene
-
-STEP 2 — COMPOSE WITH PRECISION:
-${args.prompt}
-
-${zonePlacement}
-
-ABSOLUTE RULES — violation is not acceptable:
-- DO NOT add any product, bottle, jar, tube, dropper, or package UNLESS the prompt explicitly asks for it.
-${holdingRule}
-- DO NOT add text, logos, watermarks, or labels.
-- DO NOT cover, blur, distort, or overlap ANY existing text, stars, icons, or graphic elements in the background — they must remain 100% visible and legible.
-- DO NOT alter, recolor, brighten, darken, or modify ANY part of the background — only add the person.
-- The person must be FULLY OPAQUE and SOLIDLY VISIBLE — do NOT apply fading, dissolving, transparency, or soft disappearance to any part of the person. The person should look physically present with clear edges.
-- Lighting must match the existing background naturally.
-- The scene must feel authentic and warm, not overly commercial.`;
-
-  console.log(`[gemini:generateScene] model=${MODEL_NANO_BANANA} prompt_chars=${wrappedPrompt.length}\n${wrappedPrompt.slice(0, 300)}`);
+  console.log(`[gemini:generateScene] model=${MODEL_NANO_BANANA} prompt_chars=${args.prompt.length}\n${args.prompt.slice(0, 300)}`);
   const response = await generateContentWithRetry(ai, {
     model: MODEL_NANO_BANANA,
     contents: [
       {
         role: "user",
         parts: [
-          { inlineData: { mimeType: "image/png", data: args.backgroundPng.toString("base64") } },
-          { text: wrappedPrompt },
+          { inlineData: { mimeType: bg.mimeType, data: bg.data } },
+          { text: args.prompt },
         ],
       },
     ],
@@ -380,7 +310,6 @@ export async function generateSceneWithAvatarAndProduct(args: {
   avatarPng: Buffer;
   prompt: string;
   aspectRatio?: string;
-  copyZone?: "left" | "right" | "top" | "bottom" | "center";
 }): Promise<Buffer> {
   const ai = getClient();
 
@@ -390,99 +319,10 @@ export async function generateSceneWithAvatarAndProduct(args: {
     compressProductForGemini(args.avatarPng),
   ]);
 
-  // Zone-specific constraint — stated prominently at the TOP of the prompt so Gemini prioritizes it.
-  const zonePercent =
-    args.copyZone === "right" ? "LEFT 42%" :
-    args.copyZone === "top"   ? "BOTTOM 45%" :
-    args.copyZone === "bottom"? "TOP 42%"    :
-                                "RIGHT 42%";
-
-  const zoneCleanSide =
-    args.copyZone === "right"
-      ? "RIGHT 58% must be COMPLETELY CLEAN — no person, no arm, no hair, no shadow"
-      : args.copyZone === "top"
-      ? "TOP 55% must be COMPLETELY CLEAN — no person, no arm, no shadow entering from above"
-      : args.copyZone === "bottom"
-      ? "BOTTOM 58% must be COMPLETELY CLEAN — no person, no arm, no shadow"
-      : "LEFT 58% must be COMPLETELY CLEAN — no person, no arm, no hair, no shadow";
-
-  const zoneBodyPosition =
-    args.copyZone === "right"
-      ? "centered horizontally within the left 30–40% of the canvas"
-      : args.copyZone === "top"
-      ? "centered horizontally in the lower canvas, body starting at or below 58% from top"
-      : args.copyZone === "bottom"
-      ? "centered horizontally in the upper canvas, entire body within top 40%"
-      : "centered horizontally within the right 60–95% of the canvas";
-
-  const wrappedPrompt = `You are a professional advertising image compositor. You will receive THREE images:
-- Image 1: the background scene (scene and lighting reference)
-- Image 2: the product (must be held by the person)
-- Image 3: person reference photo (face, hair, skin tone, clothing style to match)
-
-================================================================================
-PRIMARY RULE — ZONE CONSTRAINT — ENFORCED ABOVE ALL ELSE
-================================================================================
-The person and product must occupy ONLY the ${zonePercent} of the canvas.
-The ${zoneCleanSide} — absolutely no body part, arm, hair, clothing, or shadow may cross this boundary.
-Body center: ${zoneBodyPosition}.
-Leave a minimum 6% safety gap between any body part and the zone boundary.
-THIS OVERRIDES the creative brief if there is any conflict.
-================================================================================
-
-================================================================================
-SECONDARY RULE — PERSON USES THE PRODUCT — NON-NEGOTIABLE
-================================================================================
-The person MUST be actively using or interacting with the EXACT product shown in Image 2.
-Natural use modes (choose the most fitting for the product category):
-  • One hand holds the product at chest/waist height while the other hand applies it to skin
-  • Both hands present the product toward the camera, label facing forward
-  • Person applies the product to their arm, neck, or face with a natural gesture
-Product MUST be:
-  - Clearly visible and fully in frame — NEVER hidden or cropped
-  - Label / front face toward the camera (slight angle acceptable)
-  - Reproduced from Image 2 with exact colors, label text, and shape
-Any output where the product from Image 2 is NOT visible and in the person's interaction is INVALID.
-================================================================================
-
-STEP 1 — ANALYZE IMAGE 1 CAREFULLY:
-Before compositing, examine the background and identify:
-• Where existing text, badges, labels, or graphic elements are — they must NEVER be covered
-• The exact open space available for the person (within the allowed zone above)
-• Lighting direction, color temperature, and ambient light quality
-
-STEP 2 — COMPOSE THE ADVERTISING SCENE:
-CREATIVE BRIEF (execute this, but always within the zone constraint above):
-${args.prompt}
-
-PERSON — TECHNICAL REQUIREMENTS:
-- Match face, hair color/style, skin tone, and general aesthetic EXACTLY from Image 3
-- The person must look like the same individual — this is non-negotiable
-- FRAMING: show the person from HEAD to at least KNEE — full upright standing posture
-- BODY POSITION: the person stands upright and confident; their body is ${zoneBodyPosition}
-- FACING: the person faces slightly toward the center of the canvas (toward the text area), body stays inside the allowed zone
-- Clothing may adapt to the scene naturally
-
-PRODUCT — TECHNICAL REQUIREMENTS:
-- Use ONLY the product from Image 2 — do not invent or substitute any other object
-- The person is ACTIVELY USING or interacting with Image 2 — applying to skin, or presenting to camera
-- Product at CHEST or TORSO HEIGHT — clearly visible, label facing camera (slight angle is fine)
-- Preserve the product's EXACT colors, labels, logo, and proportions — zero alteration
-- The product must be FULLY IN FRAME — never cropped or partially out of canvas
-
-ABSOLUTE RULES — VIOLATIONS NOT ACCEPTABLE:
-- The person MUST be visibly using, holding, or applying the product from Image 2 — a person with empty hands and no visible product is NOT acceptable
-- The person and product must be FULLY OPAQUE and SOLIDLY VISIBLE at 100% opacity — NEVER fading, dissolving, soft edges, or any transparency
-- DO NOT cover, blur, or obscure any existing text, labels, or graphic elements from Image 1 — every pixel must remain intact and legible
-- DO NOT modify, recolor, darken, blur, or alter ANY part of the background from Image 1 — only add the person and product
-- Lighting must match the background scene naturally — same direction, same color temperature
-- No added text, watermarks, logos, or extra objects
-- Authentic feel — genuine expression, natural posture, not stiff or stock-photo generic`.trim();
-
   const MAX_ATTEMPTS = 3;
   let lastText = "";
 
-  console.log(`[gemini:generateSceneWithAvatarAndProduct] model=${MODEL_NANO_BANANA} prompt_chars=${wrappedPrompt.length}\n${wrappedPrompt.slice(0, 300)}`);
+  console.log(`[gemini:generateSceneWithAvatarAndProduct] model=${MODEL_NANO_BANANA} prompt_chars=${args.prompt.length}\n${args.prompt.slice(0, 300)}`);
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     const response = await generateContentWithRetry(ai, {
@@ -494,7 +334,7 @@ ABSOLUTE RULES — VIOLATIONS NOT ACCEPTABLE:
             { inlineData: { mimeType: bg.mimeType, data: bg.data } },
             { inlineData: { mimeType: product.mimeType, data: product.data } },
             { inlineData: { mimeType: avatar.mimeType, data: avatar.data } },
-            { text: wrappedPrompt },
+            { text: args.prompt },
           ],
         },
       ],

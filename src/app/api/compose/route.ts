@@ -81,7 +81,15 @@ interface ComposeJsonBody {
     copyZone?: "right" | "left" | "top" | "bottom" | "center" | "full";
     forceSize?: { width: number; height: number };
     includeLayoutSpec?: boolean;
+    skipTextRender?: boolean;
+    sceneMode?: boolean;
+    useAvatarAsScene?: boolean;
+    avatarSceneWithProduct?: boolean;
+    rawProductPrompt?: boolean;
+    personScene?: boolean;
     splitComparison?: boolean;
+    useGenericProductClone?: boolean;
+    sharpProductOverlay?: Record<string, unknown>;
   };
 
   templateBetaOptions?: {
@@ -181,8 +189,7 @@ if (debugInfo.productBytes === 0 && requestedMode !== "TEMPLATE_BETA") {
   const logoBase64 = formData.get("logoBase64") as string | null;
   const logoMimeType = formData.get("logoMimeType") as string | null;
 
-  // Avatar-as-scene fields (for PRODUCT_IA scene templates)
-  const useAvatarAsScene = formData.get("useAvatarAsScene") === "true";
+  // Avatar buffer (for PRODUCT_IA scene templates)
   const avatarFormFile = formData.get("avatarFile") as File | null;
   const avatarBuffer = avatarFormFile ? Buffer.from(await avatarFormFile.arrayBuffer()) : undefined;
 
@@ -204,10 +211,7 @@ if (debugInfo.productBytes === 0 && requestedMode !== "TEMPLATE_BETA") {
       logoBase64: logoBase64 ?? undefined,
       logoMimeType: logoMimeType ?? undefined,
       avatarBuffer,
-      productIAOptions: {
-        ...(config.productIAOptions ?? {}),
-        ...(useAvatarAsScene ? { useAvatarAsScene: true } : {}),
-      } as ComposeRequest["productIAOptions"],
+      productIAOptions: config.productIAOptions as ComposeRequest["productIAOptions"],
       templateBetaOptions: config.templateBetaOptions as any,
     },
     generatedBackground,
@@ -378,29 +382,7 @@ export async function POST(request: NextRequest) {
             { status: 400 }
           );
         }
-        // primaryColor and backgroundColorHint are passed from the copy generation step to keep palette coherent
-        // rawBackground = true skips all wrappers and sends the prompt directly to Gemini as-is
-        let primaryColor: string | undefined;
-        let backgroundColorHint: string | undefined;
-        let rawBackground = false;
-        if (contentType.includes("application/json")) {
-          const cloneForColor = request.clone();
-          const bodyForColor = await cloneForColor.json().catch(() => ({}));
-          primaryColor = typeof bodyForColor.primaryColor === "string" ? bodyForColor.primaryColor : undefined;
-          backgroundColorHint = typeof bodyForColor.backgroundColorHint === "string" ? bodyForColor.backgroundColorHint : undefined;
-          rawBackground = bodyForColor.rawBackground === true;
-        } else if (contentType.includes("multipart/form-data")) {
-          const cloneForColor = request.clone();
-          const fdForColor = await cloneForColor.formData().catch(() => new FormData());
-          const cfgStr = fdForColor.get("config") as string | null;
-          if (cfgStr) {
-            const cfg = JSON.parse(cfgStr);
-            primaryColor = typeof cfg.primaryColor === "string" ? cfg.primaryColor : undefined;
-            backgroundColorHint = typeof cfg.backgroundColorHint === "string" ? cfg.backgroundColorHint : undefined;
-            rawBackground = cfg.rawBackground === true;
-          }
-        }
-        const buffer = await generateBackground({ prompt, aspectRatio, primaryColor, backgroundColorHint, rawMode: rawBackground });
+        const buffer = await generateBackground({ prompt, aspectRatio });
         if (cachedUserTokens) await consumeTokensWithData(cachedUserTokens, tokensNeeded, operation);
         return NextResponse.json({
           success: true,

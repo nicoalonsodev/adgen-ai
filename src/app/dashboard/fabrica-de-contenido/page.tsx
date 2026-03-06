@@ -40,683 +40,40 @@ const ANGLE_COUNTS = [1, 2, 3, 5, 8];
 const CONCURRENCY = 5;
 
 function getTemplateSchema(templateId: string): string[] {
-  if (templateId === "promo-urgencia-bottom") {
-    return ["badge", "headline", "cta", "productPrompt", "backgroundColorHint"];
-  }
-  if (templateId === "hero-center-bottom") {
-    return ["title", "headline", "subheadline", "badge", "productPrompt", "backgroundColorHint"];
-  }
-  if (templateId === "headline-top-left") {
-    return ["headline", "subheadline", "disclaimer", "productPrompt", "backgroundColorHint"];
-  }
-  if (templateId === "pain-point-left") {
-    return ["headline", "subheadline", "badge", "backgroundColorHint", "sceneAction"];
-  }
-  if (templateId === "comparacion-split") {
-    return ["headline", "badge", "columnTitle", "competitionTitle", "bullets", "competitionBullets", "backgroundColorHint", "primaryColor"];
-  }
-  if (templateId === "antes-despues") {
-    return ["badge", "columnTitle", "competitionTitle", "bullets", "competitionBullets", "backgroundColorHint", "productPrompt"];
-  }
-  if (templateId === "beneficios-producto") {
-    return ["headline", "subheadline", "badge", "bullets", "productPrompt", "backgroundColorHint"];
-  }
-  if (templateId === "razones-producto") {
-    return ["title", "headline", "subheadline", "badge", "bullets", "productPrompt", "backgroundColorHint"];
-  }
-  if (templateId === "editorial-lifestyle-left" || templateId === "editorial-lifestyle-right") {
-    return ["headline", "subheadline", "badge", "backgroundColorHint", "sceneAction", "textSide"];
-  }
-  if (templateId === "editorial-lifestyle-bottom" || templateId === "editorial-lifestyle-top") {
-    return ["headline", "subheadline", "badge", "backgroundColorHint", "sceneAction"];
-  }
-  if (templateId === "producto-beneficios-vertical") {
-    return ["title", "headline", "columnTitle", "competitionTitle", "badge", "bullets", "productPrompt", "backgroundColorHint"];
-  }
-  if (templateId === "testimonio-review") {
-    return ["headline", "badge", "backgroundColorHint", "sceneAction"];
-  }
-  if (templateId === "producto-hero-top") {
-    return ["headline", "subheadline", "disclaimer", "productPrompt", "backgroundPrompt"];
-  }
-  if (templateId === "sorteo-giveaway-center") {
-    return ["title", "headline", "subheadline", "badge", "bullets", "backgroundPrompt"];
-  }
-  if (templateId === "persona-producto-left") {
-    return ["badge", "headline", "subheadline", "title", "backgroundPrompt", "productPrompt"];
-  }
-  if (templateId === "persona-hero-bottom") {
-    return ["headline", "subheadline", "title", "productPrompt"];
-  }
-  if (templateId === "editorial-center-top") {
-    return ["title", "headline", "subheadline", "badge", "bullets", "productPrompt", "backgroundColorHint"];
-  }
-  return ["title", "headline", "subheadline", "badge", "bullets", "productPrompt", "backgroundColorHint"];
+  return TEMPLATE_META_LIST.find((t) => t.id === templateId)?.copySchema
+    ?? ["title", "headline", "subheadline", "badge", "bullets", "productPrompt", "backgroundColorHint"];
 }
 
 function getTemplateHint(templateId: string): string | undefined {
-  if (templateId === "classic-editorial-right") {
-    return `TEMPLATE HINT for classic-editorial-right:
-  This template has the product on the LEFT and copy on the RIGHT.
-  - title: 3-5 keywords separated by " · ", max 50 chars.
-    Use ingredients, attributes or brand values.
-    Example: "Colágeno · Ácido Hialurónico · Vitamina C"
-  - headline: short emotional phrase, max 6 words, ends with period.
-    Must connect emotionally. Example: "La piel habla cuando la cuidás."
-  - subheadline: 1-2 benefit sentences, max 120 chars, specific and direct.
-  - badge: short offer in pill format, max 35 chars.
-    Example: "60% OFF en la segunda unidad"
-  - bullets: array of 3 concrete benefits with relevant emoji, max 40 chars each.
-  - productPrompt: product held by a hand emerging from the LEFT or bottom-left,
-    leaving the right half completely clean for text.`;
+  return TEMPLATE_META_LIST.find((t) => t.id === templateId)?.templateHint;
+}
+
+function resolveBgPrompt(
+  meta: (typeof TEMPLATE_META_LIST)[number] | null | undefined,
+  copy: any,
+  businessProfile: any,
+): string {
+  const basePrompt =
+    ((businessProfile?.category as string) && meta?.categoryBackgroundPrompts?.[businessProfile.category as string])
+    ?? meta?.defaultBackgroundPrompt
+    ?? "Fondo minimalista neutro, tonos beige y crema, iluminación suave, sin objetos, sin texto, sin personas.";
+
+  // 1. rawBackgroundPrompt → usar prompt del template sin modificar
+  if ((meta as any)?.rawBackgroundPrompt) {
+    return basePrompt;
   }
-  if (templateId === "promo-urgencia-bottom") {
-    return `TEMPLATE HINT for promo-urgencia-bottom:
-  This template has the product in the TOP zone and offer copy at the BOTTOM.
-  - badge: the MOST impactful offer, shown prominently at top of copy zone.
-    Max 30 chars. This is the first thing read. Example: "60% OFF HOY"
-  - headline: short emotional centered phrase, max 6 words, ends with period.
-    Example: "Recupera la firmeza que amás."
-  - cta: direct call to action, max 20 chars.
-    Example: "¡Compra Ahora!" or "Quiero el mío"
-  - productPrompt: product held by a hand in the TOP CENTER of the image,
-    fully visible, leaving the bottom 40% completely clear for text.`;
+
+  // 2. backgroundPrompt generado por OpenAI (sorteo-giveaway, producto-hero-top)
+  if (copy?.backgroundPrompt) {
+    return copy.backgroundPrompt as string;
   }
-  if (templateId === "hero-center-bottom") {
-    return `TEMPLATE HINT for hero-center-bottom:
-- title: short product or combo name, max 40 chars, can use · separator. Example: "DERMA Lisse · Reafirmante"
-  Do NOT repeat the full product description. Keep it elegant and brief.
-- headline: the BIG offer in large bold text, max 35 chars.
-  Example: "50% OFF + ENVÍO GRATIS"
-  Keep it SHORT — this renders very large on screen.
-- subheadline: one sentence describing the product benefit, max 100 chars
-- badge: a DIFFERENT secondary offer or payment info, max 30 chars.
-  Must be different from headline.
-  Example: "3 cuotas sin interés" or "Envío gratis hoy"`;
+
+  // 3. colorHint sobre el base prompt del template
+  if (copy?.backgroundColorHint) {
+    return `${basePrompt}\n\nCOLOR ADJUSTMENT: Shift the palette so that "${copy.backgroundColorHint}" becomes the dominant tone. Keep all other details exactly as described. The result must remain compatible with dark typography.`;
   }
-  if (templateId === "headline-top-left") {
-    return `TEMPLATE HINT for headline-top-left:
-  Large headline at top-center, product with hand in the bottom center.
-  - headline: bold emotional statement, max 7 words, ends with period.
-    Large font — keep it SHORT. Example: "Firmeza visible para tu piel."
-  - subheadline: one specific benefit line, max 80 chars.
-    Example: "Ideal para piernas, glúteos y abdomen."
-  - disclaimer: short social-proof line, max 45 chars.
-    Start with "✓ " or "★ " then a trust signal using real numbers if available.
-    Example: "✓ +12.000 mujeres ya lo usan" or "★ +8.000 clientas satisfechas"
-  - productPrompt: product held by an elegant hand from below-center,
-    product fully visible, top 35% of image completely clean for headline text.`;
-  }
-  if (templateId === "pain-point-left") {
-    return `TEMPLATE HINT for pain-point-left:
-  This template is for AWARENESS content — it exposes a pain point
-  or problem the audience experiences related to the SPECIFIC PRODUCT
-  being advertised.
-  NEVER use generic beauty or skin examples.
-  Always base the pain point on the actual product and audience.
 
-  - headline: A bold statement about a REAL PROBLEM the target audience
-    has that the product solves. Must be specific to the product category.
-    Max 8 words.
-
-    If product is binoculars: "La visión borrosa arruina tu aventura."
-    If product is a cream: "Las estrías aparecen sin aviso."
-    If product is a supplement: "El cansancio te frena cada día."
-    ALWAYS adapt to the actual product.
-
-  - subheadline: Expands the specific problem. Max 80 chars.
-    Must be relevant to the product being advertised.
-
-  - badge: Soft CTA or intriguing question. Max 30 chars.
-
-  - backgroundColorHint: Very light pale tone. Max 8 words.
-
-  - sceneAction: Describe a REAL PERSON experiencing the pain point
-    specific to this product. Must match the headline.
-    Person on RIGHT side, LEFT 50% completely clean.
-
-    If product is binoculars: "Person squinting trying to see something
-    far away, hand shielding eyes from sun, outdoors"
-    If product is a cream: "Woman looking at her skin with concern"
-    ALWAYS adapt the scene to the actual product and pain point.`;
-  }
-  if (templateId === "sorteo-giveaway-center") {
-    return `TEMPLATE HINT for sorteo-giveaway-center:
-  This template places emotional lifestyle copy OVER a full-bleed photo generated as the background.
-  There is NO product layer — the background IS the scene. Copy is layered on top.
-
-  CRITICAL: The backgroundPrompt is the most important field.
-  It will be sent directly to an image generation AI to create the background photo.
-  It MUST be in English, photorealistic, and adapted to the brand and product being sold.
-  The scene should feel emotionally connected to the product category.
-
-  - title: brand name only. VERY SHORT — max 20 chars. Example: "GALÉNICA" or "DERMA LISSE"
-
-  - headline: 1 word only, all uppercase. This renders ENORMOUS.
-    Example: "SORTEO" or "GIVEAWAY" or "REGALO"
-    NEVER more than 2 words.
-
-  - subheadline: max 4 words, poetic and emotional, NO punctuation.
-    Renders in italic script style. Example: "Día de la madre" or "Para las que más amás"
-
-  - badge: prize highlight, max 35 chars. Example: "6 PREMIOS / 6 GANADORAS"
-
-  - bullets: array with exactly 1 item — collaboration/CTA footer.
-    Example: ["Junto a @saludybellezaconsciente"] — max 45 chars.
-
-  - backgroundPrompt: REQUIRED. English. Full cinematic background scene description.
-    MUST be adapted to the product category. Rules:
-    • Include real people in a genuine emotional moment (2 women, mother/daughter, friends)
-    • Scene must relate to the product: skincare → spa/bathroom ritual; food → kitchen/table;
-      fitness → outdoors/gym; jewelry → elegant event; pets → park/home with pet
-    • Full-bleed, fills the entire canvas
-    • Warm soft cinematic lighting
-    • Slightly darker/moodier in center-bottom area for white text readability
-    • No text, no logos, no visible product labels
-    • Photorealistic, NOT stock-photo generic — genuine and emotional
-
-    Examples by category:
-    Skincare/beauty: "Two women in soft white robes sharing a skincare moment in a bright bathroom, one applying serum, warm golden lighting, cinematic, full canvas, darker center for text overlay"
-    Food/gastronomy: "Mother and daughter cooking together in a warm sunlit kitchen, laughing, ingredients on counter, cinematic warm lighting, full canvas, slightly darker center"
-    Fitness: "Two women on a sunny outdoor trail celebrating after a run, hugging and laughing, energetic and genuine, cinematic lighting, full canvas"
-    Pets: "Young woman lying on grass with her golden dog, both looking happy, soft afternoon light, full canvas, emotional and genuine"`;
-  }
-  if (templateId === "antes-despues") {
-    return `TEMPLATE HINT for antes-despues:
-  This template is a "Before & After" / "Day 1 vs Day X" style split comparison.
-  LEFT side (white background): the BEFORE state — problems, pain, symptoms.
-  RIGHT side (yellow background): the AFTER state — results, benefits, transformation.
-  The product is placed LARGE at the bottom center, spanning both columns.
-
-  IMPORTANT: This is NOT a competition comparison. It shows the SAME PERSON's journey
-  from BEFORE using the product to AFTER using it over time.
-
-  - competitionTitle: the BEFORE label. Short, uppercase. Max 15 chars.
-    Examples: "DÍA 1", "ANTES", "SIN TRATAMIENTO"
-    This is the LEFT column header.
-
-  - columnTitle: the AFTER label. Short, uppercase. Max 15 chars.
-    Examples: "DÍA 90", "DESPUÉS", "CON [BRAND]"
-    This is the RIGHT column header.
-
-  - competitionBullets: array of exactly 3-4 BEFORE problems/symptoms.
-    NO emojis, NO bullet symbols — they are added automatically.
-    Realistic problems the target audience recognizes. Max 45 chars each.
-    Example: ["Manchas y puntos negros", "Sobreproducción de grasa", "Desequilibrio hormonal"]
-
-  - bullets: array of exactly 3-4 AFTER results/benefits.
-    NO emojis, NO bullet symbols — they are added automatically.
-    Specific, positive, measurable results. Use **bold** for key words.
-    Max 45 chars each.
-    Example: ["Manchas reducidas un 99%", "Regulación del sebo facial", "Equilibrio hormonal visible"]
-
-  - badge: optional bottom CTA or guarantee. Max 35 chars.
-    Example: "Garantía de satisfacción 90 días" or "Envío gratis a todo el país"
-
-  - backgroundColorHint: very light/neutral tone. Max 8 words. The layout
-    already has white left + yellow right, so this is for the base background.
-    Example: "blanco puro y limpio"
-
-  - productPrompt: how to place the product at the bottom center.
-    Example: "The product centered at the bottom of the canvas, studio photography, clean background."`;
-  }
-  if (templateId === "beneficios-producto") {
-    return `TEMPLATE HINT for beneficios-producto:
-  HIGH-IMPACT design. PRODUCT on the LEFT (large hero), RIGHT side has a BIG BOLD HEADLINE
-  (displayed in UPPERCASE, renders very large — wraps to 2 lines) + 4 KEY BENEFITS.
-
-  The headline is the VISUAL ANCHOR of the creative — it renders at ~73px.
-  Think of it like a magazine cover headline: bold, punchy, emotional.
-
-  CRITICAL RULES:
-  - Do NOT add any prefix to bullets (no ●, no •, no ▸, no -, no →). The template adds "—" automatically.
-  - Keep bullets SHORT — max 20 chars each. 3-4 words max.
-  - headline renders UPPERCASE and VERY LARGE — it will wrap to 2 lines if > 12 chars. That is DESIRED.
-
-  - headline: emotional product claim. 12-25 chars. Will render UPPERCASE and HUGE.
-    Ideally 2-4 words that wrap naturally to 2 lines.
-    Example: "Piel que se renueva" or "Firmeza visible" or "Hidratación que dura"
-    The headline IS the hero — make it powerful and emotional.
-
-  - subheadline: 1 short benefit sentence. Max 45 chars. 1 line only.
-    Example: "Fórmula de reparación con ácido hialurónico"
-
-  - bullets: array of exactly 4 CORE BENEFITS. Max 20 chars each.
-    NO emojis, NO bullet prefixes — just the benefit text.
-    Example: ["Previene sequedad", "Reduce arrugas", "Textura uniforme", "Piel más suave"]
-
-  - badge: bottom CTA pill (displayed with lime/electric accent color). Max 30 chars.
-    Make it action-oriented or an irresistible offer.
-    Example: "60% OFF en segunda unidad" or "Ver producto"
-
-  - backgroundColorHint: medium gray tone. Max 5 words.
-    Example: "gris medio estudio"
-
-  - productPrompt: how to place the product on the LEFT.
-    Example: "Product large on the left, studio lighting."`;
-  }
-  if (templateId === "editorial-lifestyle-left") {
-    return `TEMPLATE HINT for editorial-lifestyle-left:
-  This template is a PURE EDITORIAL layout — NO product. Inspired by "Every Skin Tells a Story" beauty ads.
-  A person/scene fills one half; the text (headline + subheadline) fills the other half.
-
-  YOU MUST DECIDE which side the text goes on — choose the option that feels most natural
-  for the content and creates the best visual balance.
-
-  The person is generated automatically by PRODUCT_IA (sceneMode).
-
-  CRITICAL RULES:
-  - This is editorial brand content, NOT product advertising.
-  - headline should be poetic, emotional, brand-voice. 3-6 words per line, up to 5 lines.
-  - subheadline is a softer complementary phrase.
-  - NO product mentions in headline or subheadline.
-
-  - textSide: REQUIRED. Must be exactly "left" or "right". You decide based on what feels best.
-    "left" → text on left, person on right.
-    "right" → text on right, person on left.
-    Vary between creatives — don't always pick the same side.
-    Example: "left" or "right"
-
-  - headline: big emotional brand claim. Poetic and impactful. Max 50 chars.
-    Example: "Every Skin Tells a Story." or "Tu piel merece brillar."
-    Appears HUGE on the chosen side.
-
-  - subheadline: complementary phrase, softer tone. Max 60 chars.
-    Example: "We Just Help It Glow." or "Nosotros solo la ayudamos."
-
-  - badge: optional URL or brand tagline. Max 30 chars.
-    Example: "www.mybrand.com"
-
-  - backgroundColorHint: light cream, white, soft neutral. Max 5 words.
-    Example: "crema claro casi blanco"
-
-  - sceneAction: describe the person/scene. Be specific about pose, expression, lighting.
-    The person fills the side OPPOSITE to textSide.
-    Example: "Close-up of woman's face in profile, eyes closed, glowing skin, serene smile, soft warm light"`;
-  }
-  if (templateId === "editorial-lifestyle-right") {
-    return `TEMPLATE HINT for editorial-lifestyle-right:
-  This template is a PURE EDITORIAL layout — NO product. Mirror of editorial-lifestyle-left.
-  A person/scene is generated by AI on the LEFT side. Text goes on the RIGHT.
-
-  CRITICAL RULES:
-  - This is editorial brand content, NOT product advertising.
-  - headline should be poetic, emotional, brand-voice. Up to 5 lines.
-  - NO product mentions.
-
-  - headline: big emotional brand claim. Max 50 chars.
-    Example: "Confiá en tu piel." or "Beauty Starts Within."
-
-  - subheadline: complementary phrase, softer tone. Max 60 chars.
-    Example: "Cada día es una nueva oportunidad."
-
-  - badge: optional URL or brand tagline. Max 30 chars.
-
-  - backgroundColorHint: light cream, white, soft neutral. Max 5 words.
-
-  - sceneAction: describe the person/scene for the LEFT side. Be specific about pose, expression, lighting.
-    Example: "Medium shot of woman touching her face gently, radiant skin, natural makeup, warm studio light"
-    The person MUST stay on the LEFT side only.`;
-  }
-  if (templateId === "editorial-lifestyle-bottom") {
-    return `TEMPLATE HINT for editorial-lifestyle-bottom:
-  This template is a PURE EDITORIAL layout — NO product. Full-bleed lifestyle scene with
-  a BIG white headline at the BOTTOM over a dark gradient.
-
-  The person fills the entire canvas. Text is WHITE over a dark gradient at the bottom.
-
-  CRITICAL RULES:
-  - This is editorial brand content, NOT product advertising.
-  - headline should be emotional and impactful. White text on dark gradient.
-  - Keep it concise — max 3 lines.
-
-  - headline: big emotional brand claim. Max 40 chars.
-    Example: "Brillá con confianza." or "Your Glow, Your Rules."
-
-  - subheadline: softer complementary phrase. Max 60 chars.
-    Example: "Descubrí tu mejor versión."
-
-  - badge: optional URL or brand tagline. Max 30 chars.
-
-  - backgroundColorHint: not very relevant here (scene is full-bleed). Max 5 words.
-    Example: "neutro cálido"
-
-  - sceneAction: describe the person for the FULL canvas. Close-up works best.
-    Example: "Close-up beauty portrait, woman looking up with closed eyes, glowing dewy skin, natural light from above"
-    The person should fill the frame.`;
-  }
-  if (templateId === "editorial-lifestyle-top") {
-    return `TEMPLATE HINT for editorial-lifestyle-top:
-  This template is a PURE EDITORIAL layout — NO product. Full-bleed lifestyle scene with
-  a BIG white headline at the TOP over a dark gradient.
-
-  The person fills the lower portion. Text is WHITE over a dark gradient at the top.
-
-  CRITICAL RULES:
-  - This is editorial brand content, NOT product advertising.
-  - headline should be emotional and impactful. White text on dark gradient.
-  - Keep it concise — max 3 lines.
-
-  - headline: big emotional brand claim. Max 40 chars.
-    Example: "Sentite única." or "Confidence Is Beautiful."
-
-  - subheadline: softer complementary phrase. Max 60 chars.
-    Example: "Tu piel cuenta tu historia."
-
-  - badge: optional tagline at top-left. Max 30 chars.
-    Example: "www.mybrand.com"
-
-  - backgroundColorHint: not very relevant here (scene is full-bleed). Max 5 words.
-    Example: "neutro cálido"
-
-  - sceneAction: describe the person. The person should fill the lower 65% of the canvas.
-    Example: "Medium shot from below, woman with confident gaze, radiant skin, hair flowing, warm golden light"
-    Top area should be darker/hair for text overlay.`;
-  }
-  if (templateId === "producto-beneficios-vertical") {
-    return `TEMPLATE HINT for producto-beneficios-vertical:
-  "Body Tales — What do you want / What you need" split layout.
-  A rounded card sits centered on a soft lavender canvas.
-  BRAND NAME appears ABOVE the card. WEBSITE URL appears BELOW.
-  Inside the card: LEFT column = user desires (lavender), RIGHT column = product solution (blue-gray).
-  Header bar shows two column titles. 4 circle+checkmark icons on the left. Product large on right.
-
-  The product is placed by PRODUCT_IA on the RIGHT (copyZone=left). The LEFT 56% stays completely clean.
-
-  CRITICAL RULES:
-  - Do NOT add prefixes to bullets (no ●, no •, no -, no →). The template adds checkmark icons.
-  - Keep bullets SHORT — max 30 chars each. Plain text, no emojis.
-  - columnTitle and competitionTitle should be short and punchy (max 22 chars).
-
-  - title: brand name displayed ABOVE the card, centered. Max 35 chars.
-    Example: "BODY TALES" or "Laboratorio Skincare"
-
-  - columnTitle: left column header — expresses the USER DESIRE. Max 22 chars.
-    Example: "Lo que querés" or "What you want"
-
-  - competitionTitle: right column header — expresses the SOLUTION. Max 22 chars.
-    Example: "Lo que necesitás" or "What you need"
-
-  - bullets: array of exactly 4 USER DESIRES or PROBLEMS. Short, max 30 chars each.
-    No emojis, no prefixes. Think of what the customer wants to achieve.
-    Example: ["Natural Hair Colour", "Slowed Greying", "Strengthened Hair", "Better Texture"]
-
-  - headline: product name or short claim shown BELOW the product image, inside the card. Max 35 chars.
-    Example: "Anti Grey Hair Serum" or "Suero Revitalizante"
-
-  - badge: website URL shown BELOW the card. Max 40 chars.
-    Example: "www.bodytales.in" or "www.marca.com.ar"
-
-  - backgroundColorHint: ignored — template uses a fixed soft lavender background.
-
-  - productPrompt: product on the RIGHT side of the canvas, large and prominent.
-    Example: "Product on the right side, centered at 75% horizontal, large, studio lighting."`;
-  }
-  if (templateId === "testimonio-review") {
-    return `TEMPLATE HINT for testimonio-review:
-  This is a TESTIMONIAL / REVIEW layout with a person generated by AI.
-  5 star rating icons at the top (auto-generated SVG, do NOT mention stars in text).
-  Big centered quote text in the middle, attribution name below.
-  A real person (generated by sceneAction) fills ONLY the BOTTOM 45% of the canvas.
-  The TOP 50% is reserved for text — the person must NOT appear there.
-
-  Solid pastel background color (pink, peach, lavender, etc.).
-
-  CRITICAL RULES:
-  - Do NOT include quotation marks in the headline — the template adds them automatically.
-  - Do NOT include star emojis or rating numbers — the template renders 5 SVG stars.
-  - Keep the quote natural and authentic-sounding.
-  - The badge is the person's FIRST NAME only.
-  - The quote should be SHORT — max 80 chars, ideally 2-3 lines. Shorter is better.
-
-  - headline: the testimonial quote. Natural, authentic voice. Max 80 chars.
-    Example: "I definitely feel a difference in my skin and nails."
-    Example: "Mi piel cambió por completo en 2 semanas."
-
-  - badge: the person's first name. Max 15 chars.
-    Example: "Cheryl" or "María"
-
-  - backgroundColorHint: pastel/soft color for the background. Max 5 words.
-    Example: "rosa suave pastel" or "durazno claro"
-
-  - sceneAction: describe the person for AI generation. Person fills BOTTOM 45% ONLY.
-    MUST specify: gender, expression, clothing. Person should look happy/confident.
-    CRITICAL: Specify that the person is visible from CHEST UP, centered horizontally,
-    and their HEAD is at about 55% from the top. The top half stays empty.
-    Example: "Smiling woman with long dark hair, visible from chest up, centered, looking slightly to the right, white t-shirt, warm natural lighting, clean solid pink background. Head at 55% from top."
-    Example: "Hombre joven sonriente, barba corta, remera blanca, visible desde el pecho, fondo sólido celeste. Cabeza a 55% desde arriba."`;
-  }
-  if (templateId === "razones-producto") {
-    return `TEMPLATE HINT for razones-producto:
-  BODY TALES "Reasons to start using" style infographic.
-  Product centered and large. 4 benefit labels arranged around it (2 left, 2 right),
-  connected to the product by deterministic SVG horizontal lines with dots — do NOT mention
-  connector lines in productPrompt, they are added automatically by the template.
-
-  TOP: brand name (left) + headline intro in italic (center, line 1) + product name bold (center, line 2).
-  Product name gets a decorative underline added automatically.
-  BOTTOM-LEFT: website URL or CTA.
-  Warm peach/cream background.
-
-  CRITICAL RULES:
-  - Do NOT add any prefix to bullets (no ●, no •, no ▸, no -). Just the text.
-  - Keep bullets SHORT — max 22 chars each, ideally 2-3 words.
-  - Do NOT include connector lines or dots in productPrompt — these are handled by SVG.
-
-  - title: brand name shown top-left. Max 30 chars.
-    Example: "BODY TALES" or "DermaLisse"
-
-  - headline: short intro phrase before the product name, line 1. Max 35 chars.
-    Example: "Razones para empezar a usar" or "Por qué elegir"
-    Displayed in italic, centered.
-
-  - subheadline: the PRODUCT NAME or category, line 2. Max 30 chars.
-    Example: "Niacinamide" or "Crema Reafirmante"
-    Displayed bold and large, with automatic underline decoration.
-
-  - bullets: array of exactly 4 KEY BENEFITS. Short, max 22 chars each.
-    NO emojis, NO bullet prefixes — just plain text. 2-3 words ideal.
-    Example: ["Piel más radiante", "Reduce marcas", "Minimiza poros", "Controla oleosidad"]
-
-  - badge: website URL or CTA shown bottom-left. Max 35 chars.
-    Example: "www.bodytales.in" or "www.mibrand.com"
-
-  - backgroundColorHint: warm peach/cream tone. Max 5 words.
-    Example: "durazno cálido suave"
-
-  - productPrompt: product perfectly centered, studio lighting, no connector lines.
-    Example: "Product perfectly centered, large, studio lighting, soft warm shadow beneath."`;
-  }
-  if (templateId === "comparacion-split") {
-    return `TEMPLATE HINT for comparacion-split:
-  This template is a "US VS THEM" style comparison.
-  YOUR product is on the LEFT (warm brown background).
-  COMPETITION is on the RIGHT (lighter beige background).
-  A big centered title at top, column labels below, then 4 numbered comparison points.
-
-  - headline: the main comparison title, bold and punchy. Max 30 chars, uppercase.
-    Examples: "NOSOTROS VS ELLOS", "TU MARCA VS EL RESTO", "LO REAL VS LO BARATO"
-    Must contain "VS" or a comparison concept.
-
-  - badge: top offer or claim pill, max 40 chars. Optional.
-    Example: "3 cuotas sin interés + envío gratis"
-
-  - columnTitle: YOUR product/brand name, short, max 20 chars, uppercase.
-    This is the LEFT column label on the brown side.
-    Example: "MEENO" or "DERMALISSE" or "NOSOTROS"
-
-  - competitionTitle: generic competition label, max 20 chars, uppercase.
-    This is the RIGHT column label on the beige side.
-    Example: "ELLOS" or "CREMA COMÚN" or "OTRAS MARCAS"
-
-  - bullets: array of exactly 4 YOUR PRODUCT benefits.
-    NO emojis, NO ✓ symbols — they are added automatically.
-    Focus on specific, provable benefits. Max 40 chars each.
-    Example: ["100% natural e ingredientes vegetales", "Resultados permanentes comprobados",
-              "Sin efectos secundarios", "Garantía de devolución 90 días"]
-
-  - competitionBullets: array of exactly 4 COMPETITION weaknesses.
-    NO emojis, NO ✗ symbols — they are added automatically.
-    Realistic and recognizable, not exaggerated. Max 40 chars each.
-    Example: ["Químicos agresivos", "Resultados temporales",
-              "Posibles efectos secundarios", "Sin garantía de devolución"]`;
-  }
-  if (templateId === "producto-hero-top") {
-    return `TEMPLATE HINT for producto-hero-top:
-  This is a HERO EDITORIAL layout. The product is CENTERED in the canvas (middle zone).
-  Brand name + tagline appear at the TOP. A short disclaimer line sits at the BOTTOM.
-  Inspired by minimalist beauty brands like Blume. Clean, photographic, premium aesthetic.
-
-  Layout:
-  - TOP 0–22%: headline (brand name, large bold) + subheadline (tagline, thin spaced) — text only
-  - CENTER 22–78%: product hero (generated by PRODUCT_IA) — large, centered, main focus
-  - BOTTOM 87–95%: disclaimer (small optional line)
-
-  - headline: the brand or product name, displayed LARGE at the top-center.
-    Max 20 chars. This is the primary visual anchor above the product.
-    Examples: "BLUME", "DERMA PRO", "GLOW LAB", "SÉRUM VITAL"
-
-  - subheadline: a concise benefit or product line descriptor, thin and spaced.
-    Max 30 chars, wide letter-spacing. Sits just below the headline.
-    Examples: "SOOTHE & HYDRATE", "ANTI-EDAD INTENSIVO", "BRILLO NATURAL"
-
-  - disclaimer: optional short punchy line at the very bottom, small text.
-    Max 50 chars.
-    Examples: "CALM YOUR SKIN. BOOST YOUR BARRIER.", "RESULTADOS DESDE LA PRIMERA SEMANA.", "TU PIEL LO MERECE."
-
-  - productPrompt: product CENTERED in the canvas (both horizontally and vertically).
-    The product occupies the center zone (22–78% from top). Large, premium, no hands.
-    Example: "Product large and centered, soft studio lighting, clean shadow, no hands."
-
-  - backgroundPrompt: A self-contained English image generation prompt for an aesthetic
-    minimalist macro/close-up background RELATED TO THE PRODUCT AND BUSINESS CATEGORY.
-    ALWAYS: full-bleed, no text, no people, no products, no logos. Ultra high resolution
-    photorealistic photography, 4K, premium brand aesthetic. ~250-350 characters.
-
-    Match the style to the product category:
-    - Skincare / Cosmetics / Beauty: extreme close-up macro of SMOOTH cream, gel or serum
-      textures on a soft pastel surface. Only 2-3 broad thin flat strokes, semi-transparent
-      with glossy wet surface. Soft diffused studio lighting.
-    - Food & Beverages / Nutrition: macro photography of natural ingredients related to the
-      product (herbs, spices, fruits, powders, grains) arranged beautifully on a clean
-      neutral surface. Warm editorial lighting.
-    - Fitness / Sports: close-up premium texture of sports fabric, rubber, or equipment
-      surface relevant to the product. Clean studio lighting, minimal and bold.
-    - Fashion / Accessories / Jewelry: extreme close-up of premium material or fabric
-      texture related to the product. Elegant, editorial, soft lighting.
-    - Health / Wellness / Supplements: soft organic textures — stone, cotton, dried
-      botanicals, powder — neutral calming palette, spa-like minimal aesthetic.
-    - Tech / Electronics: clean brushed metal, glass or matte surface texture. Modern,
-      minimal, premium studio lighting.
-    - Home / Deco: soft interior material — linen, marble, polished wood — warm clean
-      editorial style. Natural diffused lighting.`;
-  }
-  if (templateId === "persona-hero-bottom") {
-    return `TEMPLATE HINT for persona-hero-bottom:
-  This is a Huel-style lifestyle brand ad. The top 42% is a WHITE PANEL with centered text (dark color).
-  The bottom 58% is a full-bleed lifestyle scene with people holding/using THIS SPECIFIC PRODUCT.
-  Everything is centered — no left/right split. The brand logo is placed automatically at the top center — do NOT generate a badge field.
-
-  - headline: the BIG centered claim about THIS PRODUCT. Max 8 words.
-    Write a bold, specific claim that matches the product's category and benefit.
-    Examples for a protein shake: "Fast, complete, plant-based nutrition."
-    Examples for a skincare: "Glowing skin starts here."
-    Examples for a supplement: "La energía que necesitás, cuando la necesitás."
-
-  - subheadline: 1-2 sentences that reinforce the headline with a specific product benefit. Max 45 chars.
-    Must relate directly to what this product does for the user.
-    Example for protein: "Fórmula completa con 26 vitaminas."
-    Example for skincare: "Hidratación profunda con vitamina C."
-
-  - title: CTA button text (pill at the bottom of the scene). Max 14 chars.
-    Example: "Shop Now" or "Quiero el mío" or "Empezá hoy" or "Ver producto"
-
-  - productPrompt: This prompt goes DIRECTLY to an image generation AI. Write it as a self-contained image generation prompt.
-    MANDATORY STRUCTURE — always include all of these in this order:
-    1. ZONE RULE: Start with "BOTTOM 55% OF CANVAS ONLY — no person, no object, no shadow may appear in the top 45%."
-    2. SCENE: 2-3 real-looking diverse people naturally using or holding this SPECIFIC PRODUCT. Authentic lifestyle context that matches the product.
-    3. SETTING: Choose the environment that makes sense for the product (kitchen/café for food, gym/outdoors for fitness, bathroom/vanity for beauty, home for wellness).
-    4. LIGHTING: Warm, cinematic, natural light. Candid feel — not stock-photo stiff.
-    5. DO NOT MODIFY EXISTING TEXT: "Do not erase or modify any existing text or graphic elements already present in the image."
-    Full example for face cream: "BOTTOM 55% OF CANVAS ONLY — no person, no object, no shadow may appear in the top 45%. Two women in their 30s in a bright minimalist bathroom, laughing while applying the face cream to their cheeks, the product tube clearly visible in one woman's hand. Warm daylight from a window, clean and fresh feel, authentic and candid. Do not erase or modify any existing text or graphic elements already present in the image."
-    Full example for protein shake: "BOTTOM 55% OF CANVAS ONLY — no person, no object, no shadow may appear in the top 45%. Three diverse athletes in a gym locker room after a workout, smiling and holding up the protein shake bottles, the product label facing the camera. Natural warm lighting, energetic and authentic, not stock-photo stiff. Do not erase or modify any existing text or graphic elements already present in the image."`;
-  }
-  if (templateId === "persona-producto-left") {
-    return `TEMPLATE HINT for persona-producto-left:
-  This is a Huel/Nike-style lifestyle brand ad. Person with product on the RIGHT, large claim + CTA on the LEFT.
-  Dark gradient covers the left half for white text readability.
-
-  ⚡ COHERENCE IS MANDATORY: backgroundPrompt and productPrompt MUST describe the SAME location,
-  lighting, and atmosphere. First decide the scene setting based on the product and angle (outdoor trail,
-  gym, bathroom, kitchen, etc.), then write backgroundPrompt as the empty environment and productPrompt
-  as the person+product IN THAT EXACT SAME environment. They must feel like the same photo shoot.
-
-  - badge: brand name or short tagline at TOP-LEFT. Max 30 chars.
-    Example: "Huel®" or "DermaLisse™" or "NutriBoost"
-
-  - headline: the BIG claim — bold statement about the product benefit. Max 8 words. No period needed.
-    This renders very large. Examples:
-    "Fast, complete, plant-based nutrition."
-    "La piel que siempre quisiste tener."
-    "Firmeza visible desde la primera semana."
-
-  - subheadline: 1-2 supporting sentences that expand the headline. Max 100 chars.
-    Example: "Fórmula intensiva con colágeno marino y vitamina C para resultados reales."
-
-  - title: CTA BUTTON TEXT ONLY — this renders as a clickable pill button. Max 20 chars.
-    OVERRIDE: Do NOT generate keywords separated by "·" — that format is for other templates, NOT here.
-    Must be a complete action phrase (verb + complement). No dots, no separators.
-    Examples: "Quiero el mío" / "Shop Now" / "Probalo gratis" / "Comprá ahora" / "Ver la oferta"
-
-  - backgroundPrompt: ENGLISH REQUIRED. The background scene environment WITHOUT any person or product.
-    Shallow depth of field, no people, no products, no text, no logos.
-    The setting must match the product category and the angle's emotional tone.
-    Examples:
-    Hiking boots → "A sunlit mountain trail at golden hour, pine trees blurred in soft bokeh, earthy soil and rocks, warm natural light, no people, no products"
-    Protein shake → "Modern gym interior, metal weights rack, rubber flooring, large windows with warm light, shallow depth of field, no people, no products"
-    Skincare cream → "Bright minimalist bathroom, white marble surface, soft morning window light, warm steam ambiance, no people, no products"
-    Running shoes → "Empty urban street at sunrise, blurred city lights bokeh, warm golden fog, wet asphalt, no people, no products"
-
-  - productPrompt: ENGLISH REQUIRED. Full-body or head-to-waist person WITH the product on the RIGHT side.
-    OVERRIDE: Do NOT generate a disembodied hand — always show a COMPLETE PERSON, visible from head to at least mid-torso.
-    MUST place the person in THE SAME SETTING described in backgroundPrompt — same location, lighting, atmosphere.
-    Person on RIGHT 52% only. LEFT 48% MUST remain COMPLETELY CLEAN — no arm, no shadow crossing the center.
-    Specify: person's age range, style, expression, clothing, and how they hold or use the product.
-    The person must be ACTIVELY HOLDING or WEARING/USING the product — clearly visible in their hands or on their body.
-    Examples:
-    Hiking boots → "A confident woman in her 30s in hiking gear, full body visible, standing on a mountain trail holding hiking boots at chest height with both hands, warm golden light, right side of canvas only, left half completely clean"
-    Protein shake → "Athletic man in his 20s in workout clothes, head to torso visible, in a gym holding a protein shake bottle at chest height, genuine smile, right side of canvas only, left half completely clean"
-    Running shoes → "Young woman in athletic wear, full body visible, running on an urban street at sunrise, wearing the running shoes, right side of canvas only, left half completely clean"`;
-  }
-  if (templateId === "editorial-center-top") {
-    return `TEMPLATE HINT for editorial-center-top:
-  This is an editorial lifestyle ad. The TOP 40% is a CLEAN LIGHT PANEL with centered headline + subheadline (dark text).
-  The BOTTOM 60% shows a real person naturally using or holding THIS SPECIFIC PRODUCT, spanning the FULL canvas width.
-
-  - headline: bold centered claim about this product. Max 7 words, emotional.
-    Examples: "La piel que siempre quisiste tener." / "Más energía. Menos esfuerzo."
-
-  - subheadline: 1 sentence with specific product benefit. Max 90 chars.
-    Example: "Fórmula con colágeno marino y ácido hialurónico para resultados reales."
-
-  - badge: optional brand tagline or short offer. Max 30 chars.
-
-  - title: 3-5 product keywords separated by ' · '. Max 40 chars.
-    Example: "Colágeno · Vitamina C · Reafirmante"
-
-  - bullets: 3 short benefits with emoji, max 35 chars each.
-
-  - productPrompt: REQUIRED. English. Self-contained image generation prompt.
-    MANDATORY STRUCTURE:
-    1. "BOTTOM 40% OF CANVAS ONLY — no person or object may appear in the top 60%."
-    2. 1-2 real people naturally using or holding this product. Authentic lifestyle moment.
-    3. "Person spans the FULL WIDTH of the canvas, left to right edge. Head at 55–65% from top."
-    4. Environment matching the product category (bathroom → skincare, kitchen → food, gym → fitness).
-    5. "Warm natural lighting, editorial quality, candid feel."
-    6. "Do not erase or modify any existing text or graphic elements already present in the image."
-    Example (skincare): "BOTTOM 40% OF CANVAS ONLY — no person or object in the top 60%. A woman in her 30s in a bright bathroom smiling while applying face cream, the product tube visible in her hands. Person spans full canvas width. Head at 58% from top. Warm morning light, editorial quality, candid. Do not erase or modify any existing text or graphic elements already present in the image."`;
-  }
-  return undefined;
+  return basePrompt;
 }
 
 async function runWithConcurrency<T>(
@@ -1061,22 +418,7 @@ export default function FabricaDeContenido() {
       setAutoStep("Generando background...");
       const _t1 = Date.now();
       const templateDef = TEMPLATES.find((t) => t.id === primaryTemplate);
-      const colorHint = (copy.backgroundColorHint as string) ?? "";
-      const userCategory = (businessProfile?.category as string) ?? "";
-      const basePrompt =
-        (userCategory && templateDef?.categoryBackgroundPrompts?.[userCategory]) ??
-        templateDef?.defaultBackgroundPrompt ??
-        "Fondo minimalista neutro, tonos beige y crema, iluminación suave, sin objetos, sin texto, sin personas.";
-      const isNoProductLayer = templateDef?.noProductLayer === true;
-      const useRawBg = (templateDef as any)?.rawBackgroundPrompt === true;
-      const bgPrompt = useRawBg
-        ? basePrompt
-        : isNoProductLayer
-          ? `${basePrompt}${copy.backgroundPrompt ? ` Context: ${copy.backgroundPrompt}` : ""}`
-          : ((copy.backgroundPrompt as string) ||
-              (colorHint
-                ? basePrompt.replace(/tonos? [^,.]+/i, colorHint) || `${basePrompt}. Paleta de color: ${colorHint}`
-                : basePrompt));
+      const bgPrompt = resolveBgPrompt(templateDef, copy, businessProfile);
       const bgRes = await fetch("/api/compose", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
@@ -1084,8 +426,6 @@ export default function FabricaDeContenido() {
           mode: "GENERATE_BACKGROUND",
           prompt: bgPrompt,
           aspectRatio: "1:1",
-          primaryColor: useRawBg ? undefined : ((copy.primaryColor as string) || undefined),
-          rawBackground: useRawBg ? true : undefined,
         }),
       });
       const bgData = await bgRes.json();
@@ -1137,7 +477,7 @@ export default function FabricaDeContenido() {
         // ── NEW ORDER: PRODUCT_IA (clean bg) → TEMPLATE_BETA (text on top) ──────────
         setAutoStep("Generando escena con persona...");
         const templateMeta = TEMPLATES.find((t) => t.id === primaryTemplate);
-        const effectiveProductPromptScene = (copy.productPrompt as string) || templateMeta?.defaultProductPrompt || "";
+        const effectiveProductPromptScene = (templateMeta?.copySchema?.includes("productPrompt") ? (copy.productPrompt as string) : undefined) || templateMeta?.defaultProductPrompt || "";
         const zoneSideScene: "left" | "right" | "bottom" | "top" | "center" =
           (TEMPLATE_COPY_ZONES[primaryTemplate] ?? "left") as "left" | "right" | "bottom" | "top" | "center";
 
@@ -1156,6 +496,7 @@ export default function FabricaDeContenido() {
             includeLayoutSpec: false,
             skipTextRender: true,
             avatarSceneWithProduct: true,
+            rawProductPrompt: (templateMeta as any)?.rawProductPrompt === true ? true : undefined,
             sharpProductOverlay: (templateMeta as any)?.sharpProductOverlay ?? undefined,
           },
         }));
@@ -1229,27 +570,17 @@ export default function FabricaDeContenido() {
           productFormData.append("product", effectiveProductFile);
           if (isSceneTemplate && avatarFile) {
             productFormData.append("avatarFile", avatarFile);
-            productFormData.append("useAvatarAsScene", "true");
           }
           const templateMeta = TEMPLATES.find((t) => t.id === primaryTemplate);
           const hasRawProductPrompt = (templateMeta as any)?.rawProductPrompt === true;
-          const templateDefault = templateMeta?.defaultProductPrompt;
-          const effectiveProductPrompt = templateDefault || (copy.productPrompt as string) || "";
+          const effectiveProductPrompt = (templateMeta?.copySchema?.includes("productPrompt") ? (copy.productPrompt as string) : undefined) || templateMeta?.defaultProductPrompt || "";
+          console.log(`[page:productIA] templateId=${primaryTemplate} copy.productPrompt=${JSON.stringify((copy as Record<string,unknown>).productPrompt ?? null)} inSchema=${templateMeta?.copySchema?.includes("productPrompt")} effectiveProductPrompt="${effectiveProductPrompt.slice(0, 80)}"`);
           const zoneSide: "left" | "right" | "bottom" | "top" | "center" = (
             primaryTemplate === "editorial-lifestyle-left" &&
             (copy as Record<string, unknown>).textSide === "right"
           ) ? "right" : ((TEMPLATE_COPY_ZONES[primaryTemplate] ?? "left") as "left" | "right" | "bottom" | "top" | "center");
-          const zoneInstruction = zoneSide === "right"
-            ? "Person on the LEFT side only. Right side stays clean."
-            : zoneSide === "top"
-              ? "Person in the BOTTOM half only. Top half stays clean."
-              : zoneSide === "bottom"
-                ? "Person in the TOP half only. Bottom half stays clean."
-                : zoneSide === "center"
-                  ? "Person fills the canvas naturally."
-                  : "Person on the RIGHT side only. Left side stays clean.";
-          const scenePrompt = (isSceneTemplate && !hasRawProductPrompt)
-            ? `Show a real person experiencing this situation: ${(copy.sceneAction as string) ?? (copy.productPrompt as string) ?? ""}. IMPORTANT: No products, no objects, no items of any kind. Only a person in a natural candid moment. ${zoneInstruction} CRITICAL: Do NOT erase, modify, blur, or cover ANY existing text, stars, or graphic elements in the image. All pre-existing text must remain perfectly intact and legible.`
+          const effectiveScenePrompt = isSceneTemplate
+            ? ((copy.sceneAction as string) || effectiveProductPrompt)
             : effectiveProductPrompt;
           productFormData.append("config", JSON.stringify({
             mode: "PRODUCT_IA",
@@ -1257,13 +588,15 @@ export default function FabricaDeContenido() {
             quality: 95,
             copy: {},
             productIAOptions: {
-              prompt: scenePrompt,
+              prompt: effectiveScenePrompt,
               copyZone: zoneSide,
               includeLayoutSpec: false,
               skipTextRender: true,
-              sceneMode: isSceneTemplate && !avatarFile && !hasRawProductPrompt,
-              splitComparison: primaryTemplate === "comparacion-split",
+              sceneMode: isSceneTemplate && !templateMeta?.sceneWithProduct && !avatarFile,
+              useAvatarAsScene: isSceneTemplate && !templateMeta?.sceneWithProduct && !!avatarFile,
+              splitComparison: templateMeta?.splitComparison ?? false,
               rawProductPrompt: hasRawProductPrompt ? true : undefined,
+              personScene: templateMeta?.personScene === true ? true : undefined,
               sharpProductOverlay: (templateMeta as any)?.sharpProductOverlay ?? undefined,
             },
           }));
@@ -1400,22 +733,7 @@ export default function FabricaDeContenido() {
           const tplMeta = TEMPLATES.find((t) => t.id === templateId);
 
           // 1. Generar fondo para este creativo específico
-          const _userCat = (businessProfile?.category as string) ?? "";
-          const _basePrompt =
-            (_userCat && tplMeta?.categoryBackgroundPrompts?.[_userCat]) ??
-            tplMeta?.defaultBackgroundPrompt ??
-            "Fondo minimalista neutro, tonos beige y crema, iluminación suave, sin objetos, sin texto, sin personas.";
-          const _isNoProdLayer = tplMeta?.noProductLayer === true;
-          const _useRawBg = (tplMeta as any)?.rawBackgroundPrompt === true;
-          const _colorHint = (copy?.backgroundColorHint as string) ?? "";
-          const bgPrompt = _useRawBg
-            ? _basePrompt
-            : _isNoProdLayer
-              ? `${_basePrompt}${copy?.backgroundPrompt ? ` Context: ${copy.backgroundPrompt}` : ""}`
-              : ((copy?.backgroundPrompt as string) ||
-                  (_colorHint
-                    ? _basePrompt.replace(/tonos? [^,.]+/i, _colorHint) || `${_basePrompt}. Paleta de color: ${_colorHint}`
-                    : _basePrompt));
+          const bgPrompt = resolveBgPrompt(tplMeta, copy, businessProfile);
           const _bgRes = await fetch("/api/compose", {
             method: "POST",
             headers: { "Content-Type": "application/json", Accept: "application/json" },
@@ -1423,8 +741,6 @@ export default function FabricaDeContenido() {
               mode: "GENERATE_BACKGROUND",
               prompt: bgPrompt,
               aspectRatio: "1:1",
-              primaryColor: _useRawBg ? undefined : ((copy?.primaryColor as string) || undefined),
-              rawBackground: _useRawBg ? true : undefined,
             }),
           });
           const _bgData = await _bgRes.json();
@@ -1475,7 +791,7 @@ export default function FabricaDeContenido() {
 
           if (isSceneWithProductFlowAngles) {
             // ── NEW ORDER: PRODUCT_IA (clean bg) → TEMPLATE_BETA (text on top) ──────────
-            const effectiveProductPromptScene = (copy.productPrompt as string) || tplMeta?.defaultProductPrompt || "";
+            const effectiveProductPromptScene = (tplMeta?.copySchema?.includes("productPrompt") ? (copy.productPrompt as string) : undefined) || tplMeta?.defaultProductPrompt || "";
             const zoneSideScene = (TEMPLATE_COPY_ZONES[templateId] ?? "left") as "left" | "right" | "bottom" | "top" | "center";
 
             const productForm = new FormData();
@@ -1575,23 +891,12 @@ export default function FabricaDeContenido() {
             productForm.append("product", effectiveProductFile);
             if (isSceneTemplate && avatarFile) {
               productForm.append("avatarFile", avatarFile);
-              productForm.append("useAvatarAsScene", "true");
             }
             const hasRawProductPromptAngles = (tplMeta as any)?.rawProductPrompt === true;
-            const templateDefault = tplMeta?.defaultProductPrompt;
-            const effectiveProductPrompt = templateDefault || (copy.productPrompt as string) || "";
+            const effectiveProductPrompt = (tplMeta?.copySchema?.includes("productPrompt") ? (copy.productPrompt as string) : undefined) || tplMeta?.defaultProductPrompt || "";
             const zoneSide = TEMPLATE_COPY_ZONES[templateId] ?? "left";
-            const zoneInstruction = zoneSide === "right"
-              ? "Person on the LEFT side only. Right side stays clean."
-              : zoneSide === "top"
-                ? "Person in the BOTTOM half only. Top half stays clean."
-                : zoneSide === "bottom"
-                  ? "Person in the TOP half only. Bottom half stays clean."
-                  : zoneSide === "center"
-                    ? "Person fills the canvas naturally."
-                    : "Person on the RIGHT side only. Left side stays clean.";
-            const scenePrompt = (isSceneTemplate && !hasRawProductPromptAngles)
-              ? `Show a real person experiencing this situation: ${(copy.sceneAction as string) ?? (copy.productPrompt as string) ?? ""}. IMPORTANT: No products, no objects, no items of any kind. Only a person in a natural candid moment. ${zoneInstruction} CRITICAL: Do NOT erase, modify, blur, or cover ANY existing text, stars, or graphic elements in the image. All pre-existing text must remain perfectly intact and legible.`
+            const effectiveScenePrompt = isSceneTemplate
+              ? ((copy.sceneAction as string) || effectiveProductPrompt)
               : effectiveProductPrompt;
             productForm.append("config", JSON.stringify({
               mode: "PRODUCT_IA",
@@ -1599,13 +904,15 @@ export default function FabricaDeContenido() {
               quality: 95,
               copy: {},
               productIAOptions: {
-                prompt: scenePrompt,
-                copyZone: TEMPLATE_COPY_ZONES[templateId],
+                prompt: effectiveScenePrompt,
+                copyZone: zoneSide,
                 includeLayoutSpec: false,
                 skipTextRender: true,
-                sceneMode: isSceneTemplate && !avatarFile && !hasRawProductPromptAngles,
-                splitComparison: templateId === "comparacion-split",
+                sceneMode: isSceneTemplate && !tplMeta?.sceneWithProduct && !avatarFile,
+                useAvatarAsScene: isSceneTemplate && !tplMeta?.sceneWithProduct && !!avatarFile,
+                splitComparison: tplMeta?.splitComparison ?? false,
                 rawProductPrompt: hasRawProductPromptAngles ? true : undefined,
+                personScene: tplMeta?.personScene === true ? true : undefined,
                 sharpProductOverlay: (tplMeta as any)?.sharpProductOverlay ?? undefined,
               },
             }));
@@ -1716,19 +1023,13 @@ export default function FabricaDeContenido() {
       // Step 2: For each slide in parallel: background → TEMPLATE_BETA → PRODUCT_IA
       const tasks = slides.map((slide, slideIndex) =>
         async (): Promise<GeneratedVariant> => {
-          const colorHint = (slide.backgroundColorHint as string) ?? "";
-          const basePrompt =
-            tplDef?.defaultBackgroundPrompt ??
-            "Fondo casi blanco o crema muy pálido, completamente liso. Iluminación natural suave y uniforme.";
-          const bgPrompt = colorHint
-            ? basePrompt.replace(/tonos? [^,.]+/i, colorHint) || `${basePrompt}. Paleta de color: ${colorHint}`
-            : basePrompt;
+          const bgPrompt = resolveBgPrompt(tplDef, slide, businessProfile);
 
           // Background
           const bgRes = await fetch("/api/compose", {
             method: "POST",
             headers: { "Content-Type": "application/json", Accept: "application/json" },
-            body: JSON.stringify({ mode: "GENERATE_BACKGROUND", prompt: bgPrompt, aspectRatio: "1:1", primaryColor: (slide.primaryColor as string) || undefined }),
+            body: JSON.stringify({ mode: "GENERATE_BACKGROUND", prompt: bgPrompt, aspectRatio: "1:1" }),
           });
           const bgData = await bgRes.json();
           if (!bgRes.ok) throw new Error(bgData.error || `Error ${bgRes.status}`);
@@ -1743,7 +1044,7 @@ export default function FabricaDeContenido() {
             // sceneWithProduct order: PRODUCT_IA (clean bg) → TEMPLATE_BETA (text on scene)
             // Step A: generate person+product scene on clean background
             const productPromptForSlide =
-              (slide.productPrompt as string) ||
+              (tplDef?.copySchema?.includes("productPrompt") ? (slide.productPrompt as string) : undefined) ||
               tplDef?.defaultProductPrompt ||
               "A confident person holding the product at chest height, right side of canvas only, left half completely clean.";
 
@@ -1857,7 +1158,6 @@ export default function FabricaDeContenido() {
             productForm.append("product", TRANSPARENT_PNG_FILE());
             if (avatarFile) {
               productForm.append("avatarFile", avatarFile);
-              productForm.append("useAvatarAsScene", "true");
             }
             const slideRole = ((slide.slideRole as string) ?? "").toLowerCase();
             const scenePrompt = `Photography style, editorial quality, real person.
@@ -1886,6 +1186,7 @@ Full body or 3/4 shot. Natural lighting. Hyper-realistic. No text, no objects, n
                   includeLayoutSpec: false,
                   skipTextRender: true,
                   sceneMode: !avatarFile,
+                  useAvatarAsScene: !!avatarFile,
                 },
               })
             );

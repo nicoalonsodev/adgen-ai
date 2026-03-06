@@ -3,6 +3,253 @@ import { renderTextOnImage } from "./textRenderer";
 import type { ComposeRequest } from "./types";
 import type { LayoutSpec } from "./layoutSpec";
 import { nanoBananaInjectProduct, generateScene, generateGenericProduct, generateSceneWithAvatarAndProduct, detectProductBoundingBox } from "@/lib/ai/gemini";
+import { ABSOLUTE_RULES_SCENE, ABSOLUTE_RULES_PRODUCT_INJECT, ABSOLUTE_RULES_ANATOMY } from "@/lib/ai/promptRules";
+
+// ─── Zone placement helpers ──────────────────────────────────────────────────
+
+function buildZonePlacement(
+  copyZone: "left" | "right" | "top" | "bottom" | "center",
+  mode: "scene" | "product" | "avatar",
+): string {
+  if (mode === "scene") {
+    switch (copyZone) {
+      case "right":
+        return `PLACEMENT ZONE — hard constraint:
+- The person must be positioned ENTIRELY within the LEFT 42% of the image (left edge to 42% width).
+- A clear gap of at least 8% must exist between the right edge of the person and the center line.
+- The RIGHT 58% of the image must remain COMPLETELY UNCHANGED — no person, no arm, no hair, no shadow, no alteration of any kind.`;
+      case "top":
+        return `PLACEMENT ZONE — hard constraint:
+- The person must be positioned STRICTLY in the BOTTOM 45% of the image ONLY (below 55% vertical).
+- The person's head (top of hair) must NOT go above the 55% vertical line of the image.
+- The person MUST be CENTERED HORIZONTALLY.
+- The TOP 55% of the image MUST remain COMPLETELY UNTOUCHED — all existing text and decorations preserved pixel-perfect.`;
+      case "bottom":
+        return `PLACEMENT ZONE — hard constraint:
+- The person must be positioned ENTIRELY within the TOP 42% of the image.
+- The BOTTOM 58% must remain exactly as the background — no person, no shadow extending there.`;
+      case "center":
+        return `PLACEMENT ZONE — guidance:
+- The person can be placed centrally, but should be large and prominent.
+- Keep the overall composition balanced. Avoid covering any existing text or graphic elements.`;
+      case "left":
+      default:
+        return `PLACEMENT ZONE — hard constraint:
+- The person must be positioned ENTIRELY within the RIGHT 42% of the image (from 58% to 100% width).
+- A clear gap of at least 8% must exist between the left edge of the person and the center line.
+- The LEFT 58% of the image must remain COMPLETELY UNCHANGED — no person, no arm, no hair, no shadow, no alteration of any kind.`;
+    }
+  }
+
+  if (mode === "avatar") {
+    switch (copyZone) {
+      case "top":
+        return `PLACEMENT ZONE — hard constraint:
+- The person must be positioned ENTIRELY within the BOTTOM 42% of the canvas (below 58% vertical).
+- The person's head must NOT go above 58% from the top.
+- The person fills the full horizontal width of the bottom zone.
+- The TOP 58% must remain COMPLETELY UNCHANGED — no person, no arm, no shadow, no alteration.`;
+      case "bottom":
+        return `PLACEMENT ZONE — hard constraint:
+- The person must be positioned ENTIRELY within the TOP 42% of the canvas.
+- The BOTTOM 58% must remain exactly as the background — completely clean, no person, no shadows.`;
+      case "right":
+        return `PLACEMENT ZONE — hard constraint:
+- The person must be positioned ENTIRELY within the LEFT 42% of the canvas (left edge to 42% width).
+- The RIGHT 58% must remain exactly as the background — completely clean, no person, no arm, no shadow.`;
+      case "left":
+      default:
+        return `PLACEMENT ZONE — hard constraint:
+- The person must be positioned ENTIRELY within the RIGHT 42% of the canvas (from 58% to 100% width).
+- The LEFT 58% must remain exactly as the background — completely clean, no person, no arm, no shadow.`;
+    }
+  }
+
+  // mode === "product"
+  const zonePercent =
+    copyZone === "right"  ? "LEFT 42%"   :
+    copyZone === "top"    ? "BOTTOM 45%" :
+    copyZone === "bottom" ? "TOP 42%"    :
+                            "RIGHT 42%";
+
+  const zoneCleanSide =
+    copyZone === "right"
+      ? "RIGHT 58% must be COMPLETELY CLEAN — no person, no arm, no hair, no shadow"
+      : copyZone === "top"
+      ? "TOP 55% must be COMPLETELY CLEAN — no person, no arm, no shadow entering from above"
+      : copyZone === "bottom"
+      ? "BOTTOM 58% must be COMPLETELY CLEAN — no person, no arm, no shadow"
+      : "LEFT 58% must be COMPLETELY CLEAN — no person, no arm, no hair, no shadow";
+
+  const zoneBodyPosition =
+    copyZone === "right"
+      ? "centered horizontally within the left 30–40% of the canvas"
+      : copyZone === "top"
+      ? "centered horizontally in the lower canvas, body starting at or below 58% from top"
+      : copyZone === "bottom"
+      ? "centered horizontally in the upper canvas, entire body within top 40%"
+      : "centered horizontally within the right 60–95% of the canvas";
+
+  return `================================================================================
+PRIMARY RULE — ZONE CONSTRAINT — ENFORCED ABOVE ALL ELSE
+================================================================================
+The person and product must occupy ONLY the ${zonePercent} of the canvas.
+The ${zoneCleanSide} — absolutely no body part, arm, hair, clothing, or shadow may cross this boundary.
+Body center: ${zoneBodyPosition}.
+Leave a minimum 6% safety gap between any body part and the zone boundary.
+THIS OVERRIDES the creative brief if there is any conflict.
+================================================================================`;
+}
+
+function buildScenePrompt(sceneAction: string, copyZone: string): string {
+  const zone = copyZone as "left" | "right" | "top" | "bottom" | "center";
+  const holdingRule = zone === "top"
+    ? `- The person CAN hold a small beauty/wellness product naturally in their hands — this is intentional and expected.`
+    : `- DO NOT show anything being held. The person's hands must be empty or in a natural resting pose.`;
+
+  return `You are a professional advertising image compositor. Your task is to add a person to a background scene.
+
+STEP 1 — ANALYZE THE IMAGE FIRST:
+Before making any changes, examine the background image carefully and identify:
+• Where existing text, labels, badges, icons, or graphic elements are located — these are protected zones, the person must NEVER overlap them
+• Where the open, empty space is available for placing the person
+• The dominant lighting direction and color temperature of the scene
+
+STEP 2 — COMPOSE WITH PRECISION:
+${sceneAction}
+
+${buildZonePlacement(zone, "scene")}
+
+${ABSOLUTE_RULES_SCENE}
+- DO NOT add any product, bottle, jar, tube, dropper, or package UNLESS the prompt explicitly asks for it.
+${holdingRule}
+- DO NOT add text, logos, watermarks, or labels.
+- The person must be FULLY OPAQUE and SOLIDLY VISIBLE — do NOT apply fading, dissolving, transparency, or soft disappearance to any part of the person. The person should look physically present with clear edges.
+- Lighting must match the existing background naturally.
+- The scene must feel authentic and warm, not overly commercial.`.trim();
+}
+
+function buildAvatarScenePrompt(userPrompt: string, copyZone: string): string {
+  const zone = copyZone as "left" | "right" | "top" | "bottom" | "center";
+  return `You are a professional advertising image compositor.
+
+You will receive TWO images:
+- Image 1: the background scene
+- Image 2: a photo of a person (avatar)
+
+STEP 1 — ANALYZE IMAGE 1 FIRST:
+Before compositing, carefully examine the background and identify:
+• Where existing text, labels, badges, icons, or graphic elements are located — these must NEVER be covered
+• Where the open, empty space is available for placing the person
+• The dominant lighting direction and color temperature of the scene
+
+STEP 2 — INTEGRATE THE PERSON:
+Naturally composite the person from Image 2 into the open space of Image 1.
+
+${buildZonePlacement(zone, "avatar")}
+
+INTEGRATION RULES:
+- Match the lighting direction and color temperature of the background to the person naturally.
+- The person should feel like they belong in the scene — same ambient light, natural shadows.
+- The person must be FULLY OPAQUE and SOLIDLY VISIBLE — do NOT apply fading, dissolving, soft disappearance, or transparency to any part of the person. The person must look physically present with confident, clear edges.
+- The person must be fully visible from head to at least knee level, not cropped at top.
+- Maintain the person's original appearance, face, and clothing.
+- Do NOT add any products, objects, text, or logos.
+
+STRICT PROHIBITIONS:
+- Do NOT paste the person as a flat cutout — blend them naturally into the scene.
+- Do NOT change the person's appearance or clothing.
+- Do NOT add text, watermarks, or decorative elements.
+${ABSOLUTE_RULES_SCENE}${userPrompt ? `\n\nAdditional creative context: ${userPrompt}` : ""}`.trim();
+}
+
+function buildAvatarWithProductPrompt(
+  productPrompt: string,
+  copyZone: string,
+  rawMode: boolean,
+): string {
+  const zone = copyZone as "left" | "right" | "top" | "bottom" | "center";
+
+  if (rawMode) {
+    return `You are a professional advertising image compositor. You will receive THREE images:
+- Image 1: the background scene (lighting and environment reference)
+- Image 2: the product (must be held or used by the person)
+- Image 3: person reference photo — MANDATORY: match this person's face, hair color/style, skin tone, and general aesthetic EXACTLY. The person must look like the same individual.
+
+CREATIVE BRIEF — execute this exactly:
+${productPrompt}
+
+ABSOLUTE RULES — VIOLATIONS NOT ACCEPTABLE:
+- Replicate the person's appearance from Image 3 — face, hair, skin tone, clothing style must match
+- The person and product must be FULLY OPAQUE and SOLIDLY VISIBLE at 100% opacity — NEVER fading, dissolving, soft edges, or any transparency
+- Lighting must match the background scene naturally — same direction, same color temperature
+- No added text, watermarks, logos, or extra objects
+${ABSOLUTE_RULES_SCENE}`.trim();
+  }
+
+  const zoneBodyPosition =
+    zone === "right"  ? "centered horizontally within the left 30–40% of the canvas"
+    : zone === "top"  ? "centered horizontally in the lower canvas, body starting at or below 58% from top"
+    : zone === "bottom" ? "centered horizontally in the upper canvas, entire body within top 40%"
+    : "centered horizontally within the right 60–95% of the canvas";
+
+  return `You are a professional advertising image compositor. You will receive THREE images:
+- Image 1: the background scene (scene and lighting reference)
+- Image 2: the product (must be held by the person)
+- Image 3: person reference photo (face, hair, skin tone, clothing style to match)
+
+${buildZonePlacement(zone, "product")}
+
+================================================================================
+SECONDARY RULE — PERSON USES THE PRODUCT — NON-NEGOTIABLE
+================================================================================
+The person MUST be actively using or interacting with the EXACT product shown in Image 2.
+Natural use modes (choose the most fitting for the product category):
+  • One hand holds the product at chest/waist height while the other hand applies it to skin
+  • Both hands present the product toward the camera, label facing forward
+  • Person applies the product to their arm, neck, or face with a natural gesture
+Product MUST be:
+  - Clearly visible and fully in frame — NEVER hidden or cropped
+  - Label / front face toward the camera (slight angle acceptable)
+  - Reproduced from Image 2 with exact colors, label text, and shape
+Any output where the product from Image 2 is NOT visible and in the person's interaction is INVALID.
+================================================================================
+
+STEP 1 — ANALYZE IMAGE 1 CAREFULLY:
+Before compositing, examine the background and identify:
+• Where existing text, badges, labels, or graphic elements are — they must NEVER be covered
+• The exact open space available for the person (within the allowed zone above)
+• Lighting direction, color temperature, and ambient light quality
+
+STEP 2 — COMPOSE THE ADVERTISING SCENE:
+CREATIVE BRIEF (execute this, but always within the zone constraint above):
+${productPrompt}
+
+PERSON — TECHNICAL REQUIREMENTS:
+- Match face, hair color/style, skin tone, and general aesthetic EXACTLY from Image 3
+- The person must look like the same individual — this is non-negotiable
+- FRAMING: show the person from HEAD to at least KNEE — full upright standing posture
+- BODY POSITION: the person stands upright and confident; their body is ${zoneBodyPosition}
+- FACING: the person faces slightly toward the center of the canvas (toward the text area), body stays inside the allowed zone
+- Clothing may adapt to the scene naturally
+
+PRODUCT — TECHNICAL REQUIREMENTS:
+- Use ONLY the product from Image 2 — do not invent or substitute any other object
+- The person is ACTIVELY USING or interacting with Image 2 — applying to skin, or presenting to camera
+- Product at CHEST or TORSO HEIGHT — clearly visible, label facing camera (slight angle is fine)
+- Preserve the product's EXACT colors, labels, logo, and proportions — zero alteration
+- The product must be FULLY IN FRAME — never cropped or partially out of canvas
+
+ABSOLUTE RULES — VIOLATIONS NOT ACCEPTABLE:
+- The person MUST be visibly using, holding, or applying the product from Image 2 — a person with empty hands and no visible product is NOT acceptable
+- The person and product must be FULLY OPAQUE and SOLIDLY VISIBLE at 100% opacity — NEVER fading, dissolving, soft edges, or any transparency
+- Lighting must match the background scene naturally — same direction, same color temperature
+- No added text, watermarks, logos, or extra objects
+- Authentic feel — genuine expression, natural posture, not stiff or stock-photo generic
+${ABSOLUTE_RULES_SCENE}`.trim();
+}
+
+// ─── Main composer ───────────────────────────────────────────────────────────
 
 export async function composeWithProductIA(req: ComposeRequest) {
   const t0 = Date.now();
@@ -36,6 +283,7 @@ const aspectRatio = `${targetW / divisor}:${targetH / divisor}`;
   if (req.productIAOptions?.avatarSceneWithProduct && req.avatarBuffer && req.productBuffer) {
     const avatarPng = await sharp(req.avatarBuffer).png().toBuffer();
     const copyZone = (req.productIAOptions?.copyZone ?? "left") as "left" | "right" | "top" | "bottom" | "center";
+    const rawMode = req.productIAOptions?.rawProductPrompt === true;
 
     // When useGenericProductClone is set, generate a label-free clone first so the product
     // looks more natural / photo-realistic when held by the person.
@@ -44,13 +292,18 @@ const aspectRatio = `${targetW / divisor}:${targetH / divisor}`;
       productForScene = await generateGenericProduct({ productPng: req.productBuffer });
     }
 
+    const avatarWithProductPrompt = buildAvatarWithProductPrompt(
+      req.productIAOptions?.prompt ?? "",
+      copyZone,
+      rawMode,
+    );
+
     const scene = await generateSceneWithAvatarAndProduct({
       backgroundPng: bg,
       productPng: productForScene,
       avatarPng,
-      prompt: req.productIAOptions?.prompt ?? "",
+      prompt: avatarWithProductPrompt,
       aspectRatio,
-      copyZone,
     });
 
     const sceneMeta = await sharp(scene).metadata();
@@ -58,30 +311,34 @@ const aspectRatio = `${targetW / divisor}:${targetH / divisor}`;
       ? await sharp(scene).resize(targetW, targetH, { fit: "cover" }).png().toBuffer()
       : scene;
 
-    // Overlay the exact original product at the position Gemini chose.
-    // Gemini approximates product appearance — this replaces its version with the real branded product.
+    // Re-overlay the real branded product ONLY when useGenericProductClone was used.
+    // In that case Gemini drew a label-free placeholder — we need to replace it with the real one.
+    // When Gemini already received the actual product image, its output is the final one;
+    // running bbox detection + overlay would layer a second copy on top → visible duplication.
     let finalScene = normalizedScene;
-    try {
-      const bbox = await detectProductBoundingBox({ scenePng: normalizedScene, productPng: req.productBuffer });
-      if (bbox) {
-        const left = Math.round(bbox.x * targetW);
-        const top = Math.round(bbox.y * targetH);
-        const productW = Math.round(bbox.width * targetW);
-        const productH = Math.round(bbox.height * targetH);
-        const productResized = await sharp(req.productBuffer)
-          .resize(productW, productH, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
-          .png()
-          .toBuffer();
-        finalScene = await sharp(normalizedScene)
-          .composite([{ input: productResized, left, top }])
-          .png()
-          .toBuffer();
-        console.log(`[composeWithProductIA] product overlay applied at (${left},${top}) ${productW}x${productH}`);
-      } else {
-        console.warn("[composeWithProductIA] product bbox detection returned null, using Gemini scene as-is");
+    if (req.productIAOptions?.useGenericProductClone) {
+      try {
+        const bbox = await detectProductBoundingBox({ scenePng: normalizedScene, productPng: req.productBuffer });
+        if (bbox) {
+          const left = Math.round(bbox.x * targetW);
+          const top = Math.round(bbox.y * targetH);
+          const productW = Math.round(bbox.width * targetW);
+          const productH = Math.round(bbox.height * targetH);
+          const productResized = await sharp(req.productBuffer)
+            .resize(productW, productH, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+            .png()
+            .toBuffer();
+          finalScene = await sharp(normalizedScene)
+            .composite([{ input: productResized, left, top }])
+            .png()
+            .toBuffer();
+          console.log(`[composeWithProductIA] product overlay applied at (${left},${top}) ${productW}x${productH}`);
+        } else {
+          console.warn("[composeWithProductIA] product bbox detection returned null, using Gemini scene as-is");
+        }
+      } catch (err) {
+        console.warn("[composeWithProductIA] product bbox detection failed, using Gemini scene as-is:", err);
       }
-    } catch (err) {
-      console.warn("[composeWithProductIA] product bbox detection failed, using Gemini scene as-is:", err);
     }
 
     return {
@@ -96,71 +353,10 @@ const aspectRatio = `${targetW / divisor}:${targetH / divisor}`;
   if (req.productIAOptions?.useAvatarAsScene && req.avatarBuffer) {
     const avatarCopyZone = req.productIAOptions?.copyZone ?? "left";
 
-    // Zone-specific placement: copy (text) lives in the stated zone, person goes on the opposite side.
-    // Margins are conservative: keep person well inside scene zone to avoid feather-blend dissolving.
-    let avatarZonePlacement: string;
-    switch (avatarCopyZone) {
-      case "top":
-        avatarZonePlacement = `PLACEMENT ZONE — hard constraint:
-- The person must be positioned ENTIRELY within the BOTTOM 42% of the canvas (below 58% vertical).
-- The person's head must NOT go above 58% from the top.
-- The person fills the full horizontal width of the bottom zone.
-- The TOP 58% must remain COMPLETELY UNCHANGED — no person, no arm, no shadow, no alteration.`;
-        break;
-      case "bottom":
-        avatarZonePlacement = `PLACEMENT ZONE — hard constraint:
-- The person must be positioned ENTIRELY within the TOP 42% of the canvas.
-- The BOTTOM 58% must remain exactly as the background — completely clean, no person, no shadows.`;
-        break;
-      case "right":
-        avatarZonePlacement = `PLACEMENT ZONE — hard constraint:
-- The person must be positioned ENTIRELY within the LEFT 42% of the canvas (left edge to 42% width).
-- The RIGHT 58% must remain exactly as the background — completely clean, no person, no arm, no shadow.`;
-        break;
-      case "left":
-      default:
-        avatarZonePlacement = `PLACEMENT ZONE — hard constraint:
-- The person must be positioned ENTIRELY within the RIGHT 42% of the canvas (from 58% to 100% width).
-- The LEFT 58% must remain exactly as the background — completely clean, no person, no arm, no shadow.`;
-    }
-
-    const avatarPrompt = `
-You are a professional advertising image compositor.
-
-You will receive TWO images:
-- Image 1: the background scene
-- Image 2: a photo of a person (avatar)
-
-STEP 1 — ANALYZE IMAGE 1 FIRST:
-Before compositing, carefully examine the background and identify:
-• Where existing text, labels, badges, icons, or graphic elements are located — these must NEVER be covered
-• Where the open, empty space is available for placing the person
-• The dominant lighting direction and color temperature of the scene
-
-STEP 2 — INTEGRATE THE PERSON:
-Naturally composite the person from Image 2 into the open space of Image 1.
-
-${avatarZonePlacement}
-
-INTEGRATION RULES:
-- Match the lighting direction and color temperature of the background to the person naturally.
-- The person should feel like they belong in the scene — same ambient light, natural shadows.
-- The person must be FULLY OPAQUE and SOLIDLY VISIBLE — do NOT apply fading, dissolving, soft disappearance, or transparency to any part of the person. The person must look physically present with confident, clear edges.
-- The person must be fully visible from head to at least knee level, not cropped at top.
-- Maintain the person's original appearance, face, and clothing.
-- Do NOT add any products, objects, text, or logos.
-
-STRICT PROHIBITIONS:
-- Do NOT paste the person as a flat cutout — blend them naturally into the scene.
-- Do NOT change the person's appearance or clothing.
-- Do NOT add text, watermarks, or decorative elements.
-- DO NOT modify, alter, recolor, blur, brighten, darken, or change ANY part of the background. Only add the person.
-- Do NOT cover, blur, distort, or touch ANY existing text, badges, labels, or graphic elements — every pixel of pre-existing text and decorations MUST remain perfectly intact and legible.
-
-${req.productIAOptions?.prompt
-  ? `Additional creative context: ${req.productIAOptions.prompt}`
-  : ""}
-    `.trim();
+    const avatarPrompt = buildAvatarScenePrompt(
+      req.productIAOptions?.prompt ?? "",
+      avatarCopyZone,
+    );
 
     // Normalize avatar to PNG so Gemini receives the format it expects
     const avatarPng = await sharp(req.avatarBuffer).png().toBuffer();
@@ -200,14 +396,13 @@ ${req.productIAOptions?.prompt
   const isSceneMode = req.productIAOptions?.sceneMode === true;
 
   if (isSceneMode) {
-    const userPrompt = req.productIAOptions?.prompt ?? "";
+    const sceneAction = req.productIAOptions?.prompt ?? "";
     const sceneCopyZone = req.productIAOptions?.copyZone ?? "left";
 
     const scene = await generateScene({
       backgroundPng: bg,
-      prompt: userPrompt,
+      prompt: buildScenePrompt(sceneAction, sceneCopyZone),
       aspectRatio,
-      zoneHint: sceneCopyZone as "left" | "right" | "top" | "bottom" | "center",
     });
 
     const sceneMeta = await sharp(scene).metadata();
@@ -220,7 +415,7 @@ ${req.productIAOptions?.prompt
     return {
       success: true,
       buffer: normalizedScene,
-      promptUsed: userPrompt,
+      promptUsed: sceneAction,
       timings: { total: Date.now() - t0, renderText: 0 },
     };
   }
@@ -230,7 +425,8 @@ ${req.productIAOptions?.prompt
   const copyZone = req.productIAOptions?.copyZone ?? "right";
   const rawProductPrompt = req.productIAOptions?.rawProductPrompt === true;
 
-  const prompt = buildProductIAPrompt({ userPrompt, copyZone, rawMode: rawProductPrompt });
+  const prompt = buildProductIAPrompt({ userPrompt, copyZone, rawMode: rawProductPrompt, personScene: req.productIAOptions?.personScene === true });
+  console.log(`[compose:buildProductIAPrompt] copyZone=${copyZone} rawMode=${rawProductPrompt} personScene=${req.productIAOptions?.personScene} prompt="${prompt.slice(0, 120).replace(/\n/g, " ")}..."`);
 
   // 3) NanoBanana: integrate product into background
   const scene = await nanoBananaInjectProduct({
@@ -678,15 +874,24 @@ function buildProductIAPrompt(args: {
   userPrompt?: string;
   copyZone: "right" | "left" | "top" | "bottom" | "center" | "full";
   rawMode?: boolean;
+  /** true when the scene intentionally includes a person (e.g. persona-producto-left without avatar).
+   *  Enables ABSOLUTE_RULES_ANATOMY. Never set for product-only templates. */
+  personScene?: boolean;
 }) {
-  // ── RAW mode: template's prompt goes to Gemini exactly as-is ────────────
+  // ── RAW mode: template's prompt goes to Gemini mostly as-is ─────────────
+  // We still append the universal text-preservation rule so no template can
+  // accidentally skip it, even when it owns the creative direction.
   if (args.rawMode && args.userPrompt) {
-    return args.userPrompt;
+    return `${args.userPrompt}
+
+${ABSOLUTE_RULES_PRODUCT_INJECT}${args.personScene ? `\n${ABSOLUTE_RULES_ANATOMY}` : ""}`.trim();
   }
 
   // ── FULL mode: template owns the entire prompt ───────────────────────────
   if (args.copyZone === "full" && args.userPrompt) {
-    return args.userPrompt;
+    return `${args.userPrompt}
+
+${ABSOLUTE_RULES_PRODUCT_INJECT}${args.personScene ? `\n${ABSOLUTE_RULES_ANATOMY}` : ""}`.trim();
   }
 
   // ── TEMPLATE-DIRECTED mode: template's defaultProductPrompt is the creative brief ──
@@ -707,21 +912,18 @@ ${args.userPrompt}
 ABSOLUTE RULES — always enforced, no exceptions:
 - No hands, fingers, arms, or body parts of any kind
 - No text, logos, watermarks, icons, sparkles, or decorative symbols
-- Preserve the product's exact appearance, colors, labels, and proportions — do NOT alter the product in any way
-- The product must always be FULLY VISIBLE and FULLY OPAQUE — never crop, clip, fade, dissolve, or apply transparency to it
-- DO NOT modify, alter, recolor, blur, brighten, darken, or change ANY part of the background. The background must remain pixel-perfect except where the product shadow falls.
 - The product MUST NOT overlap or cover any existing text, badges, labels, or graphic elements. Place it in open space only.
-- Do not erase, modify, or obscure any pre-existing text or graphic elements in the background — every pixel must remain intact`.trim();
+${ABSOLUTE_RULES_PRODUCT_INJECT}`.trim();
   }
 
   // ── GENERIC FALLBACK: no user prompt — use zone-based rules ─────────────
   const zoneRules =
     args.copyZone === "right"
-      ? "- copyZone is RIGHT: product MUST stay within LEFT 38% of canvas, centered in that zone.\n  The right 62% must be COMPLETELY CLEAR — no product, no shadow, no alteration."
+      ? "- copyZone is RIGHT: product MUST stay within LEFT 42% of canvas, centered in that zone.\n  The right 58% must be COMPLETELY CLEAR — no product, no shadow, no alteration."
       : args.copyZone === "left"
-      ? "- copyZone is LEFT: product MUST stay within RIGHT 38% of canvas, centered in that zone.\n  The left 62% must be COMPLETELY CLEAR — no product, no shadow, no alteration."
+      ? "- copyZone is LEFT: product MUST stay within RIGHT 42% of canvas, centered in that zone.\n  The left 58% must be COMPLETELY CLEAR — no product, no shadow, no alteration."
       : args.copyZone === "bottom"
-      ? "- copyZone is BOTTOM: product MUST stay within TOP 52% of canvas.\n  The bottom 48% must be COMPLETELY CLEAR — no product, no shadow."
+      ? "- copyZone is BOTTOM: product MUST stay within TOP 42% of canvas.\n  The bottom 58% must be COMPLETELY CLEAR — no product, no shadow."
       : "- copyZone is CENTER: product MUST stay within the center zone between 22% and 68% from top.\n  The top 22% and bottom 32% must be COMPLETELY CLEAR.";
 
   return `You are an expert product photographer and digital compositor specializing in high-end commercial advertising. You will receive two images: a background scene and a product photo.
@@ -748,9 +950,6 @@ COMPOSITION GUIDELINES:
 ABSOLUTE RULES:
 - No hands, fingers, arms, or body parts — the product must never be held
 - No text, logos, watermarks, icons, or decorative symbols
-- Preserve the product's exact appearance, colors, labels, and proportions — do NOT alter the product
-- Product must be FULLY VISIBLE — never crop or clip it
-- DO NOT modify, alter, recolor, blur, or change ANY part of the background. Only add the product.
 - The product MUST NOT overlap any existing text or graphic elements — place it in open space only.
-- Do not erase or alter any pre-existing text or graphic elements in the background`.trim();
+${ABSOLUTE_RULES_PRODUCT_INJECT}`.trim();
 }

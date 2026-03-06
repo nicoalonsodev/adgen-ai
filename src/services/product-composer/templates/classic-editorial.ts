@@ -8,6 +8,7 @@
 
 import type { LayoutSpec } from "../layoutSpec";
 import type { CopyContent } from "../types";
+import { resolveTemplateColors } from "@/lib/colorUtils";
 
 const W = 1080;
 const H = 1080; // puede ser 1080x1080 o 1080x1350, se adapta
@@ -165,6 +166,15 @@ export function buildClassicEditorialLayout(
   console.log("HOLA[classic-editorial] copy.bullets:", copy.bullets); 
   const { width: CW, height: CH } = canvas;
 
+  // ── Colores dinámicos de marca ──────────────────────────────────────────
+  // classic-editorial usa fondo lifestyle claro → mode "light"
+  const tc = resolveTemplateColors(copy.primaryColor, "light");
+  const COL_HEADLINE = tc?.headline ?? "#1A1A1A";
+  const COL_BODY     = tc?.body     ?? "#1A1A1A";
+  const COL_MUTED    = tc?.muted    ?? "#444444";
+  const COL_BADGE_BG = tc?.badgeBg  ?? "#00B5AD";
+  const COL_BADGE_TX = tc?.badgeText ?? "#FFFFFF";
+
   // ── Zona de copy: mitad derecha ─────────────────────────────────────────
   const COPY_X = Math.round(CW * 0.46); // ~497px  (empieza pasada la mitad)
   const COPY_W = Math.round(CW * 0.49); // ~529px  (hasta margen derecho de 2%)
@@ -242,7 +252,7 @@ export function buildClassicEditorialLayout(
         fontFamily: "Montserrat",
         fontWeight: "400", // fino, no bold
         fontSize: Math.round(CW * 0.02), // ~19px, más pequeño
-        color: "#1A1A1A", // más gris, menos protagonismo
+        color: COL_MUTED, // color de marca (muted) o fallback gris
         maxLines: 2,
         lineHeight: 1.4,
         letterSpacing: 0.04,
@@ -263,7 +273,7 @@ export function buildClassicEditorialLayout(
         fontSize: hlFontSize,
         lineHeight: HL_LINE_H,
         letterSpacing: -0.02,
-        color: "#1A1A1A",
+        color: COL_HEADLINE,
         maxLines: 5,
         textTransform: "none",
       },
@@ -280,7 +290,7 @@ export function buildClassicEditorialLayout(
   fontFamily: "Montserrat",
   fontWeight: "700",
   fontSize: Math.round(CW * 0.02),
-  color: "#1A1A1A",
+  color: COL_BODY,
   maxLines: 3,
   lineHeight: 1.55,
   letterSpacing: 0,
@@ -300,7 +310,7 @@ export function buildClassicEditorialLayout(
       fontFamily: "Montserrat",
       fontWeight: "400",
       fontSize: Math.round(CW * 0.025),
-      color: "#444444",
+      color: COL_MUTED,
       maxLines: 1,
       lineHeight: 1.3,
       letterSpacing: 0,
@@ -317,7 +327,7 @@ export function buildClassicEditorialLayout(
         w: Math.round(CW * 0.6), // antes 0.90 — mucho más contenido
         h: 60,
         align: "center",
-        color: "#FFFFFF",
+        color: COL_BADGE_TX,
         fontFamily: "Montserrat",
         fontWeight: "700",
         fontSize: Math.round(CW * 0.021),
@@ -327,7 +337,7 @@ export function buildClassicEditorialLayout(
         textTransform: "none",
         background: {
           type: "pill",
-          color: "#00B5AD",
+          color: COL_BADGE_BG,
           radius: 32,
           padding: 20, // antes 18 — más aire adentro
           opacity: 1,

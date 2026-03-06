@@ -240,7 +240,8 @@ ${args.backgroundStyleGuide}
 
   const prompt = `You are an expert advertising copywriter specialized in direct response marketing in Spanish.
 
-Generate copy for a visual advertising template that needs these specific fields: ${args.templateSchema.join(", ")}
+Generate copy for a visual advertising template. Output a JSON object with EXACTLY these fields: ${args.templateSchema.join(", ")}
+CRITICAL: Do NOT add any field not listed above. The JSON must contain ONLY those keys.
 
 ${fieldRules}
 ${templateHintBlock}${backgroundStyleGuideBlock}${brandContextBlock}${sorteoBlock}${referenceBlock}USER INFO:
@@ -252,7 +253,7 @@ ${templateHintBlock}${backgroundStyleGuideBlock}${brandContextBlock}${sorteoBloc
 
 ${variantInstructions}`;
 
-  console.log(`[openai:generateTemplateCopyOpenAI] model=gpt-4o-mini prompt_chars=${prompt.length}\n${prompt.slice(0, 300)}`);
+  console.log(`[openai:generateTemplateCopyOpenAI] schema=[${args.templateSchema.join(", ")}] prompt_chars=${prompt.length}`);
   const response = await client.chat.completions.create({
     model: "gpt-4o-mini",
     messages: [
@@ -266,6 +267,7 @@ ${variantInstructions}`;
 
   try {
     const parsed = JSON.parse(raw);
+    console.log(`[openai:generateTemplateCopyOpenAI] response keys=[${Object.keys(n > 1 ? (parsed.variants?.[0] ?? parsed) : parsed).join(", ")}]${parsed.productPrompt ? ` ⚠️ productPrompt="${String(parsed.productPrompt).slice(0, 80)}"` : ""}`);
     if (n > 1) {
       const variants = parsed.variants;
       if (!Array.isArray(variants)) throw new Error("Invalid JSON from OpenAI");

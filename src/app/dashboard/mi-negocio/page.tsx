@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { BUSINESS_CATEGORIES } from "@/lib/businessCategories";
+import { generateBrandPalette, isValidHex, getTextColorForBackground, type BrandPalette } from "@/lib/colorUtils";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -344,6 +345,7 @@ export default function MiNegocioPage() {
   const [palabrasSi, setPalabrasSi] = useState("");
   const [palabrasNo, setPalabrasNo] = useState("");
   const [coloresMarca, setColoresMarca] = useState<string[]>(["#E8D5C0"]);
+  const [brandPalette, setBrandPalette] = useState<BrandPalette | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [toastVisible, setToastVisible] = useState(false);
   const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -384,6 +386,29 @@ export default function MiNegocioPage() {
     }
     loadPerfil()
   }, []);
+
+  const handlePrimaryColorChange = useCallback((hex: string) => {
+    const next = [...coloresMarca];
+    next[0] = hex;
+    setColoresMarca(next);
+
+    if (!isValidHex(hex)) {
+      setBrandPalette(null);
+      return;
+    }
+
+    const palette = generateBrandPalette(hex);
+    setBrandPalette(palette);
+
+    // Autocompletar colores restantes con la paleta generada
+    const suggested = [
+      palette.primary.hex,
+      palette.primaryLight.hex,
+      palette.primaryDark.hex,
+      palette.accent.hex,
+    ];
+    setColoresMarca(suggested);
+  }, [coloresMarca]);
 
   function toggleTone(t: Tone) {
     setTonos((prev) =>
@@ -826,84 +851,171 @@ export default function MiNegocioPage() {
 
             {/* Brand colors */}
             <div>
-              <FieldLabel>Colores de marca</FieldLabel>
+              <FieldLabel>Color principal de marca</FieldLabel>
               <p style={{ color: S.muted, fontSize: 12, marginBottom: 10, marginTop: -4 }}>
-                El generador usará estos colores como paleta para los fondos de tus creativos.
+                Elegí tu color principal y se generará automáticamente una paleta completa.
               </p>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}>
-                {coloresMarca.map((color, idx) => (
-                  <div key={idx} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-                    <div style={{ position: "relative" }}>
-                      <input
-                        type="color"
-                        value={color}
-                        onChange={(e) => {
-                          const next = [...coloresMarca];
-                          next[idx] = e.target.value;
-                          setColoresMarca(next);
-                        }}
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+                <input
+                  type="color"
+                  value={coloresMarca[0] || "#E8D5C0"}
+                  onChange={(e) => handlePrimaryColorChange(e.target.value)}
+                  style={{
+                    width: 56,
+                    height: 56,
+                    border: `2px solid ${S.accent}`,
+                    borderRadius: 12,
+                    cursor: "pointer",
+                    padding: 3,
+                    background: S.inputBg,
+                  }}
+                />
+                <div>
+                  <span style={{ color: S.text, fontSize: 13, fontWeight: 500 }}>Principal</span>
+                  <span style={{ color: S.muted, fontSize: 11, fontFamily: "monospace", display: "block" }}>
+                    {(coloresMarca[0] || "#E8D5C0").toUpperCase()}
+                  </span>
+                </div>
+              </div>
+
+              {/* Paleta generada */}
+              {brandPalette && (
+                <div>
+                  <FieldLabel>Paleta sugerida</FieldLabel>
+                  <p style={{ color: S.muted, fontSize: 11, marginBottom: 10, marginTop: -4 }}>
+                    Podés editar cada color manualmente si lo necesitás.
+                  </p>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                    {([
+                      brandPalette.primary,
+                      brandPalette.primaryLight,
+                      brandPalette.primaryDark,
+                      brandPalette.primaryPale,
+                      brandPalette.accent,
+                      brandPalette.accentLight,
+                      brandPalette.accentDark,
+                    ] as const).map((cr) => (
+                      <div
+                        key={cr.role}
                         style={{
-                          width: 52,
-                          height: 52,
-                          border: `2px solid ${S.border}`,
-                          borderRadius: 12,
-                          cursor: "pointer",
-                          padding: 3,
-                          background: S.inputBg,
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          gap: 4,
+                          minWidth: 70,
                         }}
-                      />
-                      {coloresMarca.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => setColoresMarca((prev) => prev.filter((_, i) => i !== idx))}
+                      >
+                        <div
                           style={{
-                            position: "absolute",
-                            top: -7,
-                            right: -7,
-                            width: 20,
-                            height: 20,
-                            borderRadius: "50%",
-                            background: "#555",
-                            border: "none",
-                            color: "#fff",
-                            fontSize: 12,
-                            cursor: "pointer",
+                            width: 48,
+                            height: 48,
+                            borderRadius: 10,
+                            background: cr.hex,
+                            border: `1px solid ${S.border}`,
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            lineHeight: 1,
+                            fontSize: 10,
+                            fontWeight: 600,
+                            color: getTextColorForBackground(cr.hex),
                           }}
                         >
-                          ×
-                        </button>
-                      )}
-                    </div>
-                    <span style={{ color: S.muted, fontSize: 10, fontFamily: "monospace" }}>
-                      {color.toUpperCase()}
-                    </span>
+                          Aa
+                        </div>
+                        <span style={{ color: S.text, fontSize: 10, fontWeight: 500, textAlign: "center" }}>
+                          {cr.name}
+                        </span>
+                        <span style={{ color: S.muted, fontSize: 9, fontFamily: "monospace" }}>
+                          {cr.hex.toUpperCase()}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-                {coloresMarca.length < 4 && (
-                  <button
-                    type="button"
-                    onClick={() => setColoresMarca((prev) => [...prev, "#FFFFFF"])}
-                    style={{
-                      width: 52,
-                      height: 52,
-                      border: `2px dashed ${S.border}`,
-                      borderRadius: 12,
-                      background: "transparent",
-                      color: S.muted,
-                      fontSize: 24,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    +
-                  </button>
-                )}
+                </div>
+              )}
+
+              {/* Colores editables */}
+              <div style={{ marginTop: 16 }}>
+                <FieldLabel>Colores guardados</FieldLabel>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}>
+                  {coloresMarca.map((color, idx) => (
+                    <div key={idx} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                      <div style={{ position: "relative" }}>
+                        <input
+                          type="color"
+                          value={color}
+                          onChange={(e) => {
+                            if (idx === 0) {
+                              handlePrimaryColorChange(e.target.value);
+                            } else {
+                              const next = [...coloresMarca];
+                              next[idx] = e.target.value;
+                              setColoresMarca(next);
+                            }
+                          }}
+                          style={{
+                            width: 44,
+                            height: 44,
+                            border: `2px solid ${idx === 0 ? S.accent : S.border}`,
+                            borderRadius: 10,
+                            cursor: "pointer",
+                            padding: 2,
+                            background: S.inputBg,
+                          }}
+                        />
+                        {coloresMarca.length > 1 && idx > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => setColoresMarca((prev) => prev.filter((_, i) => i !== idx))}
+                            style={{
+                              position: "absolute",
+                              top: -7,
+                              right: -7,
+                              width: 18,
+                              height: 18,
+                              borderRadius: "50%",
+                              background: "#555",
+                              border: "none",
+                              color: "#fff",
+                              fontSize: 11,
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              lineHeight: 1,
+                            }}
+                          >
+                            ×
+                          </button>
+                        )}
+                      </div>
+                      <span style={{ color: S.muted, fontSize: 9, fontFamily: "monospace" }}>
+                        {color.toUpperCase()}
+                      </span>
+                    </div>
+                  ))}
+                  {coloresMarca.length < 7 && (
+                    <button
+                      type="button"
+                      onClick={() => setColoresMarca((prev) => [...prev, "#FFFFFF"])}
+                      style={{
+                        width: 44,
+                        height: 44,
+                        border: `2px dashed ${S.border}`,
+                        borderRadius: 10,
+                        background: "transparent",
+                        color: S.muted,
+                        fontSize: 22,
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      +
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </Card>

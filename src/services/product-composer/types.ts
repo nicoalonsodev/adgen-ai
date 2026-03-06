@@ -232,6 +232,9 @@ copyZone: z.enum(["right", "left", "top", "bottom", "center", "full"]).default("
   splitComparison: z.boolean().optional().default(false),
   /** When true: send the product prompt to Gemini exactly as-is, without any role wrapper or rules */
   rawProductPrompt: z.boolean().optional().default(false),
+  /** When true: the Flujo D scene intentionally includes a person (e.g. persona-producto-left without avatar).
+   *  Enables ABSOLUTE_RULES_ANATOMY in buildProductIAPrompt. Never set for product-only templates. */
+  personScene: z.boolean().optional().default(false),
   /**
    * When true: use avatar as a REFERENCE for the person's appearance and have Gemini
    * generate them holding the product. Requires both avatarBuffer and productBuffer.

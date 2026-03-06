@@ -11,6 +11,7 @@
 import sharp from "sharp";
 import { renderTextOnImage } from "./textRenderer";
 import { getTemplate } from "./templates/index";
+import { getTemplateMeta } from "./templates/meta";
 import type { ComposeRequest } from "./types";
 
 export interface TemplateBetaOptions {
@@ -66,11 +67,11 @@ export async function composeWithTemplateBeta(
   });
 
   // Templates que no usan logo (layout propio sin espacio para él)
-  const NO_LOGO_TEMPLATES = ["antes-despues"];
+  const meta = getTemplateMeta(templateId);
 
   // 4) Logo overlay (si el perfil de negocio tiene logo guardado)
   let finalBuffer = rendered.buffer;
-  if (req.logoBase64 && !NO_LOGO_TEMPLATES.includes(templateId)) {
+  if (req.logoBase64 && !meta?.noLogo) {
     const logoBuffer = Buffer.from(req.logoBase64, "base64");
     const logoMaxW = Math.round(canvas.width * 0.18);
     const logoMaxH = Math.round(canvas.height * 0.08);
@@ -83,8 +84,7 @@ export async function composeWithTemplateBeta(
     // Centrar logo horizontalmente para templates que lo requieren en el centro
     const logoMeta = await sharp(resizedLogo).metadata();
     const logoW = logoMeta.width ?? logoMaxW;
-    const isCenterLogoTemplate = templateId === "sorteo-giveaway-center" || templateId === "comparacion-split" || templateId === "testimonio-review" || templateId === "persona-hero-bottom";
-    const logoLeft = isCenterLogoTemplate
+    const logoLeft = meta?.logoPosition === "center"
       ? Math.round((canvas.width - logoW) / 2)
       : logoPadding;
 
