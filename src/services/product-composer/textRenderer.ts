@@ -220,10 +220,11 @@ function generateGradientDefs(overlays: Overlay[]): string {
 function generateTextSvg(textBlocks: TextBlock[], canvasWidth: number, canvasHeight: number, debug: boolean): string {
   return textBlocks.map((tb) => {
 if (!tb.content || tb.content.trim() === "") return "";
-    
+
+    const normalizedContent = normalizeBoldSpacing(tb.content);
     const lines = (tb as any).textBalance
-      ? wrapTextBalanced(tb.content, tb.w, tb.fontSize, tb.fontWeight, tb.maxLines, tb.fontFamily)
-      : wrapTextPrecise(tb.content, tb.w, tb.fontSize, tb.fontWeight, tb.maxLines, tb.fontFamily);
+      ? wrapTextBalanced(normalizedContent, tb.w, tb.fontSize, tb.fontWeight, tb.maxLines, tb.fontFamily)
+      : wrapTextPrecise(normalizedContent, tb.w, tb.fontSize, tb.fontWeight, tb.maxLines, tb.fontFamily);
     const lineHeightPx = tb.fontSize * tb.lineHeight;
     const totalTextHeight = lines.length * lineHeightPx;
     
@@ -616,6 +617,22 @@ function parseBoldSegments(text: string): TextSegment[] {
     lastIndex = regex.lastIndex;
   }
   if (lastIndex < normalized.length) segments.push({ text: normalized.slice(lastIndex), bold: false });
+
+  // Move trailing spaces from non-bold segments to the leading position of the
+  // following bold segment. SVG renderers (incl. librsvg) reliably preserve
+  // leading whitespace in <tspan> but may silently drop trailing whitespace,
+  // even with xml:space="preserve" on the parent <text>.
+  for (let i = 0; i < segments.length - 1; i++) {
+    if (!segments[i].bold && segments[i + 1].bold) {
+      const trimmed = segments[i].text.trimEnd();
+      const trailingSpace = segments[i].text.slice(trimmed.length);
+      if (trailingSpace) {
+        segments[i] = { ...segments[i], text: trimmed };
+        segments[i + 1] = { ...segments[i + 1], text: trailingSpace + segments[i + 1].text };
+      }
+    }
+  }
+
   return segments;
 }
 
