@@ -10,7 +10,7 @@ Formato de cada ejemplo: `[Nicho] — [Ángulo] → prompt`
 ## Belleza & Cosmética (skincare, cremas, sueros, aceites)
 
 **Editorial minimalista:**
-Place the skincare product upright on a smooth white marble surface, slightly angled 15° toward camera. A second unit of the same product rests open beside it at a natural angle. Soft diffuse natural light from the left casts a gentle elliptical shadow directly beneath. Product scale: 38% of canvas height. Product occupies left 40% of canvas only, right side completely clean.
+Place the skincare product upright on a smooth white marble surface, slightly angled 15° toward camera. A second unit of the same product rests open beside it at a natural angle. Soft diffuse natural light from the left casts a gentle elliptical shadow directly beneath. Product scale: 38% of canvas height. Product in left 40% of canvas only. DO NOT modify the right side — it contains pre-rendered copy text.
 
 **Premium con props naturales:**
 Position the cream jar on a raw linen cloth draped over a cool stone surface. Jar is centered and upright, label toward camera. A single dried eucalyptus sprig lays diagonally behind it, slightly out of focus. Warm morning light from upper-left, long soft shadow extending to the right. Product scale: 42% canvas height. Left half of canvas only.
