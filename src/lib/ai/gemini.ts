@@ -1,7 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import sharp from "sharp";
 import { ABSOLUTE_RULES_SCENE, ABSOLUTE_RULES_PRODUCT_INJECT } from "./promptRules";
-import { getLibrary, type ImageBriefType } from "./promptLibrary";
+import { getLibrarySection, type ImageBriefType } from "./promptLibrary";
 
 const MODEL_NANO_BANANA = "gemini-2.5-flash-image";
 
@@ -666,7 +666,7 @@ export async function generateImageBriefGemini(args: {
 }): Promise<string> {
   const ai = getClient();
 
-  const library = getLibrary(args.briefType);
+  const library = getLibrarySection(args.briefType, args.productCategory);
 
   const oppositeSide =
     args.copyZone === "right"  ? "left"   :

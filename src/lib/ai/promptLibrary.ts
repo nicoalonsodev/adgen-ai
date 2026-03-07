@@ -13,8 +13,8 @@ import path from "path";
 
 const dir = path.join(process.cwd(), "src/lib/ai/prompt-library");
 
-export const PRODUCT_ONLY_LIBRARY  = fs.readFileSync(path.join(dir, "product-only.md"),  "utf-8");
-export const SCENE_ONLY_LIBRARY    = fs.readFileSync(path.join(dir, "scene-only.md"),    "utf-8");
+export const PRODUCT_ONLY_LIBRARY   = fs.readFileSync(path.join(dir, "product-only.md"),   "utf-8");
+export const SCENE_ONLY_LIBRARY     = fs.readFileSync(path.join(dir, "scene-only.md"),     "utf-8");
 export const PERSON_PRODUCT_LIBRARY = fs.readFileSync(path.join(dir, "person-product.md"), "utf-8");
 
 export type ImageBriefType = "product-only" | "scene-only" | "person-product";
@@ -25,4 +25,54 @@ export function getLibrary(type: ImageBriefType): string {
     case "scene-only":     return SCENE_ONLY_LIBRARY;
     case "person-product": return PERSON_PRODUCT_LIBRARY;
   }
+}
+
+/**
+ * Maps business category IDs to keywords present in the ## section headers of the .md files.
+ * Order matters: first match wins. Add new categories here as the library grows.
+ */
+const CATEGORY_KEYWORDS: Record<string, string[]> = {
+  "belleza-cosmetica":      ["Belleza", "Cosmética"],
+  "salud-bienestar":        ["Salud", "Bienestar"],
+  "salud-estetica-clinica": ["Salud", "Bienestar"],
+  "fitness-deporte":        ["Fitness", "Deporte"],
+  "alimentos-bebidas":      ["Alimentos", "Bebidas"],
+  "gastronomia":            ["Alimentos", "Bebidas", "Gastronomía"],
+  "tecnologia":             ["Tecnología"],
+  "hogar-deco":             ["Hogar", "Decoración"],
+  "mascotas":               ["Mascotas"],
+  "joyeria-accesorios":     ["Joyería", "Accesorios"],
+  "servicios-profesionales": ["Servicios", "Educación", "Profesional"],
+  "educacion-cursos":       ["Servicios", "Educación"],
+  "moda-indumentaria":      ["Moda", "Estilo"],
+  "turismo-viajes":         ["Lifestyle", "Viajes"],
+  "bienes-raices":          ["Servicios", "Profesional"],
+};
+
+/**
+ * Returns only the library section(s) relevant to the given product category.
+ * Falls back to the full library when the category is unknown or has no matching section.
+ *
+ * Each .md library is split by `## ` headers — only the matching section(s) are returned,
+ * preserving the intro text so Gemini keeps the format context.
+ */
+export function getLibrarySection(type: ImageBriefType, productCategory: string): string {
+  const library = getLibrary(type);
+  const keywords = CATEGORY_KEYWORDS[productCategory] ?? [];
+
+  if (keywords.length === 0) return library;
+
+  // Split at every `## ` section header (keeping the delimiter)
+  const parts = library.split(/(?=^## )/m);
+  const intro = parts[0]; // everything before the first ## header
+  const sections = parts.slice(1);
+
+  const matched = sections.filter(section =>
+    keywords.some(kw => section.toLowerCase().includes(kw.toLowerCase()))
+  );
+
+  // If no section matched the category, return the full library as fallback
+  if (matched.length === 0) return library;
+
+  return [intro.trim(), ...matched].join("\n");
 }
