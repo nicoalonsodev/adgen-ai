@@ -67,9 +67,12 @@ export function getLibrarySection(type: ImageBriefType, productCategory: string)
   const intro = parts[0]; // everything before the first ## header
   const sections = parts.slice(1);
 
-  const matched = sections.filter(section =>
-    keywords.some(kw => section.toLowerCase().includes(kw.toLowerCase()))
-  );
+  const matched = sections.filter(section => {
+    // Match only against the section category name (before the parenthetical examples)
+    // e.g. "## Salud & Bienestar (suplementos...)" → "salud & bienestar"
+    const headerName = section.split("\n")[0].replace(/^## /, "").split("(")[0].toLowerCase().trim();
+    return keywords.some(kw => headerName.includes(kw.toLowerCase()));
+  });
 
   // If no section matched the category, return the full library as fallback
   if (matched.length === 0) return library;
