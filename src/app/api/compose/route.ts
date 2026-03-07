@@ -429,6 +429,18 @@ export async function POST(request: NextRequest) {
             imageBriefFields.includes("sceneAction")   ? "scene-only"    :
             "product-only";
 
+          // Capture Gemini Flash input for logging before calling
+          const imageBriefInput = imageBriefFields.length > 0
+            ? {
+                product: body.product ?? "",
+                productCategory: (body.businessProfile as any)?.category ?? "",
+                tone: body.tone ?? "",
+                briefType,
+                copyZone: body.copyZone,
+                clienteIdeal: (body.businessProfile as any)?.clienteIdeal,
+              }
+            : null;
+
           // Run OpenAI (copy) and Gemini Flash (image brief) in parallel when applicable
           const [copyResult, imagePrompt] = await Promise.all([
             generateTemplateCopyOpenAI({
@@ -471,8 +483,12 @@ export async function POST(request: NextRequest) {
             }
           }
 
+          const imageBriefLog = imagePrompt !== null && imageBriefInput
+            ? { input: imageBriefInput, output: imagePrompt }
+            : null;
+
           if (cachedUserTokens) await consumeTokensWithData(cachedUserTokens, tokensNeeded, operation);
-          return NextResponse.json({ success: true, data: { copy: result, promptUsed: `Schema: ${fullSchema.join(", ")}` } });
+          return NextResponse.json({ success: true, data: { copy: result, promptUsed: `Schema: ${fullSchema.join(", ")}`, imageBriefLog } });
         } catch (err) {
           const message = err instanceof Error ? err.message : "Unknown error";
           return NextResponse.json({ success: false, error: message }, { status: 500 });

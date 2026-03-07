@@ -5,6 +5,8 @@ import { useState } from "react";
 export interface PromptLayer {
   name: string;
   model?: string;
+  /** Rendered as "INPUT" block before the main prompt output */
+  input?: string;
   prompt?: string;
   status: "completed" | "skipped";
 }
@@ -12,6 +14,19 @@ export interface PromptLayer {
 export interface PromptsUsed {
   layers: PromptLayer[];
 }
+
+const CODE_BLOCK_STYLE: React.CSSProperties = {
+  marginTop: 4,
+  background: "#0A0A0A",
+  padding: "6px 8px",
+  borderRadius: 4,
+  fontSize: 10,
+  color: "#666",
+  whiteSpace: "pre-wrap",
+  wordBreak: "break-word",
+  maxHeight: 200,
+  overflow: "auto",
+};
 
 export function PromptsPanel({ prompts }: { prompts: PromptsUsed }) {
   const [expanded, setExpanded] = useState(false);
@@ -66,8 +81,21 @@ export function PromptsPanel({ prompts }: { prompts: PromptsUsed }) {
                   <span style={{ color: "#444", fontSize: 10 }}>{layer.model}</span>
                 )}
               </div>
+
+              {/* INPUT block (only shown when expanded) */}
+              {layer.input && expandedLayer === i && (
+                <div style={{ paddingLeft: 20, marginBottom: 4 }}>
+                  <span style={{ color: "#666", fontSize: 10, fontWeight: 600, letterSpacing: "0.05em" }}>INPUT</span>
+                  <pre style={CODE_BLOCK_STYLE}>{layer.input}</pre>
+                </div>
+              )}
+
+              {/* OUTPUT / prompt block */}
               {layer.prompt && (
                 <div style={{ paddingLeft: 20 }}>
+                  {layer.input && expandedLayer === i && (
+                    <span style={{ color: "#666", fontSize: 10, fontWeight: 600, letterSpacing: "0.05em" }}>OUTPUT</span>
+                  )}
                   <p style={{ color: "#555", lineHeight: 1.4 }}>
                     {expandedLayer === i
                       ? layer.prompt
@@ -91,22 +119,7 @@ export function PromptsPanel({ prompts }: { prompts: PromptsUsed }) {
                     </button>
                   )}
                   {expandedLayer === i && (
-                    <pre
-                      style={{
-                        marginTop: 4,
-                        background: "#0A0A0A",
-                        padding: "6px 8px",
-                        borderRadius: 4,
-                        fontSize: 10,
-                        color: "#666",
-                        whiteSpace: "pre-wrap",
-                        wordBreak: "break-word",
-                        maxHeight: 200,
-                        overflow: "auto",
-                      }}
-                    >
-                      {layer.prompt}
-                    </pre>
+                    <pre style={CODE_BLOCK_STYLE}>{layer.prompt}</pre>
                   )}
                 </div>
               )}
