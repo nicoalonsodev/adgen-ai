@@ -16,8 +16,9 @@ import { compose, composeWithAutoLayout, composeWithSmartUsage, composeWithPrese
 
 import { composeWithProductIA } from "@/services/product-composer";
 import { composeWithTemplateBeta } from "@/services/product-composer/composeWithTemplateBeta"; // ← AGREGAR
-import { generateBackground, analyzeCreativeQuality } from "@/lib/ai/gemini";
+import { generateBackground, analyzeCreativeQuality, generateImageBriefGemini } from "@/lib/ai/gemini";
 import { generateTemplateCopyOpenAI, analyzeCreativeReference, generateSequenceCopy } from "@/lib/ai/openai";
+import type { ImageBriefType } from "@/lib/ai/promptLibrary";
 import { listPresets } from "@/services/product-composer/presets";
 import { createLogger, generateRequestId } from "@/lib/logger";
 import { createMetrics } from "@/lib/metrics";
@@ -398,22 +399,70 @@ export async function POST(request: NextRequest) {
       const body = await clone.json().catch(() => ({}));
       if (body.mode === "GENERATE_COPY") {
         try {
-          const result = await generateTemplateCopyOpenAI({
-            product: body.product ?? "",
-            offer: body.offer ?? "",
-            targetAudience: body.targetAudience ?? "",
-            problem: body.problem ?? "",
-            tone: body.tone ?? "",
-            templateSchema: body.templateSchema ?? [],
-            numberOfVariants: body.numberOfVariants ?? 1,
-            templateHint: body.templateHint,
-            businessProfile: body.businessProfile,
-            referenceStyle: body.referenceStyle,
-            backgroundStyleGuide: body.backgroundStyleGuide,
-            sorteoData: body.sorteoData,
-          });
+          const fullSchema: string[] = body.templateSchema ?? [];
+
+          // Fields that benefit from Gemini Flash specialization.
+          // productPrompt → person+product scene direction
+          // sceneAction   → person-only scene direction
+          const IMAGE_BRIEF_FIELDS = ["productPrompt", "sceneAction"] as const;
+          type ImageField = typeof IMAGE_BRIEF_FIELDS[number];
+
+          const imageBriefFields = fullSchema.filter((f): f is ImageField =>
+            IMAGE_BRIEF_FIELDS.includes(f as ImageField)
+          );
+          const copyOnlySchema = fullSchema.filter(f =>
+            !IMAGE_BRIEF_FIELDS.includes(f as ImageField)
+          );
+
+          const briefType: ImageBriefType =
+            imageBriefFields.includes("productPrompt") ? "person-product" :
+            imageBriefFields.includes("sceneAction")   ? "scene-only"    :
+            "product-only";
+
+          // Run OpenAI (copy) and Gemini Flash (image brief) in parallel when applicable
+          const [copyResult, imagePrompt] = await Promise.all([
+            generateTemplateCopyOpenAI({
+              product: body.product ?? "",
+              offer: body.offer ?? "",
+              targetAudience: body.targetAudience ?? "",
+              problem: body.problem ?? "",
+              tone: body.tone ?? "",
+              templateSchema: imageBriefFields.length > 0 ? copyOnlySchema : fullSchema,
+              numberOfVariants: body.numberOfVariants ?? 1,
+              templateHint: body.templateHint,
+              businessProfile: body.businessProfile,
+              referenceStyle: body.referenceStyle,
+              backgroundStyleGuide: body.backgroundStyleGuide,
+              sorteoData: body.sorteoData,
+            }),
+            imageBriefFields.length > 0
+              ? generateImageBriefGemini({
+                  product: body.product ?? "",
+                  productCategory: (body.businessProfile as any)?.category ?? "",
+                  tone: body.tone ?? "",
+                  briefType,
+                  copyZone: body.copyZone,
+                  businessProfile: {
+                    nombre: (body.businessProfile as any)?.nombre,
+                    clienteIdeal: (body.businessProfile as any)?.clienteIdeal,
+                  },
+                })
+              : Promise.resolve(null),
+          ]);
+
+          // Merge image brief fields into copy result
+          let result = copyResult;
+          if (imagePrompt !== null && imageBriefFields.length > 0) {
+            const briefPatch = Object.fromEntries(imageBriefFields.map(f => [f, imagePrompt]));
+            if (Array.isArray(result)) {
+              result = result.map(v => ({ ...v, ...briefPatch }));
+            } else {
+              result = { ...result, ...briefPatch };
+            }
+          }
+
           if (cachedUserTokens) await consumeTokensWithData(cachedUserTokens, tokensNeeded, operation);
-          return NextResponse.json({ success: true, data: { copy: result, promptUsed: `Schema: ${(body.templateSchema ?? []).join(", ")}` } });
+          return NextResponse.json({ success: true, data: { copy: result, promptUsed: `Schema: ${fullSchema.join(", ")}` } });
         } catch (err) {
           const message = err instanceof Error ? err.message : "Unknown error";
           return NextResponse.json({ success: false, error: message }, { status: 500 });
