@@ -8,60 +8,13 @@
 import fs from "fs";
 import path from "path";
 import sharp from "sharp";
+import { Resvg } from "@resvg/resvg-js";
 import type { TextBlock, Overlay, LayoutSpec } from "./layoutSpec";
 import { createLogger } from "@/lib/logger";
 
-// ── Fuentes embebidas (cargadas una vez al iniciar) ──────────────────────────
-function loadFontBase64(filename: string): string {
-  try {
-    const fontPath = path.join(process.cwd(), "public", "fonts", filename);
-    return fs.readFileSync(fontPath).toString("base64");
-  } catch {
-    return ""; // si no encuentra el archivo, el SVG igual renderiza con fallback
-  }
-}
-
-const FONTS = {
-  loraRegular:      loadFontBase64("Lora-Regular.ttf"),
-  loraBold:         loadFontBase64("Lora-Bold.ttf"),
-  loraSemiBold:     loadFontBase64("Lora-SemiBold.ttf"),
-  montserratRegular: loadFontBase64("Montserrat-Regular.ttf"),
-  montserratMedium:  loadFontBase64("Montserrat-Medium.ttf"),
-  montserratSemiBold: loadFontBase64("Montserrat-SemiBold.ttf"),
-  montserratBold:    loadFontBase64("Montserrat-Bold.ttf"),
-  interRegular:     loadFontBase64("Inter-Regular.ttf"),
-  interSemiBold:    loadFontBase64("Inter-SemiBold.ttf"),
-  interBold:        loadFontBase64("Inter-Bold.ttf"),
-};
-
-function buildFontFaceDefs(): string {
-  return `<style>
-    @font-face { font-family: 'Lora'; font-weight: 400; font-style: normal;
-      src: url('data:font/truetype;base64,${FONTS.loraRegular}') format('truetype'); }
-    @font-face { font-family: 'Lora'; font-weight: 600; font-style: normal;
-      src: url('data:font/truetype;base64,${FONTS.loraSemiBold}') format('truetype'); }
-    @font-face { font-family: 'Lora'; font-weight: 700; font-style: normal;
-      src: url('data:font/truetype;base64,${FONTS.loraBold}') format('truetype'); }
-    @font-face { font-family: 'Montserrat'; font-weight: 400; font-style: normal;
-      src: url('data:font/truetype;base64,${FONTS.montserratRegular}') format('truetype'); }
-    @font-face { font-family: 'Montserrat'; font-weight: 500; font-style: normal;
-      src: url('data:font/truetype;base64,${FONTS.montserratMedium}') format('truetype'); }
-    @font-face { font-family: 'Montserrat'; font-weight: 600; font-style: normal;
-      src: url('data:font/truetype;base64,${FONTS.montserratSemiBold}') format('truetype'); }
-    @font-face { font-family: 'Montserrat'; font-weight: 700; font-style: normal;
-      src: url('data:font/truetype;base64,${FONTS.montserratBold}') format('truetype'); }
-    @font-face { font-family: 'Inter'; font-weight: 400; font-style: normal;
-      src: url('data:font/truetype;base64,${FONTS.interRegular}') format('truetype'); }
-    @font-face { font-family: 'Inter'; font-weight: 600; font-style: normal;
-      src: url('data:font/truetype;base64,${FONTS.interSemiBold}') format('truetype'); }
-    @font-face { font-family: 'Inter'; font-weight: 700; font-style: normal;
-      src: url('data:font/truetype;base64,${FONTS.interBold}') format('truetype'); }
-  </style>`;
-}
-
-// Justo después de definir FONTS, agregar temporalmente:
-console.log("[fonts] loraRegular length:", FONTS.loraRegular.length);
-console.log("[fonts] montserratBold length:", FONTS.montserratBold.length);
+// ── Ruta de fuentes para resvg ────────────────────────────────────────────────
+const FONTS_DIR = path.join(process.cwd(), "public", "fonts");
+console.log("[fonts] FONTS_DIR:", FONTS_DIR);
 
 const logger = createLogger({ service: "textRenderer" });
 
@@ -83,10 +36,10 @@ const logger = createLogger({ service: "textRenderer" });
 
 function normalizeFontFamily(fontFamily: string): string {
   const key = (fontFamily ?? "").toLowerCase();
+  // Map fonts we don't have to the closest available
   if (key.includes("playfair")) return "Lora";
-  if (key.includes("poppins")) return "Montserrat";
-  // Inter, Arial, Helvetica → Montserrat
-  if (key.includes("inter") || key.includes("arial") || key.includes("helvetica")) return "Montserrat";
+  if (key.includes("poppins") || key.includes("arial") || key.includes("helvetica")) return "Montserrat";
+  // Inter, Lora, Montserrat → available directly via fontBuffers
   return fontFamily;
 }
 
@@ -139,27 +92,35 @@ export async function renderTextOnImage(options: RenderTextOptions): Promise<Ren
   const textSvg = generateTextSvg(layout.textBlocks, width, height, debug);
   const decorationsSvg = (layout as any).svgDecorations ?? "";
   
-  // Note: fonts resolved by Pango via fontconfig. @font-face base64 not supported by librsvg 2.x.
-  // clipPath ensures text never bleeds outside canvas boundary regardless of measurement errors.
-const combinedSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
+  // resvg resolves fonts via fontBuffers (injected directly into its font DB).
+  // No @font-face CSS needed — resvg ignores data URIs in CSS anyway.
+  const combinedSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
   <defs>
     ${generateGradientDefs(layout.overlays)}
     <clipPath id="canvas-clip">
       <rect x="0" y="0" width="${width}" height="${height}"/>
     </clipPath>
   </defs>
-  ${buildFontFaceDefs()}
   ${overlaysSvg}
   ${decorationsSvg}
   <g clip-path="url(#canvas-clip)">
     ${textSvg}
   </g>
 </svg>`;
-  
-  // Composite SVG onto base image
+
+  // Rasterize SVG with resvg, loading fonts from local directory
   const svgBuffer = Buffer.from(combinedSvg);
+  const resvg = new Resvg(svgBuffer, {
+    font: {
+      loadSystemFonts: false,
+      fontDirs: [FONTS_DIR],
+    },
+  });
+  const textLayerPng = resvg.render().asPng();
+
+  // Composite rasterized text layer onto base image
   const result = await sharp(baseImage)
-    .composite([{ input: svgBuffer, top: 0, left: 0 }])
+    .composite([{ input: textLayerPng, top: 0, left: 0 }])
     .png()
     .toBuffer();
   
@@ -315,7 +276,7 @@ if (!tb.content || tb.content.trim() === "") return "";
       const hasBold = boldWeight && line.includes("**");
 
       if (!hasBold) {
-        const escapedText = escapeXml(applyTransform(stripBoldMarkers(line)));
+        const escapedText = escapeXml(stripEmojis(applyTransform(stripBoldMarkers(line))));
         return `<text
           x="${xPos}"
           y="${yPos}"
@@ -332,7 +293,7 @@ if (!tb.content || tb.content.trim() === "") return "";
       const tspans = parseBoldSegments(line)
         .filter(seg => seg.text.length > 0)
         .map(seg => {
-          const escaped = escapeXml(applyTransform(seg.text));
+          const escaped = escapeXml(stripEmojis(applyTransform(seg.text)));
           return seg.bold
             ? `<tspan font-weight="${boldWeight}">${escaped}</tspan>`
             : `<tspan>${escaped}</tspan>`;
@@ -588,6 +549,14 @@ function wrapTextBalanced(
   }
 
   return wrapGreedySingleSegment(words, hi, fontSize, isBold, familyFactor, maxLines, spaceWidth);
+}
+
+// Emoji regex — matches any Unicode emoji sequence (including ZWJ, variation selectors, flags)
+const EMOJI_RE = /\p{Emoji_Presentation}[\p{Emoji}\uFE0F\u20D0-\u20FF\u200D]*/gu;
+
+/** Replace emojis with a bullet since resvg has no emoji font */
+function stripEmojis(text: string): string {
+  return text.replace(EMOJI_RE, "•").replace(/•(\s*•)+/g, "•").trim();
 }
 
 function escapeXml(text: string): string {
