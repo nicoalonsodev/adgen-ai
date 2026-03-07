@@ -8,7 +8,7 @@
 
 import type { LayoutSpec } from "../layoutSpec";
 import type { CopyContent } from "../types";
-import { resolveTemplateColors } from "@/lib/colorUtils";
+import { resolveTemplateColors, resolveTemplateColorsFromPalette } from "@/lib/colorUtils";
 
 const W = 1080;
 const H = 1080; // puede ser 1080x1080 o 1080x1350, se adapta
@@ -155,8 +155,15 @@ export interface TemplateCopy {
   competitionBullets?: string[];
   /** Social proof / disclaimer line (e.g. "+12.000 mujeres ya lo usan") */
   disclaimer?: string;
-  /** Brand primary color as hex — used by templates with solid backgrounds (e.g. comparacion-split) */
+  /** Brand primary color as hex — fallback cuando no hay brandColors */
   primaryColor?: string;
+  /**
+   * Paleta completa de la marca (7 colores guardados en mi-negocio).
+   * Índices: [0] primary, [1] primaryLight, [2] primaryDark, [3] primaryPale,
+   *          [4] accent, [5] accentLight, [6] accentDark
+   * Tiene prioridad sobre primaryColor si está presente.
+   */
+  brandColors?: string[];
 }
 
 export function buildClassicEditorialLayout(
@@ -168,7 +175,14 @@ export function buildClassicEditorialLayout(
 
   // ── Colores dinámicos de marca ──────────────────────────────────────────
   // classic-editorial usa fondo lifestyle claro → mode "light"
-  const tc = resolveTemplateColors(copy.primaryColor, "light");
+  //
+  // Prioridad:
+  //   1. brandColors[] (paleta completa guardada en mi-negocio) ← usa colores reales del negocio
+  //   2. primaryColor (solo el principal, deriva la paleta automáticamente)
+  //   3. Fallbacks hardcodeados
+  const tc =
+    resolveTemplateColorsFromPalette(copy.brandColors, "light") ??
+    resolveTemplateColors(copy.primaryColor, "light");
   const COL_HEADLINE = tc?.headline ?? "#1A1A1A";
   const COL_BODY     = tc?.body     ?? "#1A1A1A";
   const COL_MUTED    = tc?.muted    ?? "#444444";

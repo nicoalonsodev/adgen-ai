@@ -55,6 +55,7 @@ export async function composeWithTemplateBeta(
       competitionTitle: req.copy?.competitionTitle,
       competitionBullets: req.copy?.competitionBullets,
       primaryColor: req.copy?.primaryColor,
+      brandColors: req.copy?.brandColors,
     } as Parameters<typeof template.buildLayout>[0],
     canvas,
   );

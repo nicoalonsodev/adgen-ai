@@ -463,6 +463,9 @@ export default function FabricaDeContenido() {
             competitionTitle: typeof copy.competitionTitle === "string" ? copy.competitionTitle : undefined,
             competitionBullets: Array.isArray(copy.competitionBullets) ? copy.competitionBullets : undefined,
             primaryColor: typeof copy.primaryColor === "string" ? copy.primaryColor : undefined,
+            brandColors: Array.isArray(businessProfile?.coloresMarca) && (businessProfile.coloresMarca as string[]).some(Boolean)
+              ? businessProfile.coloresMarca as string[]
+              : undefined,
           },
           templateBetaOptions: {
             templateId: primaryTemplate,
@@ -779,6 +782,9 @@ export default function FabricaDeContenido() {
                 competitionTitle: typeof copy.competitionTitle === "string" ? copy.competitionTitle : undefined,
                 competitionBullets: Array.isArray(copy.competitionBullets) ? copy.competitionBullets : undefined,
                 primaryColor: typeof copy.primaryColor === "string" ? copy.primaryColor : undefined,
+                brandColors: Array.isArray(businessProfile?.coloresMarca) && (businessProfile.coloresMarca as string[]).some(Boolean)
+                  ? businessProfile.coloresMarca as string[]
+                  : undefined,
               },
               templateBetaOptions: {
                 templateId,
@@ -1098,6 +1104,9 @@ export default function FabricaDeContenido() {
                   headline: slide.headline || undefined,
                   subheadline: slide.subheadline || undefined,
                   badge: slide.badge || undefined,
+                  brandColors: Array.isArray(businessProfile?.coloresMarca) && (businessProfile.coloresMarca as string[]).some(Boolean)
+                    ? businessProfile.coloresMarca as string[]
+                    : undefined,
                 },
                 templateBetaOptions: {
                   templateId,
@@ -1132,6 +1141,9 @@ export default function FabricaDeContenido() {
                   headline: slide.headline || undefined,
                   subheadline: slide.subheadline || undefined,
                   badge: slide.badge || undefined,
+                  brandColors: Array.isArray(businessProfile?.coloresMarca) && (businessProfile.coloresMarca as string[]).some(Boolean)
+                    ? businessProfile.coloresMarca as string[]
+                    : undefined,
                 },
                 templateBetaOptions: {
                   templateId,
