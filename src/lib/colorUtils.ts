@@ -402,15 +402,121 @@ export function resolveTemplateColors(
 }
 
 /**
- * Ajusta el color de texto para garantizar contraste WCAG AA (≥ 4.5) contra un fondo.
+ * Resuelve los colores de template usando la paleta de marca guardada por el negocio.
+ *
+ * A diferencia de `resolveTemplateColors` (que regenera desde el primario),
+ * esta función usa directamente el array `coloresMarca` guardado, respetando
+ * cualquier personalización individual que haya hecho el usuario.
+ *
+ * Índices esperados (coinciden con COLOR_ROLES en mi-negocio/page.tsx):
+ *   [0] primary, [1] primaryLight, [2] primaryDark, [3] primaryPale,
+ *   [4] accent,  [5] accentLight,  [6] accentDark
+ *
+ * @param brandColors - Array de 7 hex proveniente de coloresMarca[]
+ * @param mode - "light" o "dark" según el fondo del template
+ * @returns TemplateColors resueltos, o null si el array no tiene colores válidos
+ */
+export function resolveTemplateColorsFromPalette(
+  brandColors: string[] | undefined,
+  mode: TemplateColorMode,
+): TemplateColors | null {
+  if (!brandColors || brandColors.length === 0) return null;
+
+  const primary     = brandColors[0];
+  const primaryLight = brandColors[1];
+  const primaryDark  = brandColors[2];
+  const primaryPale  = brandColors[3];
+  const accent       = brandColors[4];
+  const accentLight  = brandColors[5];
+  const accentDark   = brandColors[6];
+
+  // Necesitamos al menos el color principal válido
+  if (!primary || !isValidHex(primary)) return null;
+
+  // Para los colores que falten, generamos la paleta automáticamente como fallback
+  const generated = generateBrandPalette(primary);
+
+  const safeLight  = (primaryLight && isValidHex(primaryLight))  ? primaryLight  : generated.primaryLight.hex;
+  const safeDark   = (primaryDark  && isValidHex(primaryDark))   ? primaryDark   : generated.primaryDark.hex;
+  const safePale   = (primaryPale  && isValidHex(primaryPale))   ? primaryPale   : generated.primaryPale.hex;
+  const safeAccent = (accent       && isValidHex(accent))        ? accent        : generated.accent.hex;
+  const safeAccentL = (accentLight && isValidHex(accentLight))   ? accentLight   : generated.accentLight.hex;
+  const safeAccentD = (accentDark  && isValidHex(accentDark))    ? accentDark    : generated.accentDark.hex;
+
+  // Construir BrandPalette desde los colores guardados
+  const makeColorRole = (hex: string, role: string, name: string, usage: string): ColorRole => ({
+    hex,
+    role,
+    name,
+    usage,
+    isLight: hexToHsl(hex)[2] > 55,
+  });
+
+  const palette: BrandPalette = {
+    primary:      makeColorRole(primary,      "primary",      "Color Principal",   "CTAs, botones, logo"),
+    primaryLight: makeColorRole(safeLight,    "primaryLight", "Principal Claro",   "Fondos de secciones"),
+    primaryDark:  makeColorRole(safeDark,     "primaryDark",  "Principal Oscuro",  "Textos, headers"),
+    primaryPale:  makeColorRole(safePale,     "primaryPale",  "Principal Suave",   "Fondos sutiles"),
+    accent:       makeColorRole(safeAccent,   "accent",       "Color Acento",      "CTA secundario, badge"),
+    accentLight:  makeColorRole(safeAccentL,  "accentLight",  "Acento Claro",      "Badges, tags"),
+    accentDark:   makeColorRole(safeAccentD,  "accentDark",   "Acento Oscuro",     "Texto sobre fondos claros"),
+  };
+
+  let headline: string;
+  let body: string;
+  let muted: string;
+  let badgeBg: string;
+  let badgeText: string;
+  let overlayBg: string;
+  let overlayOpacity: number;
+
+  if (mode === "light") {
+    // Fondo claro → usar primaryDark de la marca para texto (brand-tinted headline)
+    // con fallback a near-black si el contraste es insuficiente
+    headline      = ensureContrast(safeDark, "#ffffff");
+    body          = ensureContrast(safeDark, "#ffffff");
+    muted         = ensureContrast(safeAccentD, "#ffffff", 3.5);
+    badgeBg       = safeAccent;
+    badgeText     = getTextColorForBackground(safeAccent);
+    overlayBg     = safePale;
+    overlayOpacity = 0.6;
+  } else {
+    // Fondo oscuro → texto claro sobre overlay
+    headline      = "#f5f5f5";
+    body          = safeAccentL;
+    muted         = safeLight;
+    badgeBg       = safeAccent;
+    badgeText     = getTextColorForBackground(safeAccent);
+    overlayBg     = safeDark;
+    overlayOpacity = 0.85;
+  }
+
+  // Verificar contraste badge
+  badgeText = ensureContrast(badgeText, badgeBg);
+
+  return {
+    headline,
+    body,
+    muted,
+    badgeBg,
+    badgeText,
+    overlayBg,
+    overlayOpacity,
+    palette,
+  };
+}
+
+/**
+ * Ajusta el color de texto para garantizar contraste WCAG mínimo contra un fondo.
  * Si el contraste es insuficiente, oscurece o aclara el texto en pasos de L ±5.
  * @param textHex - Color del texto
  * @param bgHex - Color del fondo
- * @returns Color de texto ajustado con contraste suficiente
+ * @param minRatio - Ratio mínimo requerido (default 4.5 = WCAG AA)
+ * @returns Color de texto ajustado
  */
-function ensureContrast(textHex: string, bgHex: string): string {
+function ensureContrast(textHex: string, bgHex: string, minRatio = 4.5): string {
   let ratio = getContrastRatio(textHex, bgHex);
-  if (ratio >= 4.5) return textHex;
+  if (ratio >= minRatio) return textHex;
 
   const [h, s, l] = hexToHsl(textHex);
   const bgIsLight = hexToHsl(bgHex)[2] > 50;
@@ -422,7 +528,7 @@ function ensureContrast(textHex: string, bgHex: string): string {
     adjusted = clamp(adjusted + step, 0, 100);
     const candidate = hslToHex(h, s, adjusted);
     ratio = getContrastRatio(candidate, bgHex);
-    if (ratio >= 4.5) return candidate;
+    if (ratio >= minRatio) return candidate;
   }
 
   // Fallback extremo: blanco o negro

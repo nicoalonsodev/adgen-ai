@@ -134,8 +134,15 @@ export const CopyContentSchema = z.object({
   competitionTitle: z.string().optional(),
   /** comparacion-split: competition weaknesses (right column bullets) */
   competitionBullets: z.array(z.string()).optional(),
-  /** Brand primary color as hex (e.g. "#D4A5A5") — used by templates for solid overlays */
+  /** Brand primary color as hex (e.g. "#D4A5A5") — fallback cuando no hay brandColors */
   primaryColor: z.string().optional(),
+  /**
+   * Paleta completa de la marca (7 colores de coloresMarca[]).
+   * Índices: [0] primary, [1] primaryLight, [2] primaryDark, [3] primaryPale,
+   *          [4] accent, [5] accentLight, [6] accentDark
+   * Tiene prioridad sobre primaryColor si está presente.
+   */
+  brandColors: z.array(z.string()).optional(),
 });
 export type CopyContent = z.infer<typeof CopyContentSchema>;
 
