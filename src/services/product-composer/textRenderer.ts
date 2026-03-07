@@ -12,30 +12,9 @@ import { Resvg } from "@resvg/resvg-js";
 import type { TextBlock, Overlay, LayoutSpec } from "./layoutSpec";
 import { createLogger } from "@/lib/logger";
 
-// ── Fuentes cargadas como Buffer para resvg ───────────────────────────────────
-function loadFontBuffer(filename: string): Buffer | null {
-  try {
-    const fontPath = path.join(process.cwd(), "public", "fonts", filename);
-    return fs.readFileSync(fontPath);
-  } catch {
-    return null;
-  }
-}
-
-const FONT_BUFFERS: Buffer[] = [
-  "Lora-Regular.ttf",
-  "Lora-Bold.ttf",
-  "Lora-SemiBold.ttf",
-  "Montserrat-Regular.ttf",
-  "Montserrat-Medium.ttf",
-  "Montserrat-SemiBold.ttf",
-  "Montserrat-Bold.ttf",
-  "Inter-Regular.ttf",
-  "Inter-SemiBold.ttf",
-  "Inter-Bold.ttf",
-].map(loadFontBuffer).filter((b): b is Buffer => b !== null);
-
-console.log("[fonts] FONT_BUFFERS loaded:", FONT_BUFFERS.length);
+// ── Ruta de fuentes para resvg ────────────────────────────────────────────────
+const FONTS_DIR = path.join(process.cwd(), "public", "fonts");
+console.log("[fonts] FONTS_DIR:", FONTS_DIR);
 
 const logger = createLogger({ service: "textRenderer" });
 
@@ -129,12 +108,12 @@ export async function renderTextOnImage(options: RenderTextOptions): Promise<Ren
   </g>
 </svg>`;
 
-  // Rasterize SVG with resvg, injecting font buffers directly into its font DB
+  // Rasterize SVG with resvg, loading fonts from local directory
   const svgBuffer = Buffer.from(combinedSvg);
   const resvg = new Resvg(svgBuffer, {
     font: {
       loadSystemFonts: false,
-      fontBuffers: FONT_BUFFERS,
+      fontDirs: [FONTS_DIR],
     },
   });
   const textLayerPng = resvg.render().asPng();
