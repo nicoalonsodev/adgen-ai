@@ -8,6 +8,7 @@
 import fs from "fs";
 import path from "path";
 import sharp from "sharp";
+import { Resvg } from "@resvg/resvg-js";
 import type { TextBlock, Overlay, LayoutSpec } from "./layoutSpec";
 import { createLogger } from "@/lib/logger";
 
@@ -156,10 +157,14 @@ const combinedSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" he
   </g>
 </svg>`;
   
-  // Composite SVG onto base image
+  // Rasterize SVG with resvg (respects @font-face data URIs, no Fontconfig needed)
   const svgBuffer = Buffer.from(combinedSvg);
+  const resvg = new Resvg(svgBuffer, { font: { loadSystemFonts: false } });
+  const textLayerPng = resvg.render().asPng();
+
+  // Composite rasterized text layer onto base image
   const result = await sharp(baseImage)
-    .composite([{ input: svgBuffer, top: 0, left: 0 }])
+    .composite([{ input: textLayerPng, top: 0, left: 0 }])
     .png()
     .toBuffer();
   

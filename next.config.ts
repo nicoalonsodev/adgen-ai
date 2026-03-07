@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   // Exclude native modules from bundling (required for sharp and @napi-rs/canvas)
-  serverExternalPackages: ["sharp", "@napi-rs/canvas"],
+  serverExternalPackages: ["sharp", "@napi-rs/canvas", "@resvg/resvg-js"],
 
   // Ensure font files are included in serverless function bundles on Vercel
   outputFileTracingIncludes: {
