@@ -156,6 +156,17 @@ const SLIDE_ROLE_COLORS: Record<string, { bg: string; text: string }> = {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
+function makeImageBriefLayer(log: { input: Record<string, unknown>; output: string } | null | undefined): PromptLayer | null {
+  if (!log) return null;
+  return {
+    name: "Image Brief (Gemini Flash)",
+    model: "gemini-flash",
+    input: JSON.stringify(log.input, null, 2),
+    prompt: log.output,
+    status: "completed",
+  };
+}
+
 export default function FabricaDeContenido() {
   const [step, setStep] = useState(0);
 
@@ -421,6 +432,7 @@ export default function FabricaDeContenido() {
       if (!copyRes.ok) throw new Error(copyData.error || `Error ${copyRes.status}`);
       const copy = copyData.data?.copy;
       if (!copy) throw new Error("No se generó copy");
+      const _imageBriefLog: { input: Record<string, unknown>; output: string } | null = copyData.data?.imageBriefLog ?? null;
       _timings["Copy"] = Date.now() - _t0;
 
       setAutoStep("Generando background...");
@@ -545,12 +557,13 @@ export default function FabricaDeContenido() {
           _timings["Total"] = Date.now() - _t0;
           setSingleTimings({ ..._timings });
           const promptsUsed: PromptsUsed = {
-            layers: [
+            layers: ([
               { name: "Copy", model: "gpt-4o-mini", prompt: `Schema: ${getTemplateSchema(primaryTemplate).join(", ")}`, status: "completed" },
+              makeImageBriefLayer(_imageBriefLog),
               { name: "Background", model: "gemini", prompt: bgData.data?.promptUsed ?? bgPrompt, status: "completed" },
               { name: "Escena con Persona", model: "gemini", prompt: productData.data?.promptUsed, status: "completed" },
               { name: "Template", prompt: primaryTemplate, status: "completed" },
-            ],
+            ] as (PromptLayer | null)[]).filter((l): l is PromptLayer => l !== null),
           };
           saveCreativo(finalImage, primaryTemplate, undefined, copy, undefined, undefined, promptsUsed);
         }
@@ -626,12 +639,13 @@ export default function FabricaDeContenido() {
             _timings["Total"] = Date.now() - _t0;
             setSingleTimings({ ..._timings });
             const promptsUsed: PromptsUsed = {
-              layers: [
+              layers: ([
                 { name: "Copy", model: "gpt-4o-mini", prompt: `Schema: ${getTemplateSchema(primaryTemplate).join(", ")}`, status: "completed" },
+                makeImageBriefLayer(_imageBriefLog),
                 { name: "Background", model: "gemini", prompt: bgData.data?.promptUsed ?? bgPrompt, status: "completed" },
                 { name: "Template", prompt: primaryTemplate, status: "completed" },
                 { name: "Producto/Escena", model: "gemini", prompt: productData.data?.promptUsed, status: "completed" },
-              ],
+              ] as (PromptLayer | null)[]).filter((l): l is PromptLayer => l !== null),
             };
             saveCreativo(finalImage, primaryTemplate, undefined, copy, undefined, undefined, promptsUsed);
           }
@@ -639,12 +653,13 @@ export default function FabricaDeContenido() {
           _timings["Total"] = Date.now() - _t0;
           setSingleTimings({ ..._timings });
           const promptsUsed: PromptsUsed = {
-            layers: [
+            layers: ([
               { name: "Copy", model: "gpt-4o-mini", prompt: `Schema: ${getTemplateSchema(primaryTemplate).join(", ")}`, status: "completed" },
+              makeImageBriefLayer(_imageBriefLog),
               { name: "Background", model: "gemini", prompt: bgData.data?.promptUsed ?? bgPrompt, status: "completed" },
               { name: "Template", prompt: primaryTemplate, status: "completed" },
               { name: "Producto/Escena", status: "skipped" },
-            ],
+            ] as (PromptLayer | null)[]).filter((l): l is PromptLayer => l !== null),
           };
           saveCreativo(templateResultImage, primaryTemplate, undefined, copy, undefined, undefined, promptsUsed);
         }
@@ -668,7 +683,7 @@ export default function FabricaDeContenido() {
     try {
       // Step 1: Generate copy for all templates in parallel
       setVariantsProgress("Generando copy para todas las plantillas...");
-      const allCopies = await Promise.all(
+      const allCopiesAndLogs = await Promise.all(
         selectedTemplates.map(async (templateId) => {
           const copyRes = await fetch("/api/compose", {
             method: "POST",
@@ -709,8 +724,13 @@ export default function FabricaDeContenido() {
               `No se generaron ángulos para ${meta ? `${meta.icon} ${meta.name}` : templateId}`
             );
           }
-          return copies;
+          const imageBriefLog: { input: Record<string, unknown>; output: string } | null = copyData.data?.imageBriefLog ?? null;
+          return { copies, imageBriefLog };
         })
+      );
+      const allCopies = allCopiesAndLogs.map((r) => r.copies);
+      const imageBriefLogByTemplate = new Map(
+        selectedTemplates.map((id, i) => [id, allCopiesAndLogs[i].imageBriefLog])
       );
 
       // Step 2: Build task list — background se genera dentro de cada pipeline individual
@@ -866,12 +886,13 @@ export default function FabricaDeContenido() {
             const finalImg = (templateData.data?.image || templateData.data?.imageUrl || sceneDataUrl) as string;
 
             const promptsUsed: PromptsUsed = {
-              layers: [
+              layers: ([
                 { name: "Copy", model: "gpt-4o-mini", prompt: `Schema: ${getTemplateSchema(templateId).join(", ")}`, status: "completed" },
+                makeImageBriefLayer(imageBriefLogByTemplate.get(templateId)),
                 { name: "Background", model: "gemini", prompt: bgDataUrl ? bgPrompt : undefined, status: "completed" },
                 { name: "Escena con Persona", model: "gemini", prompt: productData.data?.promptUsed, status: "completed" },
                 { name: "Template", prompt: templateId, status: "completed" },
-              ],
+              ] as (PromptLayer | null)[]).filter((l): l is PromptLayer => l !== null),
             };
             const variant: GeneratedVariant = { copy, backgroundImage: bgDataUrl, resultImage: finalImg, template: templateId, angle: angleIndex, angleName, promptsUsed, timings: _taskTimings };
             variantAccumulator.push(variant);
@@ -950,12 +971,13 @@ export default function FabricaDeContenido() {
             _taskTimings["Total"] = Date.now() - _tTask;
             finalImg = productData.data?.image || productData.data?.imageUrl || resultImg;
             const promptsUsed: PromptsUsed = {
-              layers: [
+              layers: ([
                 { name: "Copy", model: "gpt-4o-mini", prompt: `Schema: ${getTemplateSchema(templateId).join(", ")}`, status: "completed" },
+                makeImageBriefLayer(imageBriefLogByTemplate.get(templateId)),
                 { name: "Background", model: "gemini", prompt: bgDataUrl ? bgPrompt : undefined, status: "completed" },
                 { name: "Template", prompt: templateId, status: "completed" },
                 { name: "Producto/Escena", model: "gemini", prompt: productData.data?.promptUsed, status: "completed" },
-              ],
+              ] as (PromptLayer | null)[]).filter((l): l is PromptLayer => l !== null),
             };
             const variant: GeneratedVariant = { copy, backgroundImage: bgDataUrl, resultImage: finalImg, template: templateId, angle: angleIndex, angleName, promptsUsed, timings: _taskTimings };
             variantAccumulator.push(variant);
@@ -966,12 +988,13 @@ export default function FabricaDeContenido() {
 
           _taskTimings["Total"] = Date.now() - _tTask;
           const promptsUsedNoProduct: PromptsUsed = {
-            layers: [
+            layers: ([
               { name: "Copy", model: "gpt-4o-mini", prompt: `Schema: ${getTemplateSchema(templateId).join(", ")}`, status: "completed" },
+              makeImageBriefLayer(imageBriefLogByTemplate.get(templateId)),
               { name: "Background", model: "gemini", prompt: bgDataUrl ? bgPrompt : undefined, status: "completed" },
               { name: "Template", prompt: templateId, status: "completed" },
               { name: "Producto/Escena", status: "skipped" },
-            ],
+            ] as (PromptLayer | null)[]).filter((l): l is PromptLayer => l !== null),
           };
           const variant: GeneratedVariant = { copy, backgroundImage: bgDataUrl, resultImage: finalImg, template: templateId, angle: angleIndex, angleName, promptsUsed: promptsUsedNoProduct, timings: _taskTimings };
           variantAccumulator.push(variant);
