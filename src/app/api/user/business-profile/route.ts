@@ -45,6 +45,12 @@ export async function POST(request: Request) {
       palabrasSi: body.palabrasSi,
       palabrasNo: body.palabrasNo,
       coloresMarca: body.coloresMarca ?? undefined,
+      logoDark: body.logoDarkBase64
+        ? `data:${body.logoDarkMimeType ?? 'image/png'};base64,${body.logoDarkBase64}`
+        : undefined,
+      logoLight: body.logoLightBase64
+        ? `data:${body.logoLightMimeType ?? 'image/png'};base64,${body.logoLightBase64}`
+        : undefined,
     },
     updated_at: new Date().toISOString(),
   }

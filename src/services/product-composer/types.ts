@@ -325,11 +325,19 @@ export const ComposeRequestSchema = z
     /** Avatar buffer for scene templates (skips Gemini scene generation) */
     avatarBuffer: z.instanceof(Buffer).optional(),
 
-    /** Logo image (base64, no data: prefix) for overlay on final creative */
+    /** Logo image (base64, no data: prefix) for overlay on final creative — fallback/single logo */
     logoBase64: z.string().optional(),
 
     /** Logo MIME type (e.g., "image/png") */
     logoMimeType: z.string().optional(),
+
+    /** Logo oscuro (base64) — para templates con fondo claro */
+    logoDarkBase64: z.string().optional(),
+    logoDarkMimeType: z.string().optional(),
+
+    /** Logo claro (base64) — para templates con fondo oscuro */
+    logoLightBase64: z.string().optional(),
+    logoLightMimeType: z.string().optional(),
 
     /** Placement configuration (for STANDARD mode) */
     placement: PlacementHintSchema.optional(),

@@ -72,9 +72,20 @@ export async function composeWithTemplateBeta(
   const meta = getTemplateMeta(templateId);
 
   // 4) Logo overlay (si el perfil de negocio tiene logo guardado)
+  // Seleccionar variante según colorMode del template:
+  //   dark background → usar logo claro (logoLight)
+  //   light background → usar logo oscuro (logoDark)
+  //   fallback → logoBase64 (logo único / legado)
+  const colorMode = req.copy?.colorMode;
+  const selectedLogoBase64 = colorMode === "dark"
+    ? (req.logoLightBase64 ?? req.logoBase64)
+    : colorMode === "light"
+      ? (req.logoDarkBase64 ?? req.logoBase64)
+      : (req.logoDarkBase64 ?? req.logoLightBase64 ?? req.logoBase64);
+
   let finalBuffer = rendered.buffer;
-  if (req.logoBase64 && !meta?.noLogo) {
-    const logoBuffer = Buffer.from(req.logoBase64, "base64");
+  if (selectedLogoBase64 && !meta?.noLogo) {
+    const logoBuffer = Buffer.from(selectedLogoBase64, "base64");
     const logoMaxW = Math.round(canvas.width * 0.18);
     const logoMaxH = Math.round(canvas.height * 0.08);
     const resizedLogo = await sharp(logoBuffer)

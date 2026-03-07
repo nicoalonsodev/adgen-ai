@@ -38,8 +38,15 @@ interface NegocioPerfil {
   palabrasNo: string;
   updatedAt: string;
   category?: string;
+  /** Logo único / fallback (backward compat) */
   logoBase64?: string;
   logoMimeType?: string;
+  /** Logo oscuro: para usar en templates con fondo claro */
+  logoDarkBase64?: string;
+  logoDarkMimeType?: string;
+  /** Logo claro: para usar en templates con fondo oscuro */
+  logoLightBase64?: string;
+  logoLightMimeType?: string;
   coloresMarca?: string[];
 }
 
@@ -77,7 +84,7 @@ function saveStoredPerfil(perfil: NegocioPerfil) {
     // fallback to lightweight local profile + full session profile
   }
 
-  const { logoBase64, logoMimeType, ...perfilLite } = perfil;
+  const { logoBase64, logoMimeType, logoDarkBase64, logoDarkMimeType, logoLightBase64, logoLightMimeType, ...perfilLite } = perfil;
 
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(perfilLite));
@@ -120,6 +127,10 @@ async function fetchPerfilFromDB(): Promise<NegocioPerfil | null> {
       updatedAt: data.updated_at ?? '',
       logoBase64: data.logo_url?.split(',')[1] ?? undefined,
       logoMimeType: data.logo_url?.split(';')[0]?.split(':')[1] ?? undefined,
+      logoDarkBase64: data.metadata?.logoDark?.split(',')[1] ?? undefined,
+      logoDarkMimeType: data.metadata?.logoDark?.split(';')[0]?.split(':')[1] ?? undefined,
+      logoLightBase64: data.metadata?.logoLight?.split(',')[1] ?? undefined,
+      logoLightMimeType: data.metadata?.logoLight?.split(';')[0]?.split(':')[1] ?? undefined,
     }
   } catch {
     return null
@@ -362,14 +373,16 @@ export default function MiNegocioPage() {
   const [coloresMarca, setColoresMarca] = useState<string[]>(["#E8D5C0", "", "", "", "", "", ""]);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [toastVisible, setToastVisible] = useState(false);
-  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoDarkFile, setLogoDarkFile] = useState<File | null>(null);
+  const [logoLightFile, setLogoLightFile] = useState<File | null>(null);
 
   // Scraper state
   const [scraperUrl, setScraperUrl] = useState("");
   const [scraperLoading, setScraperLoading] = useState(false);
   const [scraperError, setScraperError] = useState("");
   const [scraperSuccess, setScraperSuccess] = useState(false);
-  const [logoPreview, setLogoPreview] = useState<string>("");
+  const [logoDarkPreview, setLogoDarkPreview] = useState<string>("");
+  const [logoLightPreview, setLogoLightPreview] = useState<string>("");
 
   // Load: primero Supabase, fallback a localStorage
   useEffect(() => {
@@ -413,8 +426,15 @@ export default function MiNegocioPage() {
         }
       }
       if (data.updatedAt) setLastUpdated(data.updatedAt)
-      if (data.logoBase64) {
-        setLogoPreview(`data:${data.logoMimeType ?? 'image/png'};base64,${data.logoBase64}`)
+      // Cargar previews de logos (dark y light; backward compat: logoBase64 va al dark slot)
+      if (data.logoDarkBase64) {
+        setLogoDarkPreview(`data:${data.logoDarkMimeType ?? 'image/png'};base64,${data.logoDarkBase64}`)
+      } else if (data.logoBase64 && !data.logoLightBase64) {
+        // logo legado → mostrarlo en el slot oscuro
+        setLogoDarkPreview(`data:${data.logoMimeType ?? 'image/png'};base64,${data.logoBase64}`)
+      }
+      if (data.logoLightBase64) {
+        setLogoLightPreview(`data:${data.logoLightMimeType ?? 'image/png'};base64,${data.logoLightBase64}`)
       }
     }
     loadPerfil()
@@ -512,18 +532,28 @@ export default function MiNegocioPage() {
 
   async function handleSave() {
     const now = new Date().toISOString()
-    let existingLogoBase64: string | null = null
-    let existingLogoMimeType: string | null = null
+    let existingDarkBase64: string | null = null
+    let existingDarkMimeType: string | null = null
+    let existingLightBase64: string | null = null
+    let existingLightMimeType: string | null = null
     try {
       const parsed = readStoredPerfil()
       if (parsed) {
-        existingLogoBase64 = parsed.logoBase64 ?? null
-        existingLogoMimeType = parsed.logoMimeType ?? null
+        existingDarkBase64 = parsed.logoDarkBase64 ?? parsed.logoBase64 ?? null
+        existingDarkMimeType = parsed.logoDarkMimeType ?? parsed.logoMimeType ?? null
+        existingLightBase64 = parsed.logoLightBase64 ?? null
+        existingLightMimeType = parsed.logoLightMimeType ?? null
       }
     } catch {}
 
-    const logoBase64 = logoFile ? await fileToBase64(logoFile) : existingLogoBase64
-    const logoMimeType = logoFile ? logoFile.type : existingLogoMimeType
+    const logoDarkBase64 = logoDarkFile ? await fileToBase64(logoDarkFile) : existingDarkBase64
+    const logoDarkMimeType = logoDarkFile ? logoDarkFile.type : existingDarkMimeType
+    const logoLightBase64 = logoLightFile ? await fileToBase64(logoLightFile) : existingLightBase64
+    const logoLightMimeType = logoLightFile ? logoLightFile.type : existingLightMimeType
+
+    // logoBase64 = fallback para código legado (usar el dark logo como default)
+    const logoBase64 = logoDarkBase64 ?? logoLightBase64
+    const logoMimeType = logoDarkBase64 ? logoDarkMimeType : logoLightMimeType
 
     const perfil: NegocioPerfil = {
       nombre, category: category || undefined, rubro, sitioWeb, queVendes,
@@ -531,6 +561,8 @@ export default function MiNegocioPage() {
       tonos, palabrasSi, palabrasNo, updatedAt: now,
       coloresMarca: coloresMarca.some((c) => c && isValidHex(c)) ? coloresMarca : undefined,
       ...(logoBase64 ? { logoBase64, logoMimeType: logoMimeType ?? 'image/png' } : {}),
+      ...(logoDarkBase64 ? { logoDarkBase64, logoDarkMimeType: logoDarkMimeType ?? 'image/png' } : {}),
+      ...(logoLightBase64 ? { logoLightBase64, logoLightMimeType: logoLightMimeType ?? 'image/png' } : {}),
     }
 
     // Guardar en Supabase (principal) y localStorage (backup)
@@ -654,72 +686,158 @@ export default function MiNegocioPage() {
           {/* Section 0: Identidad de marca */}
           <Card>
             <SectionTitle>Identidad de marca</SectionTitle>
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+            <div>
               <FieldLabel>Logo del negocio</FieldLabel>
-              {!logoPreview ? (
-                <label
-                  style={{
-                    border: `2px dashed ${S.border}`,
-                    borderRadius: 12,
-                    width: 160,
-                    height: 160,
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
-                    background: S.inputBg,
-                    gap: 8,
-                    textAlign: "center",
-                    padding: "0 12px",
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.borderColor = S.accent)}
-                  onMouseLeave={(e) => (e.currentTarget.style.borderColor = S.border)}
-                >
-                  <input
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      setLogoFile(file);
-                      const reader = new FileReader();
-                      reader.onload = () => setLogoPreview(reader.result as string);
-                      reader.readAsDataURL(file);
-                    }}
-                  />
-                  <span style={{ fontSize: 32 }}>🖼️</span>
-                  <span style={{ color: S.muted, fontSize: 11 }}>
-                    Subí tu logo (PNG con fondo transparente recomendado)
+              <p style={{ color: S.muted, fontSize: 11, marginBottom: 14, lineHeight: 1.5 }}>
+                Si subís solo uno, se usa en todos los templates. PNG con fondo transparente recomendado.
+              </p>
+              <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+
+                {/* Logo Oscuro */}
+                <div style={{ flex: 1, minWidth: 140, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+                  <span style={{ color: S.muted, fontSize: 11, fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase" }}>
+                    Logo Oscuro
                   </span>
-                </label>
-              ) : (
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={logoPreview}
-                    alt="Logo"
-                    style={{
-                      width: 160,
-                      height: 160,
-                      objectFit: "contain",
-                      borderRadius: 12,
-                      background: S.inputBg,
-                      border: `1px solid ${S.border}`,
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => { setLogoFile(null); setLogoPreview(""); }}
-                    style={{ color: S.muted, fontSize: 12, background: "transparent", border: "none", cursor: "pointer" }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = "#FF453A")}
-                    onMouseLeave={(e) => (e.currentTarget.style.color = S.muted)}
-                  >
-                    ✕ Quitar
-                  </button>
+                  <span style={{ color: "#555", fontSize: 10, textAlign: "center", lineHeight: 1.4 }}>
+                    Para fondos claros
+                  </span>
+                  {!logoDarkPreview ? (
+                    <label
+                      style={{
+                        border: `2px dashed ${S.border}`,
+                        borderRadius: 12,
+                        width: 140,
+                        height: 140,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        cursor: "pointer",
+                        background: "#F5F5F710",
+                        gap: 6,
+                        textAlign: "center",
+                        padding: "0 10px",
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.borderColor = S.accent)}
+                      onMouseLeave={(e) => (e.currentTarget.style.borderColor = S.border)}
+                    >
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          setLogoDarkFile(file);
+                          const reader = new FileReader();
+                          reader.onload = () => setLogoDarkPreview(reader.result as string);
+                          reader.readAsDataURL(file);
+                        }}
+                      />
+                      <span style={{ fontSize: 28 }}>🖤</span>
+                      <span style={{ color: S.muted, fontSize: 10 }}>Subir logo oscuro</span>
+                    </label>
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={logoDarkPreview}
+                        alt="Logo oscuro"
+                        style={{
+                          width: 140,
+                          height: 140,
+                          objectFit: "contain",
+                          borderRadius: 12,
+                          background: "#F5F5F710",
+                          border: `1px solid ${S.border}`,
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => { setLogoDarkFile(null); setLogoDarkPreview(""); }}
+                        style={{ color: S.muted, fontSize: 11, background: "transparent", border: "none", cursor: "pointer" }}
+                        onMouseEnter={(e) => (e.currentTarget.style.color = "#FF453A")}
+                        onMouseLeave={(e) => (e.currentTarget.style.color = S.muted)}
+                      >
+                        ✕ Quitar
+                      </button>
+                    </div>
+                  )}
                 </div>
-              )}
+
+                {/* Logo Claro */}
+                <div style={{ flex: 1, minWidth: 140, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+                  <span style={{ color: S.muted, fontSize: 11, fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase" }}>
+                    Logo Claro
+                  </span>
+                  <span style={{ color: "#555", fontSize: 10, textAlign: "center", lineHeight: 1.4 }}>
+                    Para fondos oscuros
+                  </span>
+                  {!logoLightPreview ? (
+                    <label
+                      style={{
+                        border: `2px dashed ${S.border}`,
+                        borderRadius: 12,
+                        width: 140,
+                        height: 140,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        cursor: "pointer",
+                        background: S.inputBg,
+                        gap: 6,
+                        textAlign: "center",
+                        padding: "0 10px",
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.borderColor = S.accent)}
+                      onMouseLeave={(e) => (e.currentTarget.style.borderColor = S.border)}
+                    >
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          setLogoLightFile(file);
+                          const reader = new FileReader();
+                          reader.onload = () => setLogoLightPreview(reader.result as string);
+                          reader.readAsDataURL(file);
+                        }}
+                      />
+                      <span style={{ fontSize: 28 }}>🤍</span>
+                      <span style={{ color: S.muted, fontSize: 10 }}>Subir logo claro</span>
+                    </label>
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={logoLightPreview}
+                        alt="Logo claro"
+                        style={{
+                          width: 140,
+                          height: 140,
+                          objectFit: "contain",
+                          borderRadius: 12,
+                          background: S.inputBg,
+                          border: `1px solid ${S.border}`,
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => { setLogoLightFile(null); setLogoLightPreview(""); }}
+                        style={{ color: S.muted, fontSize: 11, background: "transparent", border: "none", cursor: "pointer" }}
+                        onMouseEnter={(e) => (e.currentTarget.style.color = "#FF453A")}
+                        onMouseLeave={(e) => (e.currentTarget.style.color = S.muted)}
+                      >
+                        ✕ Quitar
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+              </div>
             </div>
           </Card>
 
