@@ -407,9 +407,19 @@ export async function POST(request: NextRequest) {
           const IMAGE_BRIEF_FIELDS = ["productPrompt", "sceneAction"] as const;
           type ImageField = typeof IMAGE_BRIEF_FIELDS[number];
 
-          const imageBriefFields = fullSchema.filter((f): f is ImageField =>
-            IMAGE_BRIEF_FIELDS.includes(f as ImageField)
-          );
+          // Skip Gemini Flash when:
+          // 1. rawProductPrompt: true → template owns the prompt engineering (zone rules, etc.)
+          // 2. backgroundPrompt is also in schema → productPrompt must be generated alongside it
+          //    by OpenAI to maintain location/lighting coherence (templateHint enforces this).
+          const skipImageBrief =
+            body.rawProductPrompt === true ||
+            (fullSchema.includes("backgroundPrompt") && fullSchema.includes("productPrompt"));
+
+          const imageBriefFields = skipImageBrief
+            ? []
+            : fullSchema.filter((f): f is ImageField =>
+                IMAGE_BRIEF_FIELDS.includes(f as ImageField)
+              );
           const copyOnlySchema = fullSchema.filter(f =>
             !IMAGE_BRIEF_FIELDS.includes(f as ImageField)
           );
