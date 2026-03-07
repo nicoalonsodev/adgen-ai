@@ -276,7 +276,7 @@ if (!tb.content || tb.content.trim() === "") return "";
       const hasBold = boldWeight && line.includes("**");
 
       if (!hasBold) {
-        const escapedText = escapeXml(applyTransform(stripBoldMarkers(line)));
+        const escapedText = escapeXml(stripEmojis(applyTransform(stripBoldMarkers(line))));
         return `<text
           x="${xPos}"
           y="${yPos}"
@@ -293,7 +293,7 @@ if (!tb.content || tb.content.trim() === "") return "";
       const tspans = parseBoldSegments(line)
         .filter(seg => seg.text.length > 0)
         .map(seg => {
-          const escaped = escapeXml(applyTransform(seg.text));
+          const escaped = escapeXml(stripEmojis(applyTransform(seg.text)));
           return seg.bold
             ? `<tspan font-weight="${boldWeight}">${escaped}</tspan>`
             : `<tspan>${escaped}</tspan>`;
@@ -549,6 +549,14 @@ function wrapTextBalanced(
   }
 
   return wrapGreedySingleSegment(words, hi, fontSize, isBold, familyFactor, maxLines, spaceWidth);
+}
+
+// Emoji regex — matches any Unicode emoji sequence (including ZWJ, variation selectors, flags)
+const EMOJI_RE = /\p{Emoji_Presentation}[\p{Emoji}\uFE0F\u20D0-\u20FF\u200D]*/gu;
+
+/** Replace emojis with a bullet since resvg has no emoji font */
+function stripEmojis(text: string): string {
+  return text.replace(EMOJI_RE, "•").replace(/•(\s*•)+/g, "•").trim();
 }
 
 function escapeXml(text: string): string {
