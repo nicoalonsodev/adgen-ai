@@ -401,6 +401,85 @@ export function resolveTemplateColors(
   };
 }
 
+// ─── Brand Color Variables ────────────────────────────────────────────────────
+
+/**
+ * Las 7 variables de color de marca listas para usar directamente en templates.
+ * Cada variable tiene su hex resuelto con fallback garantizado.
+ *
+ * Índices de coloresMarca[]:
+ *   [0] primary, [1] primaryLight, [2] primaryDark, [3] primaryPale,
+ *   [4] accent,  [5] accentLight,  [6] accentDark
+ */
+export type BrandColorVars = {
+  /** #0 Color principal — CTAs primarios, botones, logo */
+  BRAND_PRIMARY: string;
+  /** #1 Principal claro — fondos de secciones, áreas destacadas */
+  BRAND_PRIMARY_LIGHT: string;
+  /** #2 Principal oscuro — textos, headers, titulares con identidad de marca */
+  BRAND_PRIMARY_DARK: string;
+  /** #3 Principal suave — fondos sutiles, cards, hovers */
+  BRAND_PRIMARY_PALE: string;
+  /** #4 Color acento — badge CTA, highlights, CTAs secundarios */
+  BRAND_ACCENT: string;
+  /** #5 Acento claro — badges secundarios, tags, chips */
+  BRAND_ACCENT_LIGHT: string;
+  /** #6 Acento oscuro — texto sobre fondos claros con color de acento */
+  BRAND_ACCENT_DARK: string;
+};
+
+/**
+ * Resuelve las 7 variables de color de marca para usar en cualquier template.
+ *
+ * Acepta `brandColors` (paleta completa del negocio) o `primaryColor` (fallback).
+ * Para los colores que falten, genera la variante automáticamente desde el primario.
+ * Si ninguno de los dos está disponible, devuelve un set de colores neutros.
+ *
+ * @example
+ * // En cualquier template:
+ * const brand = resolveBrandColorVars(copy.brandColors, copy.primaryColor);
+ * // brand.BRAND_PRIMARY      → "#D4A5A5"
+ * // brand.BRAND_ACCENT       → "#A5C8D4"  (complementario)
+ * // brand.BRAND_PRIMARY_DARK → "#8B5E5E"  (para titulares)
+ */
+export function resolveBrandColorVars(
+  brandColors: string[] | undefined,
+  primaryColor?: string,
+): BrandColorVars {
+  // Intentar usar la paleta completa guardada
+  const src = brandColors && brandColors.length > 0 ? brandColors : undefined;
+  const fallbackPrimary = src?.[0] || primaryColor;
+
+  // Si no hay ningún color válido, devolver neutros
+  if (!fallbackPrimary || !isValidHex(fallbackPrimary)) {
+    return {
+      BRAND_PRIMARY:       "#1A1A1A",
+      BRAND_PRIMARY_LIGHT: "#F5F5F5",
+      BRAND_PRIMARY_DARK:  "#111111",
+      BRAND_PRIMARY_PALE:  "#FAFAFA",
+      BRAND_ACCENT:        "#00B5AD",
+      BRAND_ACCENT_LIGHT:  "#80D8D5",
+      BRAND_ACCENT_DARK:   "#007A75",
+    };
+  }
+
+  // Generar paleta de respaldo desde el primario (para los slots vacíos)
+  const gen = generateBrandPalette(fallbackPrimary);
+
+  const safe = (val: string | undefined, fallback: string): string =>
+    val && isValidHex(val) ? val : fallback;
+
+  return {
+    BRAND_PRIMARY:       safe(src?.[0], gen.primary.hex),
+    BRAND_PRIMARY_LIGHT: safe(src?.[1], gen.primaryLight.hex),
+    BRAND_PRIMARY_DARK:  safe(src?.[2], gen.primaryDark.hex),
+    BRAND_PRIMARY_PALE:  safe(src?.[3], gen.primaryPale.hex),
+    BRAND_ACCENT:        safe(src?.[4], gen.accent.hex),
+    BRAND_ACCENT_LIGHT:  safe(src?.[5], gen.accentLight.hex),
+    BRAND_ACCENT_DARK:   safe(src?.[6], gen.accentDark.hex),
+  };
+}
+
 /**
  * Resuelve los colores de template usando la paleta de marca guardada por el negocio.
  *

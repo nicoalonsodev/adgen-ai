@@ -8,7 +8,7 @@
 
 import type { LayoutSpec } from "../layoutSpec";
 import type { CopyContent } from "../types";
-import { resolveTemplateColors, resolveTemplateColorsFromPalette } from "@/lib/colorUtils";
+import { resolveTemplateColors, resolveTemplateColorsFromPalette, resolveBrandColorVars } from "@/lib/colorUtils";
 
 const W = 1080;
 const H = 1080; // puede ser 1080x1080 o 1080x1350, se adapta
@@ -173,20 +173,27 @@ export function buildClassicEditorialLayout(
   console.log("HOLA[classic-editorial] copy.bullets:", copy.bullets); 
   const { width: CW, height: CH } = canvas;
 
-  // ── Colores dinámicos de marca ──────────────────────────────────────────
-  // classic-editorial usa fondo lifestyle claro → mode "light"
-  //
-  // Prioridad:
-  //   1. brandColors[] (paleta completa guardada en mi-negocio) ← usa colores reales del negocio
-  //   2. primaryColor (solo el principal, deriva la paleta automáticamente)
-  //   3. Fallbacks hardcodeados
+  // ── Colores de marca — 7 variables directas ─────────────────────────────
+  // Prioridad: brandColors[] (paleta guardada) > primaryColor (fallback auto) > neutros
+  const brand = resolveBrandColorVars(copy.brandColors, copy.primaryColor);
+  // Las 7 variables de marca disponibles para usar en cualquier elemento:
+  // brand.BRAND_PRIMARY       → color principal
+  // brand.BRAND_PRIMARY_LIGHT → principal claro (fondos)
+  // brand.BRAND_PRIMARY_DARK  → principal oscuro (titulares con identidad)
+  // brand.BRAND_PRIMARY_PALE  → principal suave (fondos sutiles)
+  // brand.BRAND_ACCENT        → acento (badge, CTA, highlights)
+  // brand.BRAND_ACCENT_LIGHT  → acento claro (badges secundarios)
+  // brand.BRAND_ACCENT_DARK   → acento oscuro (texto sobre fondo claro con color)
+
+  // ── Roles semánticos para este template (light mode: fondo lifestyle) ───
+  // classic-editorial usa fondo lifestyle claro → garantizar contraste WCAG AA
   const tc =
     resolveTemplateColorsFromPalette(copy.brandColors, "light") ??
     resolveTemplateColors(copy.primaryColor, "light");
-  const COL_HEADLINE = tc?.headline ?? "#1A1A1A";
-  const COL_BODY     = tc?.body     ?? "#1A1A1A";
-  const COL_MUTED    = tc?.muted    ?? "#444444";
-  const COL_BADGE_BG = tc?.badgeBg  ?? "#00B5AD";
+  const COL_HEADLINE = tc?.headline ?? brand.BRAND_PRIMARY_DARK;
+  const COL_BODY     = tc?.body     ?? brand.BRAND_PRIMARY_DARK;
+  const COL_MUTED    = tc?.muted    ?? brand.BRAND_ACCENT_DARK;
+  const COL_BADGE_BG = tc?.badgeBg  ?? brand.BRAND_ACCENT;
   const COL_BADGE_TX = tc?.badgeText ?? "#FFFFFF";
 
   // ── Zona de copy: mitad derecha ─────────────────────────────────────────
