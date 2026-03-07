@@ -197,6 +197,8 @@ export default function FabricaDeContenido() {
   // Business profile (from Mi Negocio localStorage)
   const [businessProfile, setBusinessProfile] = useState<Record<string, unknown> | null>(null);
   const [businessLogo, setBusinessLogo] = useState<{ base64: string; mimeType: string } | null>(null);
+  const [businessLogoDark, setBusinessLogoDark] = useState<{ base64: string; mimeType: string } | null>(null);
+  const [businessLogoLight, setBusinessLogoLight] = useState<{ base64: string; mimeType: string } | null>(null);
 
   useEffect(() => {
     try {
@@ -206,6 +208,12 @@ export default function FabricaDeContenido() {
         setBusinessProfile(profile);
         if (profile.logoBase64) {
           setBusinessLogo({ base64: profile.logoBase64, mimeType: profile.logoMimeType ?? "image/png" });
+        }
+        if (profile.logoDarkBase64) {
+          setBusinessLogoDark({ base64: profile.logoDarkBase64, mimeType: profile.logoDarkMimeType ?? "image/png" });
+        }
+        if (profile.logoLightBase64) {
+          setBusinessLogoLight({ base64: profile.logoLightBase64, mimeType: profile.logoLightMimeType ?? "image/png" });
         }
         if (profile.category) {
           setTemplateCategoryFilter(profile.category as string);
@@ -456,6 +464,14 @@ export default function FabricaDeContenido() {
         if (businessLogo) {
           fd.append("logoBase64", businessLogo.base64);
           fd.append("logoMimeType", businessLogo.mimeType);
+        }
+        if (businessLogoDark) {
+          fd.append("logoDarkBase64", businessLogoDark.base64);
+          fd.append("logoDarkMimeType", businessLogoDark.mimeType);
+        }
+        if (businessLogoLight) {
+          fd.append("logoLightBase64", businessLogoLight.base64);
+          fd.append("logoLightMimeType", businessLogoLight.mimeType);
         }
         fd.append("config", JSON.stringify({
           mode: "TEMPLATE_BETA",
@@ -782,6 +798,14 @@ export default function FabricaDeContenido() {
             if (businessLogo) {
               fd.append("logoBase64", businessLogo.base64);
               fd.append("logoMimeType", businessLogo.mimeType);
+            }
+            if (businessLogoDark) {
+              fd.append("logoDarkBase64", businessLogoDark.base64);
+              fd.append("logoDarkMimeType", businessLogoDark.mimeType);
+            }
+            if (businessLogoLight) {
+              fd.append("logoLightBase64", businessLogoLight.base64);
+              fd.append("logoLightMimeType", businessLogoLight.mimeType);
             }
             fd.append("config", JSON.stringify({
               mode: "TEMPLATE_BETA",
@@ -1110,6 +1134,14 @@ export default function FabricaDeContenido() {
               variantForm.append("logoBase64", businessLogo.base64);
               variantForm.append("logoMimeType", businessLogo.mimeType);
             }
+            if (businessLogoDark) {
+              variantForm.append("logoDarkBase64", businessLogoDark.base64);
+              variantForm.append("logoDarkMimeType", businessLogoDark.mimeType);
+            }
+            if (businessLogoLight) {
+              variantForm.append("logoLightBase64", businessLogoLight.base64);
+              variantForm.append("logoLightMimeType", businessLogoLight.mimeType);
+            }
             variantForm.append(
               "config",
               JSON.stringify({
@@ -1146,6 +1178,14 @@ export default function FabricaDeContenido() {
             if (businessLogo) {
               variantForm.append("logoBase64", businessLogo.base64);
               variantForm.append("logoMimeType", businessLogo.mimeType);
+            }
+            if (businessLogoDark) {
+              variantForm.append("logoDarkBase64", businessLogoDark.base64);
+              variantForm.append("logoDarkMimeType", businessLogoDark.mimeType);
+            }
+            if (businessLogoLight) {
+              variantForm.append("logoLightBase64", businessLogoLight.base64);
+              variantForm.append("logoLightMimeType", businessLogoLight.mimeType);
             }
             variantForm.append(
               "config",

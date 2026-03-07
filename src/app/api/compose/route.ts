@@ -189,6 +189,10 @@ if (debugInfo.productBytes === 0 && requestedMode !== "TEMPLATE_BETA") {
   // Logo overlay fields (for TEMPLATE_BETA)
   const logoBase64 = formData.get("logoBase64") as string | null;
   const logoMimeType = formData.get("logoMimeType") as string | null;
+  const logoDarkBase64 = formData.get("logoDarkBase64") as string | null;
+  const logoDarkMimeType = formData.get("logoDarkMimeType") as string | null;
+  const logoLightBase64 = formData.get("logoLightBase64") as string | null;
+  const logoLightMimeType = formData.get("logoLightMimeType") as string | null;
 
   // Avatar buffer (for PRODUCT_IA scene templates)
   const avatarFormFile = formData.get("avatarFile") as File | null;
@@ -211,6 +215,10 @@ if (debugInfo.productBytes === 0 && requestedMode !== "TEMPLATE_BETA") {
       seed: config.seed,
       logoBase64: logoBase64 ?? undefined,
       logoMimeType: logoMimeType ?? undefined,
+      logoDarkBase64: logoDarkBase64 ?? undefined,
+      logoDarkMimeType: logoDarkMimeType ?? undefined,
+      logoLightBase64: logoLightBase64 ?? undefined,
+      logoLightMimeType: logoLightMimeType ?? undefined,
       avatarBuffer,
       productIAOptions: config.productIAOptions as ComposeRequest["productIAOptions"],
       templateBetaOptions: config.templateBetaOptions as any,
