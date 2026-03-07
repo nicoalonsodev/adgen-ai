@@ -1,6 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import sharp from "sharp";
 import { ABSOLUTE_RULES_SCENE, ABSOLUTE_RULES_PRODUCT_INJECT } from "./promptRules";
+import { getLibrarySection, type ImageBriefType } from "./promptLibrary";
 
 const MODEL_NANO_BANANA = "gemini-2.5-flash-image";
 
@@ -638,4 +639,76 @@ Return ONLY a valid JSON object with exactly the fields requested. No markdown, 
   } catch {
     throw new Error(`Invalid JSON from Gemini: ${raw.slice(0, 200)}`);
   }
+}
+
+/**
+ * Generates a visual image brief using Gemini Flash (text-only, fast).
+ * Uses curated prompt libraries as few-shot examples so the output
+ * matches the expected style and specificity for each template type.
+ *
+ * Template types:
+ *   "product-only"   → product placed in background, no person
+ *   "scene-only"     → person/lifestyle scene, no product visible
+ *   "person-product" → person actively holding/using the product
+ *
+ * Returns a single prompt string ready to be passed to Gemini image generation.
+ */
+export async function generateImageBriefGemini(args: {
+  product: string;
+  productCategory: string;
+  tone: string;
+  briefType: ImageBriefType;
+  copyZone?: string;
+  businessProfile?: {
+    nombre?: string;
+    clienteIdeal?: string;
+  };
+}): Promise<string> {
+  const ai = getClient();
+
+  const library = getLibrarySection(args.briefType, args.productCategory);
+
+  const oppositeSide =
+    args.copyZone === "right"  ? "left"   :
+    args.copyZone === "left"   ? "right"  :
+    args.copyZone === "top"    ? "bottom" :
+    args.copyZone === "bottom" ? "top"    :
+                                 "right";
+
+  const brandContext = args.businessProfile?.nombre || args.businessProfile?.clienteIdeal
+    ? `Brand: ${args.businessProfile.nombre || ""}. Ideal client: ${args.businessProfile.clienteIdeal || ""}.`
+    : "";
+
+  const prompt = `You are a visual prompt engineer specializing in advertising photography direction for Gemini AI image generation.
+
+Your task: generate ONE highly specific visual prompt for a "${args.briefType}" advertising image.
+
+CONTEXT:
+- Product: ${args.product}
+- Category: ${args.productCategory}
+- Advertising tone: ${args.tone}
+- Subject/product must be placed on the ${oppositeSide} side of the canvas (copy text occupies the opposite side)
+${brandContext}
+
+REFERENCE EXAMPLES — follow this style and level of specificity exactly:
+${library}
+
+Instructions:
+1. Find the example that best matches the category and tone above
+2. Adapt it to the actual product — keep the same photographic detail and structure
+3. Adjust placement to match the ${oppositeSide} side constraint
+4. Output ONLY the prompt text — no labels, no explanation, no markdown`;
+
+  console.log(`[gemini:generateImageBriefGemini] model=gemini-2.0-flash briefType=${args.briefType} category=${args.productCategory}`);
+
+  const response = await generateContentWithRetry(ai, {
+    model: "gemini-2.0-flash",
+    contents: [{ role: "user", parts: [{ text: prompt }] }],
+  });
+
+  const parts = response.candidates?.[0]?.content?.parts ?? [];
+  const text = parts.map((p: any) => p.text).filter(Boolean).join("").trim();
+
+  if (!text) throw new Error("generateImageBriefGemini: empty response from Gemini Flash");
+  return text;
 }

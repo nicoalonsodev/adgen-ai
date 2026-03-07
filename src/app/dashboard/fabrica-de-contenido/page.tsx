@@ -405,6 +405,7 @@ export default function FabricaDeContenido() {
           tone: bizTone,
           templateSchema: getTemplateSchema(primaryTemplate),
           templateHint: getTemplateHint(primaryTemplate),
+          copyZone: TEMPLATES.find((t) => t.id === primaryTemplate)?.copyZone ?? "left",
           businessProfile: businessProfile ?? undefined,
           referenceStyle: referenceAnalysis ? referenceAnalysis.recommendations : undefined,
           backgroundStyleGuide: (() => {
@@ -681,6 +682,7 @@ export default function FabricaDeContenido() {
               templateSchema: getTemplateSchema(templateId),
               numberOfVariants: numAngles,
               templateHint: getTemplateHint(templateId),
+              copyZone: TEMPLATES.find((t) => t.id === templateId)?.copyZone ?? "left",
               businessProfile: businessProfile ?? undefined,
               referenceStyle: referenceAnalysis ? referenceAnalysis.recommendations : undefined,
               backgroundStyleGuide: (() => {
