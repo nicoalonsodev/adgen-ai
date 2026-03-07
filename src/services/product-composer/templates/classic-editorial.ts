@@ -193,7 +193,7 @@ export function buildClassicEditorialLayout(
   const COL_HEADLINE = tc?.headline ?? brand.BRAND_PRIMARY_DARK;
   const COL_BODY     = tc?.body     ?? brand.BRAND_PRIMARY_DARK;
   const COL_MUTED    = tc?.muted    ?? brand.BRAND_ACCENT_DARK;
-  const COL_BADGE_BG = tc?.badgeBg  ?? brand.BRAND_ACCENT;
+  const COL_BADGE_BG = brand.BRAND_PRIMARY;
   const COL_BADGE_TX = tc?.badgeText ?? "#FFFFFF";
 
   // ── Zona de copy: mitad derecha ─────────────────────────────────────────
