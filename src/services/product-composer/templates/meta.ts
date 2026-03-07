@@ -67,6 +67,11 @@ export interface TemplateMetadata {
   /** Background prompt sent to Gemini */
   defaultBackgroundPrompt: string;
   /**
+   * Background prompt for dark mode (colorMode: "dark").
+   * Replaces defaultBackgroundPrompt when the task is rendered in dark mode.
+   */
+  darkBackgroundPrompt?: string;
+  /**
    * Category-specific background prompts. Keyed by business category ID (e.g. "belleza-cosmetica").
    * When set and the user's business category matches a key, this prompt overrides defaultBackgroundPrompt.
    */
@@ -124,9 +129,11 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
     recommendedFor: ["belleza-cosmetica", "moda-indumentaria", "joyeria-accesorios", "hogar-deco", "salud-bienestar"],
     defaultBackgroundPrompt:
       "Fondo minimalista con pared lisa de textura suave, tipo estudio fotográfico premium. Iluminación natural lateral desde ventana fuera de cuadro, sombras diagonales orgánicas y difusas sobre la pared. Sin objetos, sin texto, sin personas, sin productos. Fondo claro con profundidad sutil, sensación de calma y cuidado personal.",
-         rawBackgroundPrompt: true,
+    darkBackgroundPrompt:
+      "Fondo minimalista con pared lisa de textura suave, tipo estudio fotográfico premium. Iluminación dramática lateral tenue desde ventana fuera de cuadro, sombras profundas y envolventes. Sin objetos, sin texto, sin personas, sin productos. Fondo muy oscuro — tonos carbón, negro cálido o azul medianoche — con profundidad sutil y sensación de lujo y sofisticación.",
+    rawBackgroundPrompt: true,
     defaultProductPrompt:
-      "Integrate the product being held by an elegant hand emerging from the left or bottom-left of the frame. The hand must stay within the LEFT 45% of the canvas. Transmit confidence and care. Lighting must match the background naturally. The product must be fully visible and legible.",
+     `Edit the image adding a photorealistic human hand emerging from the LEFT or BOTTOM-LEFT edge, staying within the LEFT 45% of the canvas. The hand holds the product with a natural grip — fingers curled with realistic compression against the product surface. Render anatomically accurate skin with visible pores, knuckles, tendons and subtle veins. Apply subsurface scattering on fingertips. Lighting must match the scene exactly: same light direction, color temperature and intensity. Add natural contact shadows between hand and product. No compositing artifacts, halos or color fringing. The product must be fully visible, upright and legible.`,
     templateHint: `TEMPLATE HINT for classic-editorial-right:
   This template has the product on the LEFT and copy on the RIGHT.
   - title: 3-5 keywords separated by " · ", max 50 chars.

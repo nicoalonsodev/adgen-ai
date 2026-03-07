@@ -143,6 +143,12 @@ export const CopyContentSchema = z.object({
    * Tiene prioridad sobre primaryColor si está presente.
    */
   brandColors: z.array(z.string()).optional(),
+  /**
+   * Modo de color del template.
+   * - "light" (default): fondo lifestyle claro, texto oscuro.
+   * - "dark": fondo oscuro / overlay denso, texto claro.
+   */
+  colorMode: z.enum(["light", "dark"]).optional(),
 });
 export type CopyContent = z.infer<typeof CopyContentSchema>;
 

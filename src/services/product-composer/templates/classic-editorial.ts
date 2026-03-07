@@ -164,13 +164,19 @@ export interface TemplateCopy {
    * Tiene prioridad sobre primaryColor si está presente.
    */
   brandColors?: string[];
+  /**
+   * Modo de color del template.
+   * - "light" (default): fondo lifestyle claro, texto oscuro.
+   * - "dark": fondo oscuro / overlay denso, texto claro.
+   */
+  colorMode?: "light" | "dark";
 }
 
 export function buildClassicEditorialLayout(
   copy: TemplateCopy,
   canvas = { width: 1080, height: 1080 },
 ): LayoutSpec {
-  console.log("HOLA[classic-editorial] copy.bullets:", copy.bullets); 
+  console.log("[classic-editorial] colorMode:", copy.colorMode, "| bullets:", copy.bullets);
   const { width: CW, height: CH } = canvas;
 
   // ── Colores de marca — 7 variables directas ─────────────────────────────
@@ -185,16 +191,24 @@ export function buildClassicEditorialLayout(
   // brand.BRAND_ACCENT_LIGHT  → acento claro (badges secundarios)
   // brand.BRAND_ACCENT_DARK   → acento oscuro (texto sobre fondo claro con color)
 
-  // ── Roles semánticos para este template (light mode: fondo lifestyle) ───
-  // classic-editorial usa fondo lifestyle claro → garantizar contraste WCAG AA
+  // ── Modo de color: "light" (default) o "dark" ───────────────────────────
+  const mode = copy.colorMode ?? "light";
+
+  // ── Roles semánticos según el modo elegido ───────────────────────────────
   const tc =
-    resolveTemplateColorsFromPalette(copy.brandColors, "light") ??
-    resolveTemplateColors(copy.primaryColor, "light");
-  const COL_HEADLINE = tc?.headline ?? brand.BRAND_PRIMARY_DARK;
-  const COL_BODY     = tc?.body     ?? brand.BRAND_PRIMARY_DARK;
-  const COL_MUTED    = tc?.muted    ?? brand.BRAND_ACCENT_DARK;
-  const COL_BADGE_BG = tc?.badgeBg  ?? brand.BRAND_ACCENT;
-  const COL_BADGE_TX = tc?.badgeText ?? "#FFFFFF";
+    resolveTemplateColorsFromPalette(copy.brandColors, mode) ??
+    resolveTemplateColors(copy.primaryColor, mode);
+
+  // En light: headline oscuro fijo para máximo contraste sobre lifestyle claro.
+  // En dark:  headline claro (desde tc si está, sino blanco roto).
+  const COL_HEADLINE =
+    mode === "light"
+      ? "#212121"
+      : (tc?.headline ?? "#F5F5F5");
+  const COL_BODY     = (mode === "light" ? brand.BRAND_PRIMARY_DARK  : brand.BRAND_ACCENT_LIGHT);
+  const COL_MUTED    = (mode === "light" ? brand.BRAND_ACCENT_DARK   : brand.BRAND_PRIMARY_LIGHT);
+  const COL_BADGE_BG = (mode === "light" ? brand.BRAND_PRIMARY_DARK  : brand.BRAND_PRIMARY);
+  const COL_BADGE_TX = tc?.badgeText ?? (mode === "light" ? "#FFFFFF" : "#111111");
 
   // ── Zona de copy: mitad derecha ─────────────────────────────────────────
   const COPY_X = Math.round(CW * 0.46); // ~497px  (empieza pasada la mitad)
@@ -238,7 +252,7 @@ export function buildClassicEditorialLayout(
   // sub:        justo debajo del headline + gap 20px
   // badge:      91% del alto
   const TITLE_Y = Math.round(CH * 0.1);
-  const HL_Y = Math.round(CH * 0.28);
+  const HL_Y = Math.round(CH * 0.18);
   const SUB_Y = HL_Y + hlHeightPx + 20;
   const BADGE_Y = Math.round(CH * 0.91);
 
@@ -258,7 +272,9 @@ export function buildClassicEditorialLayout(
       rotation: 0,
     },
 
-    overlays: [], // El background ya tiene su estilo, sin overlay
+    // El background siempre viene generado externamente (Gemini via defaultBackgroundPrompt / darkBackgroundPrompt).
+    // La plantilla nunca agrega overlays de fondo propios.
+    overlays: [],
 
     textBlocks: [
       // ── TITLE: ingredientes / tagline, centrado en canvas completo ────────
@@ -311,7 +327,7 @@ export function buildClassicEditorialLayout(
   fontFamily: "Montserrat",
   fontWeight: "700",
   fontSize: Math.round(CW * 0.02),
-  color: COL_BODY,
+  color: mode === "dark" ? "#D0D0D0" : COL_BODY,
   maxLines: 3,
   lineHeight: 1.55,
   letterSpacing: 0,

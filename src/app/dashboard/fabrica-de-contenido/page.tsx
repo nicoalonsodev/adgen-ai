@@ -52,7 +52,13 @@ function resolveBgPrompt(
   meta: (typeof TEMPLATE_META_LIST)[number] | null | undefined,
   copy: any,
   businessProfile: any,
+  colorMode?: "light" | "dark",
 ): string {
+  // Dark mode con prompt específico → usarlo directamente (rawBackgroundPrompt implícito)
+  if (colorMode === "dark" && (meta as any)?.darkBackgroundPrompt) {
+    return (meta as any).darkBackgroundPrompt as string;
+  }
+
   const basePrompt =
     ((businessProfile?.category as string) && meta?.categoryBackgroundPrompts?.[businessProfile.category as string])
     ?? meta?.defaultBackgroundPrompt
@@ -708,15 +714,19 @@ export default function FabricaDeContenido() {
         templateId: string;
         angleIndex: number;
         copy: Record<string, unknown>;
+        colorMode?: "light" | "dark";
       }
       const taskList: TaskItem[] = [];
       for (let ti = 0; ti < selectedTemplates.length; ti++) {
         for (let ai = 0; ai < allCopies[ti].length; ai++) {
-          taskList.push({
-            templateId: selectedTemplates[ti],
-            angleIndex: ai,
-            copy: allCopies[ti][ai],
-          });
+          const tId = selectedTemplates[ti];
+          const tCopy = allCopies[ti][ai];
+          if (tId === "classic-editorial-right") {
+            taskList.push({ templateId: tId, angleIndex: ai, copy: tCopy, colorMode: "light" });
+            taskList.push({ templateId: tId, angleIndex: ai, copy: tCopy, colorMode: "dark" });
+          } else {
+            taskList.push({ templateId: tId, angleIndex: ai, copy: tCopy });
+          }
         }
       }
 
@@ -730,13 +740,14 @@ export default function FabricaDeContenido() {
       // Step 3: Pipeline completo por creativo con concurrencia CONCURRENCY.
       // Cada tarea genera su fondo y lo compone de forma independiente.
       // Los creativos aparecen en pantalla a medida que terminan, sin esperar a los demás.
-      const tasks = taskList.map(({ templateId, angleIndex, copy }) =>
+      const tasks = taskList.map(({ templateId, angleIndex, copy, colorMode }) =>
         async (): Promise<GeneratedVariant> => {
-          const angleName = ANGLE_NAMES[angleIndex] ?? `Ángulo ${angleIndex + 1}`;
+          const baseAngleName = ANGLE_NAMES[angleIndex] ?? `Ángulo ${angleIndex + 1}`;
+          const angleName = colorMode ? `${baseAngleName} · ${colorMode === "dark" ? "Dark" : "Light"}` : baseAngleName;
           const tplMeta = TEMPLATES.find((t) => t.id === templateId);
 
           // 1. Generar fondo para este creativo específico
-          const bgPrompt = resolveBgPrompt(tplMeta, copy, businessProfile);
+          const bgPrompt = resolveBgPrompt(tplMeta, copy, businessProfile, colorMode);
           const _bgRes = await fetch("/api/compose", {
             method: "POST",
             headers: { "Content-Type": "application/json", Accept: "application/json" },
@@ -785,6 +796,7 @@ export default function FabricaDeContenido() {
                 brandColors: Array.isArray(businessProfile?.coloresMarca) && (businessProfile.coloresMarca as string[]).some(Boolean)
                   ? businessProfile.coloresMarca as string[]
                   : undefined,
+                colorMode: colorMode ?? undefined,
               },
               templateBetaOptions: {
                 templateId,
