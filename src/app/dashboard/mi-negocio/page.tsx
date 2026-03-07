@@ -485,7 +485,20 @@ export default function MiNegocioPage() {
       };
       if (d.tono && tonoMap[d.tono]) setTonos([tonoMap[d.tono]]);
       if (Array.isArray(d.coloresMarca) && d.coloresMarca.length > 0) {
-        setColoresMarca((d.coloresMarca as string[]).slice(0, 4));
+        const scraped = (d.coloresMarca as string[]).slice(0, 7);
+        // Si el scraper devuelve menos de 7, generar paleta completa desde el principal
+        if (scraped[0] && isValidHex(scraped[0])) {
+          const palette = generateBrandPalette(scraped[0]);
+          setColoresMarca([
+            scraped[0],
+            scraped[1] && isValidHex(scraped[1]) ? scraped[1] : palette.primaryLight.hex,
+            scraped[2] && isValidHex(scraped[2]) ? scraped[2] : palette.primaryDark.hex,
+            scraped[3] && isValidHex(scraped[3]) ? scraped[3] : palette.primaryPale.hex,
+            scraped[4] && isValidHex(scraped[4]) ? scraped[4] : palette.accent.hex,
+            scraped[5] && isValidHex(scraped[5]) ? scraped[5] : palette.accentLight.hex,
+            scraped[6] && isValidHex(scraped[6]) ? scraped[6] : palette.accentDark.hex,
+          ]);
+        }
       }
       if (!scraperUrl.includes(sitioWeb) && scraperUrl) setSitioWeb(scraperUrl.trim());
       setScraperSuccess(true);
