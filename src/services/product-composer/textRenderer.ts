@@ -17,21 +17,15 @@ console.log("[fonts] FONTS_DIR:", FONTS_DIR);
 const logger = createLogger({ service: "textRenderer" });
 
 async function rasterizeSvg(svgBuffer: Buffer, fontsDir: string): Promise<Buffer> {
-  try {
-    // Carga dinámica para evitar que Turbopack rompa el build si el paquete no está
-    // eslint-disable-next-line no-new-func
-    const dynamicImport = new Function("m", "return import(m)") as (m: string) => Promise<any>;
-    const { Resvg } = await dynamicImport("@resvg/resvg-js");
-    const resvg = new Resvg(svgBuffer, {
-      font: { loadSystemFonts: false, fontDirs: [fontsDir] },
-    });
-    return resvg.render().asPng();
-  } catch (err) {
-    logger.warn("Resvg no disponible, usando fallback con sharp", { err: String(err) });
-    // density: 300 sobredimensiona el SVG (~4x) cuando el SVG usa unidades px absolutas,
-    // causando "Image to composite must have same dimensions or smaller" en sharp.
-    return sharp(svgBuffer).png().toBuffer();
-  }
+  // @resvg/resvg-js es OBLIGATORIO — nunca usar Sharp/librsvg para rasterizar SVG.
+  // Vercel Lambda no tiene fuentes del sistema; librsvg ignora @font-face data URIs
+  // y depende de Fontconfig del OS → texto invisible en producción.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { Resvg } = require("@resvg/resvg-js");
+  const resvg = new Resvg(svgBuffer, {
+    font: { loadSystemFonts: false, fontDirs: [fontsDir] },
+  });
+  return Buffer.from(resvg.render().asPng());
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -300,7 +294,7 @@ if (!tb.content || tb.content.trim() === "") return "";
       const hasBold = boldWeight && line.includes("**");
 
       if (!hasBold) {
-        const escapedText = escapeXml(stripEmojis(applyTransform(stripBoldMarkers(line))));
+        const escapedText = escapeXml(stripEmojis(applyTransform(stripBoldMarkers(line))).trim());
         return `<text
           x="${xPos}"
           y="${yPos}"
@@ -580,7 +574,7 @@ const EMOJI_RE = /\p{Emoji_Presentation}[\p{Emoji}\uFE0F\u20D0-\u20FF\u200D]*/gu
 
 /** Replace emojis with a bullet since resvg has no emoji font */
 function stripEmojis(text: string): string {
-  return text.replace(EMOJI_RE, "•").replace(/•(\s*•)+/g, "•").trim();
+  return text.replace(EMOJI_RE, "•").replace(/•(\s*•)+/g, "•");
 }
 
 function escapeXml(text: string): string {
@@ -641,20 +635,9 @@ function parseBoldSegments(text: string): TextSegment[] {
   }
   if (lastIndex < normalized.length) segments.push({ text: normalized.slice(lastIndex), bold: false });
 
-  // Move trailing spaces from non-bold segments to the leading position of the
-  // following bold segment. SVG renderers (incl. librsvg) reliably preserve
-  // leading whitespace in <tspan> but may silently drop trailing whitespace,
-  // even with xml:space="preserve" on the parent <text>.
-  for (let i = 0; i < segments.length - 1; i++) {
-    if (!segments[i].bold && segments[i + 1].bold) {
-      const trimmed = segments[i].text.trimEnd();
-      const trailingSpace = segments[i].text.slice(trimmed.length);
-      if (trailingSpace) {
-        segments[i] = { ...segments[i], text: trimmed };
-        segments[i + 1] = { ...segments[i + 1], text: trailingSpace + segments[i + 1].text };
-      }
-    }
-  }
+  // resvg respects xml:space="preserve" correctly with normal spaces.
+  // No whitespace manipulation needed — normalizeBoldSpacing already ensures
+  // spaces exist around **bold** markers before parsing.
 
   return segments;
 }
