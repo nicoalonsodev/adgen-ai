@@ -12,7 +12,8 @@ Tipos de ángulo: `pain-point` | `aspiracional` | `lifestyle` | `testimonial`
 Usar cuando el copy habla del DOLOR que el producto resuelve. La persona refleja ese dolor específico.
 
 **Skincare — problema de piel (manchas, arrugas, acné):**
-Woman in her early 30s, natural minimal makeup, wearing a simple white t-shirt, sitting in soft bathroom lighting. She looks at her reflection with a concerned expression, gently touching her cheek or under-eye area with her fingertips. Shoulders slightly hunched forward, quiet frustration. Warm ambient bathroom light. Person on right side of canvas only. DO NOT modify the left side — it contains pre-rendered copy text.
+A real woman in her early 30s, no makeup at all — uneven skin tone visible, redness around the nose and chin, a blemish or two not edited out, slight undereye shadow. Oversized faded cotton t-shirt, naturally wrinkled. She sits close to a bathroom mirror, face inches from the glass, fingertips pressing lightly into her cheek — skin visibly displaced under the touch. Expression not performed: brow slightly furrowed, mouth neutral, the private look of someone examining themselves when no one is watching. Bathroom light harsh and unflattering, casting honest shadows across her face — no softening. Shot handheld, slight angle, 35mm grain. Person on right side of canvas only. DO NOT modify the left side — it contains pre-rendered copy text. Do not add any product.
+
 
 **Salud — fatiga y energía baja:**
 Woman in her late 30s, tired eyes, wearing casual home clothes, sitting at a kitchen table with a half-empty coffee mug. She looks down with an exhausted expression, one hand resting on her forehead. Soft natural morning light from a window. Candid authentic moment. Person on right side of canvas only. DO NOT modify the left side — it contains pre-rendered copy text.
@@ -36,7 +37,8 @@ Woman or man in their 40s in casual clothes, sitting or standing with one hand o
 Usar cuando el copy habla del RESULTADO o la transformación que el producto genera.
 
 **Skincare — piel radiante y confiada:**
-Radiant woman in her late 30s, glowing natural skin, minimal makeup, wearing a soft linen or silk blouse. She looks at the camera with a warm confident smile, head slightly tilted, exuding calm self-assurance. Soft natural window light creating a luminous glow on her skin. Person on right side of canvas only. DO NOT modify the left side — it contains pre-rendered copy text.
+A real woman in her late 30s — not a model face, distinctly human: slight nasolabial lines, one eyebrow naturally higher, genuine skin luminosity from hydration not retouching. Loose linen shirt in ivory or sage, one button undone, fabric with natural drape and crease. She looks directly into the camera with the calm of someone who stopped fighting her skin. Head 10 degrees toward lens, one shoulder subtly lower, weight on her back foot. No full smile — just slightly raised corners, crow's feet visible, eyes warm and direct. Shot 85mm f/1.8, soft overcast window light from the left, no fill, shadows falling naturally on her neck. Cream bokeh background. Person on right side of canvas only. DO NOT modify the left side — it contains pre-rendered copy text. Do not add any product.
+
 
 **Fitness — cuerpo y energía logrados:**
 Fit confident woman in her 30s in clean athletic wear, standing tall with a proud open posture and genuine smile. She looks directly at the camera with energy and satisfaction, one hand relaxed on her hip. Bright clean gym or outdoor lighting. Person on right side of canvas only. DO NOT modify the left side — it contains pre-rendered copy text.

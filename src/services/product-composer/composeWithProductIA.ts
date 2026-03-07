@@ -101,11 +101,18 @@ THIS OVERRIDES the creative brief if there is any conflict.
 ================================================================================`;
 }
 
-function buildScenePrompt(sceneAction: string, copyZone: string): string {
+function buildScenePrompt(sceneAction: string, copyZone: string, hasRealProduct = false): string {
   const zone = copyZone as "left" | "right" | "top" | "bottom" | "center";
+
+  const productRule = hasRealProduct
+    ? `- You are also provided the product image as Image 2. IF the scene description implies a product, use ONLY the EXACT product shown in Image 2 — never invent, substitute, or hallucinate a different product. If the scene does not require a product, the person's hands must be empty.`
+    : `- DO NOT add any product, bottle, jar, tube, dropper, or package UNLESS the prompt explicitly asks for it.`;
+
   const holdingRule = zone === "top"
     ? `- The person CAN hold a small beauty/wellness product naturally in their hands — this is intentional and expected.`
-    : `- DO NOT show anything being held. The person's hands must be empty or in a natural resting pose.`;
+    : hasRealProduct
+      ? `- If the scene implies a product in use, the person may hold or interact with it naturally — but ONLY the product from Image 2.`
+      : `- DO NOT show anything being held. The person's hands must be empty or in a natural resting pose.`;
 
   return `You are a professional advertising image compositor. Your task is to add a person to a background scene.
 
@@ -121,7 +128,7 @@ ${sceneAction}
 ${buildZonePlacement(zone, "scene")}
 
 ${ABSOLUTE_RULES_SCENE}
-- DO NOT add any product, bottle, jar, tube, dropper, or package UNLESS the prompt explicitly asks for it.
+${productRule}
 ${holdingRule}
 - DO NOT add text, logos, watermarks, or labels.
 - The person must be FULLY OPAQUE and SOLIDLY VISIBLE — do NOT apply fading, dissolving, transparency, or soft disappearance to any part of the person. The person should look physically present with clear edges.
@@ -398,12 +405,28 @@ const aspectRatio = `${targetW / divisor}:${targetH / divisor}`;
   if (isSceneMode) {
     const sceneAction = req.productIAOptions?.prompt ?? "";
     const sceneCopyZone = req.productIAOptions?.copyZone ?? "left";
+    const hasRealProduct = req.productIAOptions?.hasRealProduct === true;
 
-    const scene = await generateScene({
-      backgroundPng: bg,
-      prompt: buildScenePrompt(sceneAction, sceneCopyZone),
-      aspectRatio,
-    });
+    let scene: Buffer;
+
+    if (hasRealProduct && req.productBuffer) {
+      // El usuario subió una imagen real de producto: enviamos background + producto a Gemini
+      // para que use el producto real como referencia y no invente uno propio.
+      console.log(`[composeWithProductIA:sceneMode] hasRealProduct=true → usando nanoBananaInjectProduct con producto real`);
+      scene = await nanoBananaInjectProduct({
+        backgroundPng: bg,
+        productPng: req.productBuffer,
+        prompt: buildScenePrompt(sceneAction, sceneCopyZone, true),
+        aspectRatio,
+      });
+    } else {
+      // Sin producto: solo se envía el fondo y Gemini genera la escena con persona
+      scene = await generateScene({
+        backgroundPng: bg,
+        prompt: buildScenePrompt(sceneAction, sceneCopyZone, false),
+        aspectRatio,
+      });
+    }
 
     const sceneMeta = await sharp(scene).metadata();
     const normalizedScene = (sceneMeta.width !== targetW || sceneMeta.height !== targetH)

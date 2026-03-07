@@ -91,6 +91,10 @@ interface ComposeJsonBody {
     splitComparison?: boolean;
     useGenericProductClone?: boolean;
     sharpProductOverlay?: Record<string, unknown>;
+    /** true = el usuario subió una imagen real de producto (no el PNG transparente de placeholder).
+     *  En sceneMode, esto indica a composeWithProductIA que debe enviar la imagen del producto
+     *  a Gemini como Image 2 para que lo use como referencia en vez de inventar uno. */
+    hasRealProduct?: boolean;
   };
 
   templateBetaOptions?: {

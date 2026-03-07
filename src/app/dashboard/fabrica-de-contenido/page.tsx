@@ -688,6 +688,7 @@ export default function FabricaDeContenido() {
               rawProductPrompt: hasRawProductPrompt ? true : undefined,
               personScene: templateMeta?.personScene === true ? true : undefined,
               sharpProductOverlay: (templateMeta as any)?.sharpProductOverlay ?? undefined,
+              hasRealProduct: !!productFile,
             },
           }));
           const _t3 = Date.now();
@@ -1031,6 +1032,7 @@ export default function FabricaDeContenido() {
                 rawProductPrompt: hasRawProductPromptAngles ? true : undefined,
                 personScene: tplMeta?.personScene === true ? true : undefined,
                 sharpProductOverlay: (tplMeta as any)?.sharpProductOverlay ?? undefined,
+                hasRealProduct: !!productFile,
               },
             }));
             const _tProd = Date.now();

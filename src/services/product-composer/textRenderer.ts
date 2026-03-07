@@ -5,10 +5,8 @@
  * This is deterministic - same input always produces same output.
  * The AI does NOT draw text, only specifies placement.
  */
-import fs from "fs";
 import path from "path";
 import sharp from "sharp";
-import { Resvg } from "@resvg/resvg-js";
 import type { TextBlock, Overlay, LayoutSpec } from "./layoutSpec";
 import { createLogger } from "@/lib/logger";
 
@@ -17,6 +15,22 @@ const FONTS_DIR = path.join(process.cwd(), "public", "fonts");
 console.log("[fonts] FONTS_DIR:", FONTS_DIR);
 
 const logger = createLogger({ service: "textRenderer" });
+
+async function rasterizeSvg(svgBuffer: Buffer, fontsDir: string): Promise<Buffer> {
+  try {
+    // Carga dinámica para evitar que Turbopack rompa el build si el paquete no está
+    // eslint-disable-next-line no-new-func
+    const dynamicImport = new Function("m", "return import(m)") as (m: string) => Promise<any>;
+    const { Resvg } = await dynamicImport("@resvg/resvg-js");
+    const resvg = new Resvg(svgBuffer, {
+      font: { loadSystemFonts: false, fontDirs: [fontsDir] },
+    });
+    return resvg.render().asPng();
+  } catch (err) {
+    logger.warn("Resvg no disponible, usando fallback con sharp", { err: String(err) });
+    return sharp(svgBuffer, { density: 300 }).png().toBuffer();
+  }
+}
 
 /* ═══════════════════════════════════════════════════════════════
    FONT NORMALIZATION
@@ -108,15 +122,9 @@ export async function renderTextOnImage(options: RenderTextOptions): Promise<Ren
   </g>
 </svg>`;
 
-  // Rasterize SVG with resvg, loading fonts from local directory
+  // Rasterize SVG con resvg (fallback a sharp si el paquete no está instalado)
   const svgBuffer = Buffer.from(combinedSvg);
-  const resvg = new Resvg(svgBuffer, {
-    font: {
-      loadSystemFonts: false,
-      fontDirs: [FONTS_DIR],
-    },
-  });
-  const textLayerPng = resvg.render().asPng();
+  const textLayerPng = await rasterizeSvg(svgBuffer, FONTS_DIR);
 
   // Composite rasterized text layer onto base image
   const result = await sharp(baseImage)
