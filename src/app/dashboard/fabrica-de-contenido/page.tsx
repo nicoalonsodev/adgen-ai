@@ -212,27 +212,77 @@ export default function FabricaDeContenido() {
   const [businessLogoLight, setBusinessLogoLight] = useState<{ base64: string; mimeType: string } | null>(null);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem("negocio_perfil");
-      if (saved) {
-        const profile = JSON.parse(saved);
+    async function loadBusinessProfile() {
+      let profile: Record<string, unknown> | null = null;
+
+      // 1. Try localStorage first
+      try {
+        const saved = localStorage.getItem("negocio_perfil");
+        if (saved) profile = JSON.parse(saved);
+      } catch { /* ignore */ }
+
+      // 2. If no logo in localStorage, check sessionStorage fallback
+      // (used when localStorage quota was exceeded during save)
+      if (profile && !profile.logoBase64 && !profile.logoDarkBase64 && !profile.logoLightBase64) {
+        try {
+          const sessionSaved = sessionStorage.getItem("negocio_perfil_session");
+          if (sessionSaved) {
+            const sessionProfile = JSON.parse(sessionSaved);
+            profile = { ...profile, ...sessionProfile };
+          }
+        } catch { /* ignore */ }
+      }
+
+      if (profile) {
         setBusinessProfile(profile);
         if (profile.logoBase64) {
-          setBusinessLogo({ base64: profile.logoBase64, mimeType: profile.logoMimeType ?? "image/png" });
+          setBusinessLogo({ base64: profile.logoBase64 as string, mimeType: (profile.logoMimeType as string) ?? "image/png" });
         }
         if (profile.logoDarkBase64) {
-          setBusinessLogoDark({ base64: profile.logoDarkBase64, mimeType: profile.logoDarkMimeType ?? "image/png" });
+          setBusinessLogoDark({ base64: profile.logoDarkBase64 as string, mimeType: (profile.logoDarkMimeType as string) ?? "image/png" });
         }
         if (profile.logoLightBase64) {
-          setBusinessLogoLight({ base64: profile.logoLightBase64, mimeType: profile.logoLightMimeType ?? "image/png" });
+          setBusinessLogoLight({ base64: profile.logoLightBase64 as string, mimeType: (profile.logoLightMimeType as string) ?? "image/png" });
         }
         if (profile.category) {
           setTemplateCategoryFilter(profile.category as string);
         }
       }
-    } catch {
-      // ignore
+
+      // 3. If still no logo, fetch from API (covers cross-device / fresh sessions)
+      const hasLogo = profile?.logoBase64 || profile?.logoDarkBase64 || profile?.logoLightBase64;
+      if (!hasLogo) {
+        try {
+          const res = await fetch("/api/user/business-profile");
+          if (res.ok) {
+            const { data } = await res.json();
+            if (data) {
+              if (!profile) {
+                setBusinessProfile(data);
+                if (data.product_category) setTemplateCategoryFilter(data.product_category as string);
+              }
+              if (data.logo_url) {
+                const base64 = data.logo_url.split(",")[1];
+                const mimeType = data.logo_url.split(";")[0]?.split(":")[1] ?? "image/png";
+                if (base64) setBusinessLogo({ base64, mimeType });
+              }
+              if (data.metadata?.logoDark) {
+                const base64 = data.metadata.logoDark.split(",")[1];
+                const mimeType = data.metadata.logoDark.split(";")[0]?.split(":")[1] ?? "image/png";
+                if (base64) setBusinessLogoDark({ base64, mimeType });
+              }
+              if (data.metadata?.logoLight) {
+                const base64 = data.metadata.logoLight.split(",")[1];
+                const mimeType = data.metadata.logoLight.split(";")[0]?.split(":")[1] ?? "image/png";
+                if (base64) setBusinessLogoLight({ base64, mimeType });
+              }
+            }
+          }
+        } catch { /* ignore */ }
+      }
     }
+
+    loadBusinessProfile();
   }, []);
 
   // Auto-select sorteo template when switching to sorteo mode
