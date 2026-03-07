@@ -295,8 +295,8 @@ if (!tb.content || tb.content.trim() === "") return "";
         .map(seg => {
           const escaped = escapeXml(stripEmojis(applyTransform(seg.text)));
           return seg.bold
-            ? `<tspan font-weight="${boldWeight}">${escaped}</tspan>`
-            : `<tspan>${escaped}</tspan>`;
+            ? `<tspan font-weight="${boldWeight}" xml:space="preserve">${escaped}</tspan>`
+            : `<tspan xml:space="preserve">${escaped}</tspan>`;
         })
         .join("");
 
