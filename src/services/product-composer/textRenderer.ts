@@ -28,7 +28,9 @@ async function rasterizeSvg(svgBuffer: Buffer, fontsDir: string): Promise<Buffer
     return resvg.render().asPng();
   } catch (err) {
     logger.warn("Resvg no disponible, usando fallback con sharp", { err: String(err) });
-    return sharp(svgBuffer, { density: 300 }).png().toBuffer();
+    // density: 300 sobredimensiona el SVG (~4x) cuando el SVG usa unidades px absolutas,
+    // causando "Image to composite must have same dimensions or smaller" en sharp.
+    return sharp(svgBuffer).png().toBuffer();
   }
 }
 
@@ -124,7 +126,20 @@ export async function renderTextOnImage(options: RenderTextOptions): Promise<Ren
 
   // Rasterize SVG con resvg (fallback a sharp si el paquete no está instalado)
   const svgBuffer = Buffer.from(combinedSvg);
-  const textLayerPng = await rasterizeSvg(svgBuffer, FONTS_DIR);
+  let textLayerPng = await rasterizeSvg(svgBuffer, FONTS_DIR);
+
+  // Sanity clamp: el fallback de sharp puede devolver dimensiones distintas al canvas.
+  // Sharp exige que la imagen a composite sea <= base en ambas dimensiones.
+  const layerMeta = await sharp(textLayerPng).metadata();
+  if ((layerMeta.width ?? 0) !== width || (layerMeta.height ?? 0) !== height) {
+    logger.warn("textLayerPng size mismatch, resizing to canvas dimensions", {
+      layerW: layerMeta.width, layerH: layerMeta.height, canvasW: width, canvasH: height,
+    });
+    textLayerPng = await sharp(textLayerPng)
+      .resize(width, height, { fit: "fill" })
+      .png()
+      .toBuffer();
+  }
 
   // Composite rasterized text layer onto base image
   const result = await sharp(baseImage)
