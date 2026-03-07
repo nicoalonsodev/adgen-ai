@@ -51,7 +51,7 @@ export function buildRazonesProductoLayout(
 
   // ── Headline intro (line 1: "Razones para usar...") ───────────────────────
   const H1_FONT = Math.round(CW * 0.028);           // ~30px
-  const H1_Y    = Math.round(CH * 0.060);           // ~65px
+  const H1_Y    = Math.round(CH * 0.090);           // ~97px
   const H1_H    = Math.ceil(H1_FONT * 1.3) + 6;
   const H1_W    = Math.round(CW * 0.680);
   const H1_X    = Math.round((CW - H1_W) / 2);
