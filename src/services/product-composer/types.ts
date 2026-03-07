@@ -276,6 +276,12 @@ copyZone: z.enum(["right", "left", "top", "bottom", "center", "full"]).default("
     /** Clockwise rotation in degrees (default 0) */
     rotation: z.number().min(-180).max(180).optional(),
   }).optional(),
+  /**
+   * When true: the user uploaded a real product image (not the transparent placeholder).
+   * In sceneMode, this tells composeWithProductIA to send the product image to Gemini
+   * as Image 2 so it uses the real product instead of hallucinating one.
+   */
+  hasRealProduct: z.boolean().optional().default(false),
 });
 export type ProductIAOptions = z.infer<typeof ProductIAOptionsSchema>;
 /* ═══════════════════════════════════════════════════════════════
