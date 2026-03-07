@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import sharp from "sharp";
-import { ABSOLUTE_RULES_SCENE, ABSOLUTE_RULES_PRODUCT_INJECT } from "./promptRules";
+import { ABSOLUTE_RULES_SCENE, ABSOLUTE_RULES_PRODUCT_INJECT, ABSOLUTE_RULES_TEXT_PRESERVATION, ABSOLUTE_RULES_PRODUCT, ABSOLUTE_RULES_BACKGROUND } from "./promptRules";
 import { getLibrarySection, type ImageBriefType } from "./promptLibrary";
 
 const MODEL_NANO_BANANA = "gemini-2.5-flash-image";
@@ -668,12 +668,13 @@ export async function generateImageBriefGemini(args: {
 
   const library = getLibrarySection(args.briefType, args.productCategory);
 
-  const oppositeSide =
+  const productZone =
     args.copyZone === "right"  ? "left"   :
     args.copyZone === "left"   ? "right"  :
     args.copyZone === "top"    ? "bottom" :
     args.copyZone === "bottom" ? "top"    :
                                  "right";
+  const copyZone = args.copyZone ?? "left";
 
   const brandContext = args.businessProfile?.nombre || args.businessProfile?.clienteIdeal
     ? `Brand: ${args.businessProfile.nombre || ""}. Ideal client: ${args.businessProfile.clienteIdeal || ""}.`
@@ -681,13 +682,18 @@ export async function generateImageBriefGemini(args: {
 
   const prompt = `You are a visual prompt engineer specializing in advertising photography direction for Gemini AI image generation.
 
-Your task: generate ONE highly specific visual prompt for a "${args.briefType}" advertising image.
+Your task: generate ONE highly specific visual prompt for a "${args.briefType}" advertising image EDITING operation.
+
+CRITICAL CONTEXT — THIS IS AN EDIT, NOT A NEW GENERATION:
+Gemini will receive an EXISTING advertising image and must ADD the subject/product to it.
+The canvas has two zones:
+- PRODUCT ZONE (${productZone} side): where the subject/product must be placed.
+- COPY ZONE (${copyZone} side): contains pre-rendered advertising text, headlines, badges, and graphic elements that are ALREADY in the image. This area is LOCKED. NEVER describe it as "clean", "empty", "clear", or "untouched" — those words may cause the model to erase content. Instead always write: "DO NOT modify or touch the ${copyZone} side."
 
 CONTEXT:
 - Product: ${args.product}
 - Category: ${args.productCategory}
 - Advertising tone: ${args.tone}
-- Subject/product must be placed on the ${oppositeSide} side of the canvas (copy text occupies the opposite side)
 ${brandContext}
 
 REFERENCE EXAMPLES — follow this style and level of specificity exactly:
@@ -696,8 +702,13 @@ ${library}
 Instructions:
 1. Find the example that best matches the category and tone above
 2. Adapt it to the actual product — keep the same photographic detail and structure
-3. Adjust placement to match the ${oppositeSide} side constraint
-4. Output ONLY the prompt text — no labels, no explanation, no markdown`;
+3. Place the subject/product on the ${productZone} side
+4. End the brief with these exact rules (adapt side names to match):
+   "${productZone} side only. DO NOT modify or touch the ${copyZone} side — it contains pre-rendered advertising copy that must remain exactly as-is.
+   ${ABSOLUTE_RULES_TEXT_PRESERVATION}
+   ${ABSOLUTE_RULES_PRODUCT}
+   ${ABSOLUTE_RULES_BACKGROUND}"
+5. Output ONLY the prompt text — no labels, no explanation, no markdown`;
 
   console.log(`[gemini:generateImageBriefGemini] model=gemini-2.0-flash briefType=${args.briefType} category=${args.productCategory}`);
 
