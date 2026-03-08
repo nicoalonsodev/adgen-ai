@@ -16,7 +16,7 @@ import { compose, composeWithAutoLayout, composeWithSmartUsage, composeWithPrese
 
 import { composeWithProductIA } from "@/services/product-composer";
 import { composeWithTemplateBeta } from "@/services/product-composer/composeWithTemplateBeta"; // ← AGREGAR
-import { generateBackground, analyzeCreativeQuality, generateImageBriefGemini } from "@/lib/ai/gemini";
+import { generateBackground, analyzeCreativeQuality, generateImageBriefGemini, expandSceneBrief } from "@/lib/ai/gemini";
 import { generateTemplateCopyOpenAI, analyzeCreativeReference, generateSequenceCopy } from "@/lib/ai/openai";
 import type { ImageBriefType } from "@/lib/ai/promptLibrary";
 import { listPresets } from "@/services/product-composer/presets";
@@ -495,6 +495,45 @@ export async function POST(request: NextRequest) {
               result = result.map(v => ({ ...v, ...briefPatch }));
             } else {
               result = { ...result, ...briefPatch };
+            }
+          }
+
+          // Hybrid sceneAction: OpenAI generates diverse short scenes per variant,
+          // then Gemini Flash expands each one into a full cinematic prompt in parallel.
+          const hasSceneAction = fullSchema.includes("sceneAction");
+          if (hasSceneAction) {
+            const expandContext = {
+              product: body.product ?? "",
+              productCategory: (body.businessProfile as any)?.category ?? "",
+              tone: body.tone ?? "",
+              copyZone: body.copyZone,
+              businessProfile: {
+                nombre: (body.businessProfile as any)?.nombre,
+                clienteIdeal: (body.businessProfile as any)?.clienteIdeal,
+              },
+            };
+
+            if (Array.isArray(result)) {
+              const expanded = await Promise.all(
+                result.map((v: Record<string, unknown>) =>
+                  v.sceneAction
+                    ? expandSceneBrief({ ...expandContext, sceneAction: v.sceneAction as string })
+                        .then(exp => ({ ...v, sceneAction: exp }))
+                        .catch(() => v) // fallback to OpenAI's short version on error
+                    : Promise.resolve(v)
+                )
+              );
+              result = expanded;
+            } else if (result && typeof result === "object" && (result as Record<string, unknown>).sceneAction) {
+              try {
+                const expanded = await expandSceneBrief({
+                  ...expandContext,
+                  sceneAction: (result as Record<string, unknown>).sceneAction as string,
+                });
+                result = { ...result, sceneAction: expanded };
+              } catch {
+                // fallback to OpenAI's short version
+              }
             }
           }
 

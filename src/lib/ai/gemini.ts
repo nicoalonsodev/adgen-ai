@@ -749,3 +749,77 @@ Instructions:
   if (!text) throw new Error("generateImageBriefGemini: empty response from Gemini Flash");
   return text;
 }
+
+/**
+ * Expands a short sceneAction (from OpenAI) into a full cinematic prompt.
+ *
+ * OpenAI generates diverse short scene descriptions per variant (e.g.
+ * "Man in gym, defeated, head down on bench"). This function takes that
+ * seed and expands it into a detailed, photographic-quality prompt using
+ * the scene-only library as style reference.
+ *
+ * Called once per variant — each gets its own expanded prompt.
+ */
+export async function expandSceneBrief(args: {
+  sceneAction: string;
+  product: string;
+  productCategory: string;
+  tone: string;
+  copyZone?: string;
+  businessProfile?: {
+    nombre?: string;
+    clienteIdeal?: string;
+  };
+}): Promise<string> {
+  const ai = getClient();
+
+  const library = getLibrarySection("scene-only", args.productCategory);
+
+  const brandContext = args.businessProfile?.nombre || args.businessProfile?.clienteIdeal
+    ? `Brand: ${args.businessProfile.nombre || ""}. Ideal client: ${args.businessProfile.clienteIdeal || ""}.`
+    : "";
+
+  const prompt = `You are a visual prompt engineer specializing in cinematic advertising photography direction.
+
+Your task: expand a SHORT scene description into a FULL, hyper-detailed visual prompt for Gemini AI image generation.
+
+SHORT SCENE DESCRIPTION (from the creative director):
+"${args.sceneAction}"
+
+CONTEXT:
+- Product category: ${args.productCategory}
+- Advertising tone: ${args.tone}
+- Product: ${args.product}
+${brandContext}
+
+REFERENCE EXAMPLES — match this level of cinematic detail and specificity:
+${library}
+
+Instructions:
+1. Take the short scene description above and EXPAND it into a rich, cinematic visual prompt
+2. Keep the EXACT scenario, setting, and emotion from the short description — do NOT change the concept
+3. Add these details that the short description is missing:
+   - Exact person description: age range, clothing, body type, hair
+   - Precise body language and micro-expressions
+   - Specific lighting setup: key light source, direction, color temperature, shadows
+   - Environment details: textures, props, depth of field, atmosphere
+   - Camera/framing: lens feel, depth, composition
+4. The person fills the ENTIRE canvas edge-to-edge (full-bleed cinematic portrait)
+5. Face should be positioned in the CENTER or CENTER-LOWER area of the canvas (NOT in the top 25%)
+6. End with: "4K photorealistic. No text, no logos, no products."
+7. Output ONLY the prompt text — no labels, no explanation, no markdown
+8. Max 80 words — be dense and specific, not verbose`;
+
+  console.log(`[gemini:expandSceneBrief] model=gemini-2.0-flash category=${args.productCategory} scene="${args.sceneAction.slice(0, 60)}..."`);
+
+  const response = await generateContentWithRetry(ai, {
+    model: "gemini-2.0-flash",
+    contents: [{ role: "user", parts: [{ text: prompt }] }],
+  });
+
+  const parts = response.candidates?.[0]?.content?.parts ?? [];
+  const text = parts.map((p: any) => p.text).filter(Boolean).join("").trim();
+
+  if (!text) throw new Error("expandSceneBrief: empty response from Gemini Flash");
+  return text;
+}
