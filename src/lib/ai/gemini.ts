@@ -232,6 +232,9 @@ export async function generateBackground(args: {
 
   console.log(`[gemini:generateBackground] model=${MODEL_NANO_BANANA} prompt_chars=${args.prompt.length}\n${args.prompt.slice(0, 300)}`);
 
+  // Prefix ensures Gemini treats this as an image generation task, not a conversation
+  const imagePrompt = `Generate an image: ${args.prompt}`;
+
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     // generateContentWithRetry handles transient network/API errors internally.
     // This outer loop retries the "no image returned" case (safety filter, model refusal, etc.)
@@ -240,7 +243,7 @@ export async function generateBackground(args: {
       contents: [
         {
           role: "user",
-          parts: [{ text: args.prompt }],
+          parts: [{ text: imagePrompt }],
         },
       ],
       config: {
@@ -258,7 +261,18 @@ export async function generateBackground(args: {
     }
 
     lastTextResponse = collectTextParts(response);
-    console.warn(`[gemini:generateBackground] Sin imagen en intento ${attempt}/${MAX_ATTEMPTS}. Respuesta: ${lastTextResponse.slice(0, 200)}`);
+    // Log safety/block diagnostics when no image is returned
+    const candidates = response?.candidates ?? [];
+    const finishReason = candidates[0]?.finishReason ?? "NO_CANDIDATES";
+    const safetyRatings = candidates[0]?.safetyRatings ?? [];
+    const promptFeedback = (response as any)?.promptFeedback;
+    const blockReason = promptFeedback?.blockReason ?? "none";
+    console.warn(
+      `[gemini:generateBackground] Sin imagen en intento ${attempt}/${MAX_ATTEMPTS}.`,
+      `finishReason=${finishReason} blockReason=${blockReason}`,
+      `safetyRatings=${JSON.stringify(safetyRatings).slice(0, 300)}`,
+      `text=${lastTextResponse.slice(0, 200)}`,
+    );
     if (attempt < MAX_ATTEMPTS) {
       await sleep(600 * attempt);
     }

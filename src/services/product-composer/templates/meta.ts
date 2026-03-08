@@ -1279,7 +1279,7 @@ No hands, no people. Photorealistic. 4K.`,
   - BOTTOM 87–95%: disclaimer (small optional line)
 
   - headline: the brand or product name, displayed LARGE at the top-center.
-    Max 20 chars. This is the primary visual anchor above the product.
+    Max 10 chars. This is the primary visual anchor above the product.
     Examples: "BLUME", "DERMA PRO", "GLOW LAB", "SÉRUM VITAL"
 
   - subheadline: a concise benefit or product line descriptor, thin and spaced.
@@ -1520,7 +1520,7 @@ No hands, no people. Photorealistic. 4K.`,
     description:
       "Escena de urgencia full-bleed, headline enorme en Bebas Neue, overlay oscuro. Un solo titular potente, sin producto. Logo arriba a la izquierda.",
     supportedRatios: ["1:1", "4:5"],
-    copyZone: "center",
+    copyZone: "top",
     copySchema: ["headline", "backgroundColorHint", "sceneAction"],
     requiresSceneGeneration: true,
     personScene: true,
@@ -1721,7 +1721,7 @@ No text, no people, no products, no logos, no hands.`,
   - Speak directly to the reader's most felt frustration in this niche.
   - End with "?" for questions or "." for statements. No ellipsis.
 
-  - headline: single powerful pain-point claim, max 8 words, max 55 chars.
+  - headline: single powerful pain-point claim, max 8 words, max 55 chars, min 5 words and min 40 chars.
     Adapt the pain point to the business niche:
 
     Servicios profesionales / Educación / Tecnología:

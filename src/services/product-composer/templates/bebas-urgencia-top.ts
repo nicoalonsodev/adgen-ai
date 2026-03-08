@@ -167,7 +167,7 @@ export function buildBebasUrgenciaTopLayout(
   const HL_X = MARGIN;
   const HL_W = CW - 2 * MARGIN; // ~994px — anchor at MARGIN + HL_W/2 = CW/2
   // Moderate-large display size — only shrinks if a single word overflows
-  const HL_MAX_FS = Math.round(CW * 0.115); // ~124px for 1080
+  const HL_MAX_FS = Math.round(CW * 0.095); // ~103px for 1080
   const HL_MIN_FS = Math.round(CW * 0.065); // ~70px floor
   const HL_LINE_H = 0.95; // Bebas Neue tight line-height
 
@@ -235,7 +235,7 @@ export function buildBebasUrgenciaTopLayout(
         h: HL_H,
         align: "center",
         fontFamily: "Bebas Neue",
-        fontWeight: "400",
+        fontWeight: "500",
         fontSize: hlFontSize,
         color: "#FFFFFF",
         lineHeight: HL_LINE_H,

@@ -12,7 +12,178 @@ Tipos de ángulo: `pain-point` | `aspiracional` | `lifestyle` | `testimonial`
 Usar cuando el copy habla del DOLOR que el producto resuelve. La persona refleja ese dolor específico.
 
 **Skincare — problema de piel (manchas, arrugas, acné):**
-A real woman in her early 30s, no makeup at all — uneven skin tone visible, redness around the nose and chin, a blemish or two not edited out, slight undereye shadow. Oversized faded cotton t-shirt, naturally wrinkled. She sits close to a bathroom mirror, face inches from the glass, fingertips pressing lightly into her cheek — skin visibly displaced under the touch. Expression not performed: brow slightly furrowed, mouth neutral, the private look of someone examining themselves when no one is watching. Bathroom light harsh and unflattering, casting honest shadows across her face — no softening. Shot handheld, slight angle, 35mm grain. Person on right side of canvas only. DO NOT modify the left side — it contains pre-rendered copy text. Do not add any product.
+Sos un experto en generación de imágenes publicitarias para skincare y belleza.
+Tu tarea es generar prompts fotorrealistas de ESCENAS DE PUNTO DE DOLOR.
+
+Una escena de punto de dolor muestra a una persona real en una situación 
+cotidiana frustrante, overwhelmed o insatisfecha — relacionada con un problema 
+de piel o rutina de belleza. NO es una foto de producto. Es una escena humana, 
+emocional y reconocible.
+
+REGLAS GENERALES PARA TODAS LAS ESCENAS:
+- Fotografía editorial realista, estilo campaña de marca moderna
+- Iluminación cinematográfica: una fuente principal + fill suave
+- Ambiente con profundidad y contexto (no fondo blanco)
+- Emoción corporal visible: postura, gesto, expresión
+- Siempre incluir elementos visuales que representen el caos o el problema
+- Calidad: 4K, photorealistic, editorial photography
+- NO texto, NO logos, NO productos visibles de marca
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CATÁLOGO DE ESCENAS DE PUNTO DE DOLOR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ESCENA 01 — "El baño desbordado"
+DOLOR: Demasiados productos, ninguno funciona
+SITUACIÓN: Persona frente al espejo del baño rodeada de decenas de 
+frascos, cremas y sueros desparramados. Algunos volcados. Cara de 
+agotamiento o confusión mirando su propia piel en el espejo.
+ELEMENTOS VISUALES DE CAOS: 15-20 frascos y tubos de skincare 
+desorganizados en la mesada, algunos abiertos, etiquetas visibles 
+pero ilegibles, toallas arrugadas, iluminación del espejo encendida.
+EMOCIÓN: Overwhelm, frustración, pérdida de dinero
+ILUMINACIÓN: Luz cálida del espejo de baño como fuente principal, 
+sombras suaves en el ambiente
+PROMPT BASE:
+"Photorealistic editorial photography. A [woman/man], 28-35 years old, 
+standing in a modern bathroom, overwhelmed expression, staring at their 
+own reflection in a lit vanity mirror. The bathroom counter is completely 
+covered with 15-20 different skincare products — serums, creams, toners, 
+masks — scattered and disorganized, some tipped over, some open. 
+Expression of exhaustion and confusion. Warm vanity lighting as key light, 
+soft ambient fill. Shallow depth of field. Cinematic, moody color grade. 
+4K photorealistic. No text, no logos."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ESCENA 02 — "El scroll infinito"
+DOLOR: Información contradictoria, no sabe qué creerle a internet
+SITUACIÓN: Persona en cama o sillón de noche, cara iluminada por 
+pantalla del celular, rodeada de pantallas o tabs abiertas con 
+consejos de skincare contradictorios. Expresión de confusión o 
+agotamiento mental.
+ELEMENTOS VISUALES DE CAOS: Celular con pantalla brillante como 
+fuente de luz, tablet apoyada cerca, cuaderno con anotaciones 
+ilegibles, post-its pegados, habitación oscura de fondo.
+EMOCIÓN: Confusión mental, información overload, agotamiento
+ILUMINACIÓN: Luz azul-fría del celular como key light, habitación 
+oscura alrededor, contraste dramático
+PROMPT BASE:
+"Photorealistic editorial photography. A [woman], 25-32 years old, 
+sitting in bed late at night, face dramatically lit by the cold blue 
+glow of her phone screen. Surrounded by a tablet, notebook full of 
+handwritten notes, sticky notes everywhere. Expression of mental 
+exhaustion and confusion while scrolling. Dark moody bedroom background. 
+Phone screen as key light, cold blue tone, deep shadows. Cinematic. 
+4K photorealistic. No text, no logos."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ESCENA 03 — "La foto en la luz natural"
+DOLOR: Ver su piel como realmente está bajo luz cruda
+SITUACIÓN: Persona parada cerca de una ventana con luz natural 
+directa, sostiene un espejo de aumento, expresión de shock o 
+disgusto al ver poros, manchas u ojeras de cerca.
+ELEMENTOS VISUALES DE CAOS: Espejo de mano o espejo de aumento 
+con reflejo visible, luz natural entrando por ventana, expresión 
+facial de sorpresa negativa.
+EMOCIÓN: Shock, inseguridad, rechazo a lo que ve
+ILUMINACIÓN: Luz natural dura desde ventana lateral, sombras 
+marcadas, realismo crudo
+PROMPT BASE:
+"Photorealistic editorial photography. A [woman], 30-40 years old, 
+standing by a large window in natural morning light, holding a 
+magnifying mirror close to her face. Expression of shock and 
+dissatisfaction — noticing skin imperfections clearly. Harsh natural 
+side lighting revealing skin texture honestly. Minimal background, 
+window light as key. Raw, unfiltered feel. Cinematic grade. 
+4K photorealistic. No text, no logos."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ESCENA 04 — "La rutina que no termina nunca"
+DOLOR: Invertir tiempo y dinero sin ver resultados
+SITUACIÓN: Persona frente al espejo del baño a las 6am o 11pm, 
+cara de cansancio extremo, en medio de una rutina de 10 pasos. 
+Reloj visible marcando hora temprana o tardía.
+ELEMENTOS VISUALES DE CAOS: Múltiples productos alineados en 
+orden de uso, reloj digital o analógico en la escena, ojeras 
+visibles, pijama o ropa de dormir.
+EMOCIÓN: Agotamiento, resignación, rutina sin fin
+ILUMINACIÓN: Luz fría de baño como key light, tono azulado-cansado
+PROMPT BASE:
+"Photorealistic editorial photography. A [woman], 28-38 years old, 
+standing at bathroom mirror at 6am, wearing pajamas, visibly 
+exhausted. Multiple skincare products lined up on the counter in 
+application order. Alarm clock or digital clock visible showing 
+early hour. Expression of tired resignation. Cold bathroom lighting, 
+blue-tinted, clinical. Shallow depth of field. Cinematic. 
+4K photorealistic. No text, no logos."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ESCENA 05 — "El antes del evento"
+DOLOR: Brote o problema de piel justo cuando más importa
+SITUACIÓN: Persona frente al espejo vistiéndose para una salida 
+importante — vestido elegante o camisa — pero con expresión de 
+pánico o frustración mirando su cara. Invitación, flores o 
+bolso de fiesta visible en el fondo.
+ELEMENTOS VISUALES DE CAOS: Ropa elegante contrasta con expresión 
+de angustia, espejo iluminado, productos de emergencia desparramados 
+en la mesada, quizás un pañuelo o maquillaje volcado.
+EMOCIÓN: Pánico, urgencia, vergüenza, impotencia
+ILUMINACIÓN: Luz cálida de vanity mirror, tono dorado-dramático
+PROMPT BASE:
+"Photorealistic editorial photography. A [woman], 25-35 years old, 
+dressed elegantly for an important event, standing in front of a 
+lit vanity mirror. Expression of panic and frustration examining 
+her face closely. Emergency skincare products scattered urgently 
+on the surface. Elegant outfit contrasting with distressed facial 
+expression. Warm golden vanity lighting. Cinematic, emotional. 
+4K photorealistic. No text, no logos."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ESCENA 06 — "El dinero tirado"
+DOLOR: Gastó mucho en productos que no funcionaron
+SITUACIÓN: Persona sentada en el piso o cama rodeada de productos 
+de skincare vacíos o a medio usar, con facturas, cajas abiertas 
+o bolsas de tienda. Expresión de arrepentimiento o resignación.
+ELEMENTOS VISUALES DE CAOS: Productos vacíos, recibos o facturas 
+visibles (texto ilegible), cajas abiertas desparramadas, expresión 
+de decepción económica y emocional.
+EMOCIÓN: Arrepentimiento, decepción, sensación de estafa
+ILUMINACIÓN: Luz natural suave de ventana, tono frío y melancólico
+PROMPT BASE:
+"Photorealistic editorial photography. A [woman], 28-40 years old, 
+sitting on the floor surrounded by empty and half-used skincare 
+product containers, open boxes, and shopping bags. Receipts visible 
+but illegible. Expression of regret and disappointment, looking at 
+the empty products. Soft natural window light, cool melancholic tone. 
+Cinematic. 4K photorealistic. No text, no logos."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ESCENA 07 — "La comparación social"
+DOLOR: Ver piel de otras personas y sentirse menos
+SITUACIÓN: Persona mirando su celular con expresión de envidia o 
+tristeza, en pantalla se ven perfiles de redes sociales con pieles 
+perfectas (pantalla desenfocada, no legible). Se toca la cara con 
+la mano mientras mira.
+ELEMENTOS VISUALES DE CAOS: Celular con pantalla visible pero 
+desenfocada mostrando feed de fotos, mano tocando su propia cara, 
+expresión de comparación negativa.
+EMOCIÓN: Inseguridad, comparación, tristeza, baja autoestima
+ILUMINACIÓN: Luz mixta: cálida ambiental + fría del celular
+PROMPT BASE:
+"Photorealistic editorial photography. A [woman], 22-30 years old, 
+sitting on a couch, scrolling her phone with a sad and insecure 
+expression. Phone screen visible but blurred — showing social media 
+content with flawless skin images. Her free hand gently touching 
+her own face in comparison. Mixed lighting: warm ambient room light 
+and cold blue phone glow. Emotional, introspective mood. Cinematic. 
+4K photorealistic. No text, no logos."
+
 
 
 **Salud — fatiga y energía baja:**
