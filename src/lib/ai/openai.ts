@@ -175,19 +175,34 @@ export async function generateTemplateCopyOpenAI(args: {
   Example: 'tonos celeste muy pálido y blanco suave'
   Example: 'beige rosado cálido muy claro'
   Example: 'blanco puro con toque crema'
-- sceneAction: (optional — only generate if this field is explicitly listed in the template schema) Describe the exact action and body language of the person that illustrates the pain point headline. Be very specific. The person must be on the RIGHT side. The LEFT 50% must stay clean.
-  Examples:
-  - 'Woman looking down at her abdomen with concern, touching her skin gently, natural light'
-  - 'Woman at desk looking exhausted, rubbing her eyes, coffee cup nearby'
-  - 'Woman looking at herself in a mirror, touching her neck and skin with a worried expression'
-  - 'Woman sitting for long hours at computer, hand on lower back showing discomfort'
-  The action must directly illustrate the headline copy.`;
+- sceneAction: (optional — only generate if this field is explicitly listed in the template schema) A hyper-specific photography direction describing the FULL SCENE with a person illustrating the pain point or emotional state from the headline. This is a creative brief for an image generation model — be vivid, cinematic, and UNIQUE.
+  CRITICAL: Each variant MUST use a COMPLETELY DIFFERENT scenario, setting, body language, and visual concept. NEVER repeat the same setup (e.g. "woman at mirror" twice). Think like a creative director building a diverse campaign.
+  Structure: [person age/gender/appearance] + [specific setting/environment] + [exact body language and expression] + [lighting mood] + [1-2 contextual props that tell the story]
+  Max 50 words. The person fills the full canvas (full-bleed cinematic portrait).
+
+  SCENARIO BANK — use these as DIVERSE inspiration, NEVER repeat the same type across variants:
+  - Kitchen: person leaning against counter, head in hands, surrounded by supplements they don't trust
+  - Gym: athlete sitting on bench post-workout, staring at the floor in defeat, towel over shoulders
+  - Bathroom: person examining skin under harsh light, magnifying mirror, shocked expression
+  - Bedroom: person sitting on bed edge at 3am, phone glow on face, sleepless and anxious
+  - Office: professional rubbing temples at desk, laptop open, overwhelmed by stress
+  - Street/urban: person walking alone in rain, hunched shoulders, avoiding reflections in shop windows
+  - Living room: person on couch holding ice pack on knee/back, TV on in background, isolated
+  - Outdoor: runner stopped mid-jog holding their side, grimacing, early morning light
+  - Closet/dressing: person staring at clothes that don't fit, hand on waist, frustrated
+  - Car: person gripping steering wheel, head down, moment of private frustration in parking lot
+  - Pharmacy/store: person reading product labels with confused overwhelmed expression, aisle of options
+  - Park bench: person sitting alone, distant gaze, one hand on neck showing tension
+  - Waiting room: person in medical waiting area, nervous fidgeting, harsh fluorescent light
+  - Mirror (full body): person turned sideways examining their body with dissatisfaction
+  - Dining table: person pushing food away, hand on stomach, uncomfortable expression
+  The action must directly illustrate the headline copy. Be specific to the product category.`;
 
   const variantInstructions =
     n > 1
       ? `\nGenerate ${n} variants with these different angles:\n${VARIANT_ANGLES.slice(0, n)
           .map((angle, i) => `- Variant ${i + 1}: ${angle}`)
-          .join("\n")}\n\nReturn a JSON object with a single key "variants" whose value is an array of ${n} objects, each with the same fields as specified. No markdown, no explanation, only the JSON object.`
+          .join("\n")}\n\nCRITICAL FOR sceneAction: Each variant MUST use a COMPLETELY DIFFERENT scenario/setting/location. If one variant uses a bathroom, NONE of the others can. If one uses a mirror, NONE of the others can. Think of ${n} different ROOMS or LOCATIONS for the person. Variety is mandatory.\n\nReturn a JSON object with a single key "variants" whose value is an array of ${n} objects, each with the same fields as specified. No markdown, no explanation, only the JSON object.`
       : `\nReturn ONLY a valid JSON object with exactly the fields requested. No markdown, no explanation, no extra text.`;
 
   const bp = args.businessProfile;
