@@ -1128,39 +1128,67 @@ or any existing graphic element. No people, no hands, no new elements.`,
       "belleza-cosmetica",
     ],
     defaultBackgroundPrompt:
-      "Dark dramatic studio interior. Very deep shadows, almost black walls, moody atmospheric lighting. Faint cold blue-white light from multiple screens or devices in the background, blurred in bokeh. No text, no people, no products. Dark cinematic aesthetic, highly textured shadows.",
+      "Minimalist dark studio interior. Near-black walls with barely perceptible matte texture. A single diffused ambient light source — a distant window or a soft box just off-frame — casts a gentle low-contrast glow across one side of the room. Deep shadows dominate. No furniture, no objects, no text, no people, no products. Cinematic, editorial, sophisticated darkness. Film photography aesthetic.",
     rawBackgroundPrompt: true,
+    categoryBackgroundPrompts: {
+      "belleza-cosmetica":
+        "Moody dark bathroom interior, near-black marble counter and walls, single soft vanity light barely illuminating one side, deep shadows, minimal and elegant. No people, no products, no text. Cinematic editorial beauty photography.",
+      "fitness-deporte":
+        "Dark premium gym interior, charcoal and black rubber flooring, dim dramatic spotlights from above creating pools of light, heavy shadows, no equipment in frame, atmospheric and cinematic. No people, no products, no text.",
+      "servicios-profesionales":
+        "Minimalist dark office interior, near-black walls, a single warm desk lamp glow barely visible off-frame, long dramatic shadows, matte textures. Sophisticated and cinematic. No people, no products, no text.",
+      "tecnologia":
+        "Dark minimal studio, charcoal walls with subtle cool undertone, a single soft blue-tinted light from the side casting elegant shadows, clean and cinematic. No people, no products, no text.",
+      "salud-bienestar":
+        "Serene dark spa-like interior, deep charcoal stone or concrete walls, warm amber candle-like ambient light barely illuminating the edges, soft and moody. No people, no products, no text. Cinematic wellness aesthetic.",
+    },
     defaultProductPrompt:
-      "Do NOT show any product. Generate a real person in an URGENCY / OVERWHELM scene filling the full canvas. The person sits at a desk with their head buried in their hands, elbows on the desk, clearly frustrated and overwhelmed. Multiple laptop screens and tablet screens surround them, each showing crossed-out or cancelled content (illustrated with large red X marks). The room is dark and moody — lit mainly by the harsh glow of the screens. The composition is cinematic and dramatic: person centered or slightly left, screens spread around. Dark background with high contrast. Photorealistic editorial photography, cinematic quality. No logos, no text, no products.",
+      "Do NOT show any product. Generate a REAL PERSON in a quiet, elegant PAIN-POINT moment — editorial, cinematic, sophisticated. A professional person, late 20s to early 40s, experiencing a moment of genuine frustration or exhaustion: eyes closed with one hand resting gently on their forehead, or chin resting on clasped hands with a distant troubled gaze, or sitting upright with arms loosely crossed and eyes looking downward. The expression conveys quiet overwhelm — composed but emotionally honest, not theatrical. The person is well-dressed in smart-casual or business attire — clean, fitted clothing with subtle fabric texture. They fill most of the frame from upper chest to just above the head. Centered horizontally in the canvas. LIGHTING: single soft key light from above-left or side window, creating sculpted shadows and depth on the face and clothing. Deep dark background, no clutter, no screens, no props. Photorealistic editorial photography, shallow depth of field, cinematic film quality. No logos, no text, no products.",
     rawProductPrompt: true,
     templateHint: `TEMPLATE HINT for bebas-urgencia-top:
-  This is a PAIN-POINT / URGENCY layout. Full-bleed scene of a frustrated person.
+  This is a PAIN-POINT / URGENCY layout. Full-bleed elegant portrait of a person in a quiet moment of struggle.
   A single HUGE headline in Bebas Neue (condensed display font) dominates the top of the image.
-  Dark overlay over the scene makes the white text pop. Logo auto-rendered top-left.
+  Dark overlay over the scene makes the white headline text pop. Logo auto-rendered top-left.
 
-  ONE FIELD ONLY — just the headline. Nothing else.
+  ONE HEADLINE ONLY — that is the only text field rendered.
 
   CRITICAL RULES:
-  - headline is the ONLY text rendered. Do NOT generate subheadline, badge, or CTA.
+  - headline is the ONLY text rendered. Do NOT generate subheadline, badge, bullets, or CTA.
   - Write a single, punchy pain-point question or statement. ALL CAPS is handled automatically.
-  - Maximum 8 words. Shorter is stronger.
-  - Use the reader's pain point — something they feel viscerally.
-  - End with "?" for questions or "." for statements.
+  - Maximum 8 words. Shorter is stronger. Every word must earn its place.
+  - Speak directly to the reader's most felt frustration in this niche.
+  - End with "?" for questions or "." for statements. No ellipsis.
 
-  - headline: single powerful pain-point claim. Max 8 words, max 50 chars.
-    Think: what frustration does this business solve?
-    Examples:
+  - headline: single powerful pain-point claim, max 8 words, max 55 chars.
+    Adapt the pain point to the business niche:
+
+    Servicios profesionales / Educación / Tecnología:
     "¿Hart@ de tutoriales que no te llevan a nada?"
     "¿Cansado de ver cómo tu competencia crece?"
-    "Seguís haciendo todo bien y no ves resultados."
-    "¿Cuándo fue la última vez que tuviste tiempo libre?"
     "Más horas de trabajo, menos dinero en el bolsillo."
+
+    Belleza / Estética / Bienestar:
+    "¿Seguís probando productos sin ver resultados reales?"
+    "Tu rutina de cuidado no debería costarte tanto esfuerzo."
+    "¿Cuándo fue la última vez que te sentiste bien con tu piel?"
+
+    Fitness / Deporte / Salud:
+    "Entrenás duro y el cuerpo no responde. ¿Por qué?"
+    "¿Meses en el gym y el cambio que esperabas no llega?"
+    "El cansancio que sentís no es normal. Hay una solución."
+
+    Alimentación / Gastronomía:
+    "¿Hartos de pagar caro por algo que no te nutre?"
+    "Comer bien no debería ser tan complicado."
 
   - backgroundColorHint: ignored — template uses a fixed dark cinematic background.
 
-  - sceneAction: optional override for the urgency scene. Describe the person.
-    Default: frustrated person at desk, head in hands, surrounded by multiple screens.
-    Example: "Person with head in hands at a cluttered desk, surrounded by multiple computer screens, dark moody room lit by screen glow, cinematic overhead angle"`,
+  - sceneAction: optional override describing the person and environment.
+    Keep it elegant — no chaos, no clutter, no screens. Focused emotional portrait.
+    Adapt the setting to the niche: bathroom for beauty, gym for fitness, office for services.
+    Example (servicios): "Professional woman in her 30s, eyes closed with hand on forehead, dark minimal office background, single side light, cinematic"
+    Example (belleza): "Woman in her late 20s seated at a dark vanity, chin resting on clasped hands, troubled gaze, warm soft side light, editorial beauty"
+    Example (fitness): "Athletic man in his 30s, seated on a dark gym bench, elbows on knees, head bowed, single overhead spotlight, cinematic"`,
   },
 ];
 
