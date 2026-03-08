@@ -1107,6 +1107,61 @@ or any existing graphic element. No people, no hands, no new elements.`,
     Full example for face cream: "BOTTOM 55% OF CANVAS ONLY — no person, no object, no shadow may appear in the top 45%. Two women in their 30s in a bright minimalist bathroom, laughing while applying the face cream to their cheeks, the product tube clearly visible in one woman's hand. Warm daylight from a window, clean and fresh feel, authentic and candid. Do not erase or modify any existing text or graphic elements already present in the image."
     Full example for protein shake: "BOTTOM 55% OF CANVAS ONLY — no person, no object, no shadow may appear in the top 45%. Three diverse athletes in a gym locker room after a workout, smiling and holding up the protein shake bottles, the product label facing the camera. Natural warm lighting, energetic and authentic, not stock-photo stiff. Do not erase or modify any existing text or graphic elements already present in the image."`,
   },
+  {
+    id: "bebas-urgencia-top",
+    name: "Urgencia Bebas Neue",
+    icon: "🔥",
+    tag: "Urgencia",
+    active: true,
+    description: "Escena de urgencia full-bleed, headline enorme en Bebas Neue, overlay oscuro. Un solo titular potente, sin producto. Logo arriba a la izquierda.",
+    supportedRatios: ["1:1", "4:5"],
+    copyZone: "center",
+    copySchema: ["headline", "backgroundColorHint", "sceneAction"],
+    requiresSceneGeneration: true,
+    personScene: true,
+    supportsSequence: false,
+    recommendedFor: [
+      "servicios-profesionales",
+      "tecnologia",
+      "fitness-deporte",
+      "salud-bienestar",
+      "belleza-cosmetica",
+    ],
+    defaultBackgroundPrompt:
+      "Dark dramatic studio interior. Very deep shadows, almost black walls, moody atmospheric lighting. Faint cold blue-white light from multiple screens or devices in the background, blurred in bokeh. No text, no people, no products. Dark cinematic aesthetic, highly textured shadows.",
+    rawBackgroundPrompt: true,
+    defaultProductPrompt:
+      "Do NOT show any product. Generate a real person in an URGENCY / OVERWHELM scene filling the full canvas. The person sits at a desk with their head buried in their hands, elbows on the desk, clearly frustrated and overwhelmed. Multiple laptop screens and tablet screens surround them, each showing crossed-out or cancelled content (illustrated with large red X marks). The room is dark and moody — lit mainly by the harsh glow of the screens. The composition is cinematic and dramatic: person centered or slightly left, screens spread around. Dark background with high contrast. Photorealistic editorial photography, cinematic quality. No logos, no text, no products.",
+    rawProductPrompt: true,
+    templateHint: `TEMPLATE HINT for bebas-urgencia-top:
+  This is a PAIN-POINT / URGENCY layout. Full-bleed scene of a frustrated person.
+  A single HUGE headline in Bebas Neue (condensed display font) dominates the top of the image.
+  Dark overlay over the scene makes the white text pop. Logo auto-rendered top-left.
+
+  ONE FIELD ONLY — just the headline. Nothing else.
+
+  CRITICAL RULES:
+  - headline is the ONLY text rendered. Do NOT generate subheadline, badge, or CTA.
+  - Write a single, punchy pain-point question or statement. ALL CAPS is handled automatically.
+  - Maximum 8 words. Shorter is stronger.
+  - Use the reader's pain point — something they feel viscerally.
+  - End with "?" for questions or "." for statements.
+
+  - headline: single powerful pain-point claim. Max 8 words, max 50 chars.
+    Think: what frustration does this business solve?
+    Examples:
+    "¿Hart@ de tutoriales que no te llevan a nada?"
+    "¿Cansado de ver cómo tu competencia crece?"
+    "Seguís haciendo todo bien y no ves resultados."
+    "¿Cuándo fue la última vez que tuviste tiempo libre?"
+    "Más horas de trabajo, menos dinero en el bolsillo."
+
+  - backgroundColorHint: ignored — template uses a fixed dark cinematic background.
+
+  - sceneAction: optional override for the urgency scene. Describe the person.
+    Default: frustrated person at desk, head in hands, surrounded by multiple screens.
+    Example: "Person with head in hands at a cluttered desk, surrounded by multiple computer screens, dark moody room lit by screen glow, cinematic overhead angle"`,
+  },
 ];
 
 

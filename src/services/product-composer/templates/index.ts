@@ -27,6 +27,7 @@ import { buildTestimonioReviewLayout } from "./testimonio-review";
 import { buildProductoHeroTopLayout } from "./producto-hero-top";
 import { buildPersonaProductoLeftLayout } from "./persona-producto-left";
 import { buildPersonaHeroBottomLayout } from "./persona-hero-bottom";
+import { buildBebasUrgenciaTopLayout } from "./bebas-urgencia-top";
 import { TEMPLATE_META_LIST, type TemplateMetadata } from "./meta";
 import type { LayoutSpec } from "../layoutSpec";
 
@@ -61,6 +62,7 @@ const LAYOUT_BUILDERS: Record<string, BuildLayoutFn> = {
   "producto-hero-top": buildProductoHeroTopLayout as BuildLayoutFn,
   "persona-producto-left": buildPersonaProductoLeftLayout as BuildLayoutFn,
   "persona-hero-bottom": buildPersonaHeroBottomLayout as BuildLayoutFn,
+  "bebas-urgencia-top": buildBebasUrgenciaTopLayout as BuildLayoutFn,
 };
 
 export const TEMPLATE_REGISTRY: Record<string, TemplateDefinition> = Object.fromEntries(
