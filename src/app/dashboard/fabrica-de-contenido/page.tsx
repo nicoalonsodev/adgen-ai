@@ -689,6 +689,7 @@ export default function FabricaDeContenido() {
               personScene: templateMeta?.personScene === true ? true : undefined,
               sharpProductOverlay: (templateMeta as any)?.sharpProductOverlay ?? undefined,
               hasRealProduct: !!productFile,
+              sceneFullBleed: templateMeta?.sceneFullBleed === true ? true : undefined,
             },
           }));
           const _t3 = Date.now();
@@ -1033,6 +1034,7 @@ export default function FabricaDeContenido() {
                 personScene: tplMeta?.personScene === true ? true : undefined,
                 sharpProductOverlay: (tplMeta as any)?.sharpProductOverlay ?? undefined,
                 hasRealProduct: !!productFile,
+                sceneFullBleed: tplMeta?.sceneFullBleed === true ? true : undefined,
               },
             }));
             const _tProd = Date.now();
