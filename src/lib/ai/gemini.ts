@@ -227,32 +227,44 @@ export async function generateBackground(args: {
   aspectRatio?: string;
 }): Promise<Buffer> {
   const ai = getClient();
+  const MAX_ATTEMPTS = 3;
+  let lastTextResponse = "";
 
   console.log(`[gemini:generateBackground] model=${MODEL_NANO_BANANA} prompt_chars=${args.prompt.length}\n${args.prompt.slice(0, 300)}`);
-  const response = await generateContentWithRetry(ai, {
-    model: MODEL_NANO_BANANA,
-    contents: [
-      {
-        role: "user",
-        parts: [{ text: args.prompt }],
-      },
-    ],
-    config: {
-      imageConfig: {
-        aspectRatio: args.aspectRatio ?? "1:1",
-        imageSize: "1K",
-      },
-      responseModalities: ["IMAGE"],
-    },
-  });
 
-  const imagePart = findImagePart(response);
-  if (imagePart?.inlineData?.data) {
-    return Buffer.from(imagePart.inlineData.data as string, "base64");
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    // generateContentWithRetry handles transient network/API errors internally.
+    // This outer loop retries the "no image returned" case (safety filter, model refusal, etc.)
+    const response = await generateContentWithRetry(ai, {
+      model: MODEL_NANO_BANANA,
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: args.prompt }],
+        },
+      ],
+      config: {
+        imageConfig: {
+          aspectRatio: args.aspectRatio ?? "1:1",
+          imageSize: "1K",
+        },
+        responseModalities: ["IMAGE"],
+      },
+    });
+
+    const imagePart = findImagePart(response);
+    if (imagePart?.inlineData?.data) {
+      return Buffer.from(imagePart.inlineData.data as string, "base64");
+    }
+
+    lastTextResponse = collectTextParts(response);
+    console.warn(`[gemini:generateBackground] Sin imagen en intento ${attempt}/${MAX_ATTEMPTS}. Respuesta: ${lastTextResponse.slice(0, 200)}`);
+    if (attempt < MAX_ATTEMPTS) {
+      await sleep(600 * attempt);
+    }
   }
 
-  const text = collectTextParts(response);
-  throw new Error(text || "Gemini no devolvió imagen de fondo.");
+  throw new Error(lastTextResponse || "Gemini no devolvió imagen de fondo.");
 }
 
 export async function generateScene(args: {
