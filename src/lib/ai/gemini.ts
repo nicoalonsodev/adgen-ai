@@ -806,9 +806,10 @@ Instructions:
    - Camera/framing: lens feel, depth, composition
 4. The person fills the ENTIRE canvas edge-to-edge (full-bleed cinematic portrait)
 5. Face should be positioned in the CENTER or CENTER-LOWER area of the canvas (NOT in the top 25%)
-6. End with: "4K photorealistic. No text, no logos, no products."
-7. Output ONLY the prompt text — no labels, no explanation, no markdown
-8. Max 80 words — be dense and specific, not verbose`;
+6. ANATOMY RULE: The person must have EXACTLY two arms and two hands — correct human anatomy is mandatory. Never describe extra limbs.
+7. End with: "4K photorealistic. No text, no logos, no products."
+8. Output ONLY the prompt text — no labels, no explanation, no markdown
+9. Max 80 words — be dense and specific, not verbose`;
 
   console.log(`[gemini:expandSceneBrief] model=gemini-2.0-flash category=${args.productCategory} scene="${args.sceneAction.slice(0, 60)}..."`);
 
