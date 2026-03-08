@@ -95,6 +95,8 @@ interface ComposeJsonBody {
      *  En sceneMode, esto indica a composeWithProductIA que debe enviar la imagen del producto
      *  a Gemini como Image 2 para que lo use como referencia en vez de inventar uno. */
     hasRealProduct?: boolean;
+    /** true = scene fills entire canvas (full-bleed) instead of being confined to one zone */
+    sceneFullBleed?: boolean;
   };
 
   templateBetaOptions?: {

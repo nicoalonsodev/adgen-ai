@@ -272,3 +272,26 @@ Happy mother and young daughter (or two women) standing close together, both loo
 
 **Grupo joven dinámico:**
 Two or three young women in their 20s–30s in casual trendy outfits, laughing or looking at camera with genuine enthusiasm and excitement. Dynamic, high-energy. Bright natural or urban lighting. Person on right side of canvas only. DO NOT modify the left side — it contains pre-rendered copy text.
+
+---
+
+## Full-Bleed / Urgencia (escenas a pantalla completa)
+
+Usar cuando el template tiene overlay oscuro y la escena debe cubrir TODO el canvas.
+La persona llena toda la imagen de borde a borde. Un overlay semi-transparente se aplicará después para legibilidad del texto.
+La cara de la persona NO debe estar centrada en la zona del headline (generalmente el top 25%) — posicionar la cara en el centro o centro-inferior del canvas.
+
+**Pain-point full-bleed — belleza/skincare:**
+Photorealistic editorial photography. Full-bleed cinematic portrait. A woman in her late 20s, seated at a dark vanity table, chin resting on clasped hands, troubled introspective gaze. She fills the entire frame — body and environment extend edge to edge. Warm soft side light from a single source, deep shadows on the opposite side. Face positioned in the center-lower area of the canvas. Dark moody atmosphere, shallow depth of field, editorial beauty photography. 4K photorealistic. No text, no logos, no products.
+
+**Pain-point full-bleed — fitness/deporte:**
+Photorealistic editorial photography. Full-bleed cinematic portrait. Athletic man in his 30s, seated on a dark gym bench, elbows resting on knees, head slightly bowed in exhaustion. He fills the entire frame edge to edge. Single overhead spotlight creates dramatic top-down lighting, deep shadows around. Face positioned in the center of the canvas. Dark minimal gym environment, cinematic mood. 4K photorealistic. No text, no logos, no products.
+
+**Pain-point full-bleed — servicios profesionales:**
+Photorealistic editorial photography. Full-bleed cinematic portrait. Professional woman in her 30s, eyes closed with hand on forehead, sitting at a dark minimal desk. She fills the entire frame edge to edge. Single warm side light, dark moody office background with barely visible elements. Face positioned in the center-lower area. Cinematic, editorial, sophisticated darkness. 4K photorealistic. No text, no logos, no products.
+
+**Pain-point full-bleed — salud/bienestar:**
+Photorealistic editorial photography. Full-bleed cinematic portrait. Woman in her late 30s, sitting on the edge of a bed in a dark room, one hand on her temple, exhausted distant gaze. She fills the entire frame edge to edge. Soft window light barely illuminating one side, deep shadows dominate. Face positioned in the center of the canvas. Intimate, vulnerable, cinematic. 4K photorealistic. No text, no logos, no products.
+
+**Urgencia full-bleed — genérico:**
+Photorealistic editorial photography. Full-bleed cinematic portrait. Person in a quiet moment of struggle or frustration, filling the entire canvas edge to edge. Dramatic single-source lighting, dark moody environment. Face positioned in the center or lower-center of the frame — NOT in the top quarter. Shallow depth of field, editorial cinematic mood. 4K photorealistic. No text, no logos, no products.

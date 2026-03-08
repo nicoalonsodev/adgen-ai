@@ -44,6 +44,16 @@ export interface TemplateMetadata {
   /** true = scene includes person holding the product (persona-producto) */
   sceneWithProduct?: boolean;
   /**
+   * true = the generated scene should cover the ENTIRE canvas (full-bleed),
+   * instead of being confined to the opposite side of the copyZone.
+   * The prompt will instruct the model to keep the headline/logo areas
+   * readable (no face/body directly behind text) but allow the scene
+   * to extend underneath the overlay.
+   * Designed for templates like bebas-urgencia-top where a dark overlay
+   * ensures text legibility over the full-bleed scene.
+   */
+  sceneFullBleed?: boolean;
+  /**
    * true = when this template falls through to Flujo D (product injection),
    * the prompt intentionally describes a person in the scene.
    * Enables ABSOLUTE_RULES_ANATOMY in buildProductIAPrompt.
@@ -1524,6 +1534,7 @@ No hands, no people. Photorealistic. 4K.`,
     copySchema: ["headline", "backgroundColorHint", "sceneAction"],
     requiresSceneGeneration: true,
     personScene: true,
+    sceneFullBleed: true,
     supportsSequence: false,
     recommendedFor: [
       "servicios-profesionales",

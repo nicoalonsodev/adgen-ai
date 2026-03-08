@@ -10,8 +10,33 @@ import { ABSOLUTE_RULES_SCENE, ABSOLUTE_RULES_PRODUCT_INJECT, ABSOLUTE_RULES_ANA
 function buildZonePlacement(
   copyZone: "left" | "right" | "top" | "bottom" | "center",
   mode: "scene" | "product" | "avatar",
+  opts?: { fullBleed?: boolean },
 ): string {
   if (mode === "scene") {
+    // Full-bleed: person covers the entire canvas, but avoids blocking headline/logo areas with face/body center
+    if (opts?.fullBleed) {
+      const avoidZone = copyZone === "top"
+        ? `- The person FILLS THE ENTIRE CANVAS — full-bleed, edge-to-edge, cinematic framing.
+- IMPORTANT: the TOP 25% of the image will have a text headline overlay. The person's FACE and upper chest should NOT be centered in that top 25% — position the face in the center or lower-center of the canvas so the headline reads clearly over the person's shoulders, hair, or negative space.
+- The person's body, arms, and silhouette MAY extend into the top area — only the FACE should avoid being directly behind the headline text.
+- Logo will be rendered at the top-left corner — avoid placing the person's face directly behind that small area.`
+        : copyZone === "bottom"
+        ? `- The person FILLS THE ENTIRE CANVAS — full-bleed, edge-to-edge, cinematic framing.
+- IMPORTANT: the BOTTOM 25% of the image will have a text overlay. Position the person's FACE in the upper-center of the canvas so text reads clearly over legs, torso, or negative space.
+- The person's body MAY extend into the bottom area — only the FACE should avoid being directly behind the text.`
+        : copyZone === "left"
+        ? `- The person FILLS THE ENTIRE CANVAS — full-bleed, edge-to-edge, cinematic framing.
+- IMPORTANT: the LEFT 45% will have a text overlay. Position the person's FACE in the right-center of the canvas so text reads clearly.
+- The person's body MAY extend into the left area — only the FACE should avoid being directly behind the text.`
+        : copyZone === "right"
+        ? `- The person FILLS THE ENTIRE CANVAS — full-bleed, edge-to-edge, cinematic framing.
+- IMPORTANT: the RIGHT 45% will have a text overlay. Position the person's FACE in the left-center of the canvas so text reads clearly.
+- The person's body MAY extend into the right area — only the FACE should avoid being directly behind the text.`
+        : `- The person FILLS THE ENTIRE CANVAS — full-bleed, edge-to-edge, cinematic framing.
+- Keep the person large and prominent, centered. Avoid placing the face directly behind any existing text or graphic elements.`;
+      return avoidZone;
+    }
+
     switch (copyZone) {
       case "right":
         return `PLACEMENT ZONE — hard constraint:
@@ -101,7 +126,7 @@ THIS OVERRIDES the creative brief if there is any conflict.
 ================================================================================`;
 }
 
-function buildScenePrompt(sceneAction: string, copyZone: string, hasRealProduct = false): string {
+function buildScenePrompt(sceneAction: string, copyZone: string, hasRealProduct = false, opts?: { fullBleed?: boolean }): string {
   const zone = copyZone as "left" | "right" | "top" | "bottom" | "center";
 
   const productRule = hasRealProduct
@@ -114,6 +139,12 @@ function buildScenePrompt(sceneAction: string, copyZone: string, hasRealProduct 
       ? `- If the scene implies a product in use, the person may hold or interact with it naturally — but ONLY the product from Image 2.`
       : `- DO NOT show anything being held. The person's hands must be empty or in a natural resting pose.`;
 
+  const fullBleedContext = opts?.fullBleed
+    ? `\nFULL-BLEED SCENE — The person should fill the entire canvas, like a cinematic portrait.
+This is NOT a split layout — the scene is edge-to-edge. A dark overlay will be applied AFTER generation
+to ensure text legibility, so the generated image should be a clean, full-frame portrait/scene.\n`
+    : "";
+
   return `You are a professional advertising image compositor. Your task is to add a person to a background scene.
 
 STEP 1 — ANALYZE THE IMAGE FIRST:
@@ -121,11 +152,11 @@ Before making any changes, examine the background image carefully and identify:
 • Where existing text, labels, badges, icons, or graphic elements are located — these are protected zones, the person must NEVER overlap them
 • Where the open, empty space is available for placing the person
 • The dominant lighting direction and color temperature of the scene
-
+${fullBleedContext}
 STEP 2 — COMPOSE WITH PRECISION:
 ${sceneAction}
 
-${buildZonePlacement(zone, "scene")}
+${buildZonePlacement(zone, "scene", { fullBleed: opts?.fullBleed })}
 
 ${ABSOLUTE_RULES_SCENE}
 ${productRule}
@@ -406,24 +437,25 @@ const aspectRatio = `${targetW / divisor}:${targetH / divisor}`;
     const sceneAction = req.productIAOptions?.prompt ?? "";
     const sceneCopyZone = req.productIAOptions?.copyZone ?? "left";
     const hasRealProduct = req.productIAOptions?.hasRealProduct === true;
+    const sceneFullBleed = req.productIAOptions?.sceneFullBleed === true;
 
     let scene: Buffer;
 
     if (hasRealProduct && req.productBuffer) {
       // El usuario subió una imagen real de producto: enviamos background + producto a Gemini
       // para que use el producto real como referencia y no invente uno propio.
-      console.log(`[composeWithProductIA:sceneMode] hasRealProduct=true → usando nanoBananaInjectProduct con producto real`);
+      console.log(`[composeWithProductIA:sceneMode] hasRealProduct=true fullBleed=${sceneFullBleed} → usando nanoBananaInjectProduct con producto real`);
       scene = await nanoBananaInjectProduct({
         backgroundPng: bg,
         productPng: req.productBuffer,
-        prompt: buildScenePrompt(sceneAction, sceneCopyZone, true),
+        prompt: buildScenePrompt(sceneAction, sceneCopyZone, true, { fullBleed: sceneFullBleed }),
         aspectRatio,
       });
     } else {
       // Sin producto: solo se envía el fondo y Gemini genera la escena con persona
       scene = await generateScene({
         backgroundPng: bg,
-        prompt: buildScenePrompt(sceneAction, sceneCopyZone, false),
+        prompt: buildScenePrompt(sceneAction, sceneCopyZone, false, { fullBleed: sceneFullBleed }),
         aspectRatio,
       });
     }

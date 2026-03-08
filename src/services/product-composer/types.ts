@@ -282,6 +282,13 @@ copyZone: z.enum(["right", "left", "top", "bottom", "center", "full"]).default("
    * as Image 2 so it uses the real product instead of hallucinating one.
    */
   hasRealProduct: z.boolean().optional().default(false),
+  /**
+   * true = the scene should cover the entire canvas (full-bleed) instead of
+   * being restricted to the opposite side of the copyZone.
+   * The prompt tells the model to keep headline/logo areas readable but lets
+   * the person fill the whole frame. Used with templates that have a dark overlay.
+   */
+  sceneFullBleed: z.boolean().optional().default(false),
 });
 export type ProductIAOptions = z.infer<typeof ProductIAOptionsSchema>;
 /* ═══════════════════════════════════════════════════════════════
