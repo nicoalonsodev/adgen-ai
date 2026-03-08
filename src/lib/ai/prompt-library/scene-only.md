@@ -281,17 +281,68 @@ Usar cuando el template tiene overlay oscuro y la escena debe cubrir TODO el can
 La persona llena toda la imagen de borde a borde. Un overlay semi-transparente se aplicará después para legibilidad del texto.
 La cara de la persona NO debe estar centrada en la zona del headline (generalmente el top 25%) — posicionar la cara en el centro o centro-inferior del canvas.
 
-**Pain-point full-bleed — belleza/skincare:**
-Photorealistic editorial photography. Full-bleed cinematic portrait. A woman in her late 20s, seated at a dark vanity table, chin resting on clasped hands, troubled introspective gaze. She fills the entire frame — body and environment extend edge to edge. Warm soft side light from a single source, deep shadows on the opposite side. Face positioned in the center-lower area of the canvas. Dark moody atmosphere, shallow depth of field, editorial beauty photography. 4K photorealistic. No text, no logos, no products.
+REGLA CLAVE DE VARIEDAD: cuando se generan múltiples creativos, cada escena DEBE usar un escenario, setting y pose COMPLETAMENTE DIFERENTE. Nunca repetir el mismo concepto visual (ej: no hacer 2 escenas de "mujer frente al espejo"). Pensar como director creativo de campaña.
 
-**Pain-point full-bleed — fitness/deporte:**
-Photorealistic editorial photography. Full-bleed cinematic portrait. Athletic man in his 30s, seated on a dark gym bench, elbows resting on knees, head slightly bowed in exhaustion. He fills the entire frame edge to edge. Single overhead spotlight creates dramatic top-down lighting, deep shadows around. Face positioned in the center of the canvas. Dark minimal gym environment, cinematic mood. 4K photorealistic. No text, no logos, no products.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CATÁLOGO FULL-BLEED — ESCENARIOS DIVERSOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**Pain-point full-bleed — servicios profesionales:**
-Photorealistic editorial photography. Full-bleed cinematic portrait. Professional woman in her 30s, eyes closed with hand on forehead, sitting at a dark minimal desk. She fills the entire frame edge to edge. Single warm side light, dark moody office background with barely visible elements. Face positioned in the center-lower area. Cinematic, editorial, sophisticated darkness. 4K photorealistic. No text, no logos, no products.
+**FB-01 — Baño / Espejo (skincare, belleza):**
+Photorealistic editorial photography. Full-bleed cinematic portrait. A woman in her late 20s standing in a dark bathroom, both hands gripping the edges of the sink, staring at her reflection with frustration. Vanity mirror light as sole source, harsh and revealing. Face in center of canvas. She fills the entire frame edge to edge. Dark moody tiles and shadows. Shallow depth of field. 4K photorealistic. No text, no logos, no products.
 
-**Pain-point full-bleed — salud/bienestar:**
-Photorealistic editorial photography. Full-bleed cinematic portrait. Woman in her late 30s, sitting on the edge of a bed in a dark room, one hand on her temple, exhausted distant gaze. She fills the entire frame edge to edge. Soft window light barely illuminating one side, deep shadows dominate. Face positioned in the center of the canvas. Intimate, vulnerable, cinematic. 4K photorealistic. No text, no logos, no products.
+**FB-02 — Gym / Derrota post-entrenamiento (fitness):**
+Photorealistic editorial photography. Full-bleed cinematic portrait. Athletic man in his 30s, seated on a dark gym bench, elbows resting on knees, head slightly bowed in exhaustion, towel draped over shoulders. Single overhead spotlight creates dramatic top-down lighting, deep shadows around. Face in center of canvas. He fills the entire frame edge to edge. Minimal dark gym. 4K photorealistic. No text, no logos, no products.
 
-**Urgencia full-bleed — genérico:**
-Photorealistic editorial photography. Full-bleed cinematic portrait. Person in a quiet moment of struggle or frustration, filling the entire canvas edge to edge. Dramatic single-source lighting, dark moody environment. Face positioned in the center or lower-center of the frame — NOT in the top quarter. Shallow depth of field, editorial cinematic mood. 4K photorealistic. No text, no logos, no products.
+**FB-03 — Oficina / Estrés laboral (servicios profesionales):**
+Photorealistic editorial photography. Full-bleed cinematic portrait. Professional woman in her 30s, eyes closed with hand on forehead, sitting at a dark minimal desk. Laptop screen glow as secondary light. Single warm side light, dark moody office. Face in center-lower area. She fills the entire frame edge to edge. Cinematic, editorial. 4K photorealistic. No text, no logos, no products.
+
+**FB-04 — Cama / Insomnio (salud, bienestar):**
+Photorealistic editorial photography. Full-bleed cinematic portrait. Woman in her late 30s, sitting on the edge of a bed in a dark room at 3am, one hand on her temple, exhausted distant gaze. Phone on nightstand casting faint blue glow. Soft window light barely illuminating one side. Face in center of canvas. She fills the entire frame edge to edge. Intimate, vulnerable. 4K photorealistic. No text, no logos, no products.
+
+**FB-05 — Cocina / Overwhelm de suplementos (salud, nutrición):**
+Photorealistic editorial photography. Full-bleed cinematic portrait. Man in his 40s leaning against a dark kitchen counter, arms crossed, skeptical exhausted expression. Counter cluttered with various supplement bottles and pills — none with readable labels. Single warm pendant light overhead, deep shadows on walls. Face in center of canvas. He fills the entire frame edge to edge. Moody kitchen atmosphere. 4K photorealistic. No text, no logos, no products.
+
+**FB-06 — Calle / Lluvia urbana (moda, lifestyle):**
+Photorealistic editorial photography. Full-bleed cinematic portrait. Young woman in her late 20s walking alone on a rain-wet urban street at dusk. Hunched shoulders, arms wrapped around herself, avoiding her reflection in a dark shop window. Neon and streetlight reflections on wet pavement. Face in center-lower area. She fills the entire frame edge to edge. Cinematic moody blue-orange palette. 4K photorealistic. No text, no logos, no products.
+
+**FB-07 — Vestidor / Ropa que no entra (fitness, moda):**
+Photorealistic editorial photography. Full-bleed cinematic portrait. Woman in her 30s standing in front of an open dark closet, one hand on her waist, the other holding a garment on a hanger. Frustrated expression looking down at the clothes. Single warm side light from a bedroom lamp. Face in center of canvas. She fills the entire frame edge to edge. Intimate domestic setting. 4K photorealistic. No text, no logos, no products.
+
+**FB-08 — Auto / Momento privado de frustración:**
+Photorealistic editorial photography. Full-bleed cinematic portrait. Man in his 30s sitting in the driver's seat of a parked car, both hands gripping the steering wheel, head slightly bowed. Expression of quiet private frustration. Parking lot light filtering through windshield creating dramatic shadows on his face. Face in center of canvas. He fills the entire frame edge to edge. Cinematic, intimate. 4K photorealistic. No text, no logos, no products.
+
+**FB-09 — Corredor detenido / Dolor físico (fitness, salud):**
+Photorealistic editorial photography. Full-bleed cinematic portrait. Female runner in her 30s stopped mid-jog on a dark morning trail, one hand pressed against her side, grimacing in pain. Early blue-hour light, mist in background. Athletic wear, body slightly bent forward. Face in center-lower area. She fills the entire frame edge to edge. Cinematic depth, cool tones. 4K photorealistic. No text, no logos, no products.
+
+**FB-10 — Sofá / Dolor crónico aislamiento (salud):**
+Photorealistic editorial photography. Full-bleed cinematic portrait. Woman in her 40s on a dark living room couch, holding an ice pack against her lower back, other hand on the armrest. TV casting faint flickering light in background. Expression of resigned discomfort. Face in center of canvas. She fills the entire frame edge to edge. Warm but melancholic ambient light. 4K photorealistic. No text, no logos, no products.
+
+**FB-11 — Farmacia / Overwhelm de opciones:**
+Photorealistic editorial photography. Full-bleed cinematic portrait. Woman in her late 20s in a dark pharmacy aisle, holding two different product boxes (labels blurred/unreadable), looking between them with confused overwhelmed expression. Harsh fluorescent overhead light, deep shelf shadows. Face in center of canvas. She fills the entire frame edge to edge. Clinical cold atmosphere. 4K photorealistic. No text, no logos, no products.
+
+**FB-12 — Banco de plaza / Soledad reflexiva:**
+Photorealistic editorial photography. Full-bleed cinematic portrait. Man in his 40s sitting alone on a park bench at golden hour, leaning forward with elbows on knees, one hand on the back of his neck. Distant introspective gaze. Warm low sun creating long shadows behind him. Face in center-lower area. He fills the entire frame edge to edge. Cinematic, contemplative. 4K photorealistic. No text, no logos, no products.
+
+**FB-13 — Mesa de comida / Malestar digestivo (salud, nutrición):**
+Photorealistic editorial photography. Full-bleed cinematic portrait. Woman in her 30s at a dark dining table, pushing a plate of food away with one hand while the other rests on her stomach. Expression of discomfort and nausea. Warm overhead pendant light, rest of room in shadow. Face in center of canvas. She fills the entire frame edge to edge. Intimate, relatable. 4K photorealistic. No text, no logos, no products.
+
+**FB-14 — Sala de espera médica / Ansiedad (salud):**
+Photorealistic editorial photography. Full-bleed cinematic portrait. Man in his 30s sitting in a dark medical waiting room, hands clasped between his knees, nervous fidgeting. Harsh cold fluorescent light from above, sterile environment. Expression of anxiety and uncertainty. Face in center of canvas. He fills the entire frame edge to edge. Clinical, tense atmosphere. 4K photorealistic. No text, no logos, no products.
+
+**FB-15 — Espejo cuerpo completo / Inseguridad corporal (fitness, moda):**
+Photorealistic editorial photography. Full-bleed cinematic portrait. Woman in her 30s standing sideways in front of a full-length mirror in a dark bedroom, hand on her waist, examining her silhouette with a dissatisfied expression. Soft warm lamp light from behind, mirror reflecting moody ambient tones. Face in center of canvas. She fills the entire frame edge to edge. Vulnerable, editorial. 4K photorealistic. No text, no logos, no products.
+
+**FB-16 — Escritorio nocturno / Burnout (servicios, tecnología):**
+Photorealistic editorial photography. Full-bleed cinematic portrait. Young professional in his late 20s at a dark home desk at night, multiple monitors casting blue-white glow on his face, one hand removing glasses while rubbing his eyes. Surrounded by empty coffee cups. Expression of mental exhaustion. Face in center of canvas. He fills the entire frame edge to edge. Dark tech-noir mood. 4K photorealistic. No text, no logos, no products.
+
+**FB-17 — Pelo en el cepillo / Caída capilar (belleza, salud):**
+Photorealistic editorial photography. Full-bleed cinematic portrait. Woman in her late 30s in a dark bathroom, holding a hairbrush with visible strands of hair on it, looking at it with a worried pained expression. Soft bathroom side light. Other hand touching her scalp gently. Face in center of canvas. She fills the entire frame edge to edge. Intimate, vulnerable, editorial. 4K photorealistic. No text, no logos, no products.
+
+**FB-18 — Celular / Comparación en redes (belleza, bienestar):**
+Photorealistic editorial photography. Full-bleed cinematic portrait. Young woman in her mid-20s lying on a dark bed, phone held above her face, its blue-white screen glow as the only light source. Expression of sadness and self-comparison. One hand touching her own cheek absently. Face in center-lower area. She fills the entire frame edge to edge. Moody, isolated, intimate. 4K photorealistic. No text, no logos, no products.
+
+**FB-19 — Escalera / Agotamiento físico (fitness, salud):**
+Photorealistic editorial photography. Full-bleed cinematic portrait. Man in his 40s sitting on dark concrete stairs, one knee up, arm resting on it, head slightly tilted back against the wall with eyes closed. Expression of physical and emotional depletion. Harsh single light from a stairwell fixture. Face in center of canvas. He fills the entire frame edge to edge. Raw, urban, cinematic. 4K photorealistic. No text, no logos, no products.
+
+**FB-20 — Ventana / Reflexión introspectiva (genérico):**
+Photorealistic editorial photography. Full-bleed cinematic portrait. Woman in her 30s standing by a dark window, forehead resting against the glass, one hand flat on the windowpane. Rain outside creating soft diffused light patterns on her face. Expression of quiet desperation and longing. Face in center of canvas. She fills the entire frame edge to edge. Melancholic, cinematic, editorial. 4K photorealistic. No text, no logos, no products.
