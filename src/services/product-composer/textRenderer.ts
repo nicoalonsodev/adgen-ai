@@ -49,7 +49,9 @@ function normalizeFontFamily(fontFamily: string): string {
   // Map fonts we don't have to the closest available
   if (key.includes("playfair")) return "Lora";
   if (key.includes("poppins") || key.includes("arial") || key.includes("helvetica")) return "Montserrat";
-  // Inter, Lora, Montserrat → available directly via fontBuffers
+  // Bebas Neue → available directly via fontBuffers
+  if (key.includes("bebas")) return "Bebas Neue";
+  // Inter, Lora, Montserrat, Bebas Neue → available directly via fontBuffers
   return fontFamily;
 }
 
@@ -384,6 +386,9 @@ const FONT_FAMILY_FACTORS: Record<string, number> = {
   "helvetica":        1.00,
   "roboto":           1.00,
   "georgia":          1.05,
+  // Bebas Neue: condensed display font, characters are narrow
+  "bebas neue":       0.62,
+  "bebas":            0.62,
 };
 
 function getFontFamilyFactor(fontFamily: string): number {

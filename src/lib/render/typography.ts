@@ -29,6 +29,10 @@ export function ensureFontsRegistered(): void {
     path.join(fontsDir, "Inter-Bold.ttf"),
     "Inter Bold"
   );
+  GlobalFonts.registerFromPath(
+    path.join(fontsDir, "BebasNeue-Regular.ttf"),
+    "Bebas Neue"
+  );
 
   fontsRegistered = true;
 }
