@@ -440,22 +440,25 @@ const aspectRatio = `${targetW / divisor}:${targetH / divisor}`;
     const sceneFullBleed = req.productIAOptions?.sceneFullBleed === true;
 
     let scene: Buffer;
+    let fullPromptUsed: string;
 
     if (hasRealProduct && req.productBuffer) {
       // El usuario subió una imagen real de producto: enviamos background + producto a Gemini
       // para que use el producto real como referencia y no invente uno propio.
+      fullPromptUsed = buildScenePrompt(sceneAction, sceneCopyZone, true, { fullBleed: sceneFullBleed });
       console.log(`[composeWithProductIA:sceneMode] hasRealProduct=true fullBleed=${sceneFullBleed} → usando nanoBananaInjectProduct con producto real`);
       scene = await nanoBananaInjectProduct({
         backgroundPng: bg,
         productPng: req.productBuffer,
-        prompt: buildScenePrompt(sceneAction, sceneCopyZone, true, { fullBleed: sceneFullBleed }),
+        prompt: fullPromptUsed,
         aspectRatio,
       });
     } else {
       // Sin producto: solo se envía el fondo y Gemini genera la escena con persona
+      fullPromptUsed = buildScenePrompt(sceneAction, sceneCopyZone, false, { fullBleed: sceneFullBleed });
       scene = await generateScene({
         backgroundPng: bg,
-        prompt: buildScenePrompt(sceneAction, sceneCopyZone, false, { fullBleed: sceneFullBleed }),
+        prompt: fullPromptUsed,
         aspectRatio,
       });
     }
@@ -470,7 +473,7 @@ const aspectRatio = `${targetW / divisor}:${targetH / divisor}`;
     return {
       success: true,
       buffer: normalizedScene,
-      promptUsed: sceneAction,
+      promptUsed: fullPromptUsed,
       timings: { total: Date.now() - t0, renderText: 0 },
     };
   }

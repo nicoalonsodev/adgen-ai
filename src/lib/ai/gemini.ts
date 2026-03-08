@@ -766,6 +766,8 @@ export async function expandSceneBrief(args: {
   productCategory: string;
   tone: string;
   copyZone?: string;
+  fullBleed?: boolean;
+  backgroundPrompt?: string;
   businessProfile?: {
     nombre?: string;
     clienteIdeal?: string;
@@ -779,9 +781,32 @@ export async function expandSceneBrief(args: {
     ? `Brand: ${args.businessProfile.nombre || ""}. Ideal client: ${args.businessProfile.clienteIdeal || ""}.`
     : "";
 
+  // Full-bleed: the background is pre-generated separately. The expanded prompt must describe
+  // ONLY the person (appearance, pose, expression, clothing) — NOT the environment/setting,
+  // because Gemini will receive the pre-generated background as Image 1 and must composite
+  // the person INTO it without altering the background.
+  const fullBleedInstructions = args.fullBleed
+    ? `
+CRITICAL — FULL-BLEED COMPOSITE MODE:
+A dark cinematic background has ALREADY been generated separately${args.backgroundPrompt ? ` ("${args.backgroundPrompt}")` : ""}.
+Gemini will receive that background as an image and must ADD the person to it.
+Therefore your prompt must describe ONLY THE PERSON — do NOT describe any environment, room,
+setting, furniture, surfaces, or background elements. The background is already done.
+Focus exclusively on: the person's appearance, clothing, pose, body language, expression,
+and how lighting falls on them (matching a dark cinematic scene).
+DO NOT mention kitchens, bathrooms, living rooms, counters, mirrors, gyms, or any setting.
+The person should look like they BELONG in a dark, moody, cinematic environment.`
+    : "";
+
+  const environmentInstruction = args.fullBleed
+    ? `   - Do NOT describe any environment, room, setting, or background — the background is pre-generated
+   - Describe lighting ON THE PERSON only (matching dark cinematic mood)`
+    : `   - Environment details: textures, props, depth of field, atmosphere`;
+
   const prompt = `You are a visual prompt engineer specializing in cinematic advertising photography direction.
 
 Your task: expand a SHORT scene description into a FULL, hyper-detailed visual prompt for Gemini AI image generation.
+${fullBleedInstructions}
 
 SHORT SCENE DESCRIPTION (from the creative director):
 "${args.sceneAction}"
@@ -802,7 +827,7 @@ Instructions:
    - Exact person description: age range, clothing, body type, hair
    - Precise body language and micro-expressions
    - Specific lighting setup: key light source, direction, color temperature, shadows
-   - Environment details: textures, props, depth of field, atmosphere
+${environmentInstruction}
    - Camera/framing: lens feel, depth, composition
 4. The person fills the ENTIRE canvas edge-to-edge (full-bleed cinematic portrait)
 5. Face should be positioned in the CENTER or CENTER-LOWER area of the canvas (NOT in the top 25%)
