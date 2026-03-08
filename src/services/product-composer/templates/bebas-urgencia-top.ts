@@ -163,12 +163,13 @@ export function buildBebasUrgenciaTopLayout(
   const MARGIN = Math.round(CW * 0.04); // ~43px
 
   // ── Headline sizing ──────────────────────────────────────────────────────
-  // Symmetric margins so centering anchors at CW/2
-  const HL_X = MARGIN;
-  const HL_W = CW - 2 * MARGIN; // ~994px — anchor at MARGIN + HL_W/2 = CW/2
-  // Moderate-large display size — only shrinks if a single word overflows
-  const HL_MAX_FS = Math.round(CW * 0.095); // ~103px for 1080
-  const HL_MIN_FS = Math.round(CW * 0.065); // ~70px floor
+  // 10% margin each side → text block = 80% of canvas width, centered
+  // The narrower wrap width also prevents lines from touching canvas edges
+  // even if actual resvg rendering is slightly wider than our estimate.
+  const HL_W = Math.round(CW * 0.80); // ~864px
+  const HL_X = Math.round((CW - HL_W) / 2); // ~108px — anchor at CW/2
+  const HL_MAX_FS = Math.round(CW * 0.080); // ~86px — moderate display size
+  const HL_MIN_FS = Math.round(CW * 0.048); // ~52px floor
   const HL_LINE_H = 0.95; // Bebas Neue tight line-height
 
   const MAX_HL_LINES = 2;
@@ -234,8 +235,8 @@ export function buildBebasUrgenciaTopLayout(
         w: HL_W,
         h: HL_H,
         align: "center",
-        fontFamily: "Bebas Neue",
-        fontWeight: "500",
+        fontFamily: "Recoleta", // substitute for Bebas Neue (condensed display), as it's more versatile and also uppercase-only
+        fontWeight: "700",
         fontSize: hlFontSize,
         color: "#FFFFFF",
         lineHeight: HL_LINE_H,

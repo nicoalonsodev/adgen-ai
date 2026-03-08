@@ -43,7 +43,7 @@ export function buildPersonaProductoLeftLayout(
   // Font scales down for longer headlines to avoid overflow
   const headlineWords = (copy.headline ?? "").trim().split(/\s+/).filter(Boolean).length;
   const HL_FONT = Math.round(
-    CW * (headlineWords <= 4 ? 0.085 : headlineWords <= 6 ? 0.073 : 0.062),
+    CW * (headlineWords <= 4 ? 0.065 : headlineWords <= 6 ? 0.055 : 0.048),
   );
   const HL_W    = Math.round(CW * 0.48);
   const HL_X    = MARGIN;

@@ -32,7 +32,7 @@ export function buildProductoHeroTopLayout(
   const headlineText = (copy.headline || copy.badge || "Brand Name").toUpperCase();
   const charWidthFactor = 0.72;
   const maxFontByWidth = Math.floor(HL_W / (headlineText.length * charWidthFactor));
-const HL_FONT = Math.max(24, Math.min(Math.round(CW * 0.075), maxFontByWidth));
+const HL_FONT = Math.max(24, Math.min(Math.round(CW * 0.095), maxFontByWidth));
 
   const HL_H = Math.ceil(HL_FONT * 1.2) + 8;
 
@@ -101,7 +101,7 @@ const HL_FONT = Math.max(24, Math.min(Math.round(CW * 0.075), maxFontByWidth));
         fontFamily: "Montserrat",
         fontWeight: "600",
         fontSize: SUB_FONT,
-        color: "#FFFFFF",
+        color: "#3A3A3A",
         lineHeight: 1.3,
         letterSpacing: 0.14,
         maxLines: 1,
