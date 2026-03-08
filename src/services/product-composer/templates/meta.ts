@@ -9,7 +9,6 @@
  *   2. Agregar el buildLayout en index.ts (solo si es una plantilla nueva)
  */
 
-
 export interface TemplateMetadata {
   id: string;
   name: string;
@@ -111,7 +110,6 @@ export interface TemplateMetadata {
   };
 }
 
-
 export const TEMPLATE_META_LIST: TemplateMetadata[] = [
   {
     id: "classic-editorial-right",
@@ -119,21 +117,34 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
     icon: "🖼️",
     tag: null,
     active: true,
-    description: "Fondo full-bleed, copy en columna derecha, badge pill al fondo.",
+    description:
+      "Fondo full-bleed, copy en columna derecha, badge pill al fondo.",
     supportedRatios: ["1:1", "4:5"],
     copyZone: "right",
-    copySchema: ["title", "headline", "subheadline", "badge", "bullets", "backgroundColorHint"],
+    copySchema: [
+      "title",
+      "headline",
+      "subheadline",
+      "badge",
+      "bullets",
+      "backgroundColorHint",
+    ],
     requiresSceneGeneration: false,
     rawProductPrompt: true,
-      personScene: false,
-    recommendedFor: ["belleza-cosmetica", "moda-indumentaria", "joyeria-accesorios", "hogar-deco", "salud-bienestar"],
+    personScene: false,
+    recommendedFor: [
+      "belleza-cosmetica",
+      "moda-indumentaria",
+      "joyeria-accesorios",
+      "hogar-deco",
+      "salud-bienestar",
+    ],
     defaultBackgroundPrompt:
       "Fondo minimalista con pared lisa de textura suave, tipo estudio fotográfico premium. Iluminación natural lateral desde ventana fuera de cuadro, sombras diagonales orgánicas y difusas sobre la pared. Sin objetos, sin texto, sin personas, sin productos. Fondo claro con profundidad sutil, sensación de calma y cuidado personal.",
     darkBackgroundPrompt:
       "Fondo minimalista con pared lisa de textura suave, tipo estudio fotográfico premium. Iluminación dramática lateral tenue desde ventana fuera de cuadro, sombras profundas y envolventes. Sin objetos, sin texto, sin personas, sin productos. Fondo muy oscuro — tonos carbón, negro cálido o azul medianoche — con profundidad sutil y sensación de lujo y sofisticación.",
     rawBackgroundPrompt: true,
-    defaultProductPrompt:
-     `Edit the image adding a photorealistic human hand emerging from the LEFT or BOTTOM-LEFT edge, staying within the LEFT 45% of the canvas. The hand holds the product with a natural grip — fingers curled with realistic compression against the product surface. Render anatomically accurate skin with visible pores, knuckles, tendons and subtle veins. Apply subsurface scattering on fingertips. Lighting must match the scene exactly: same light direction, color temperature and intensity. Add natural contact shadows between hand and product. No compositing artifacts, halos or color fringing. The product must be fully visible, upright and legible.`,
+    defaultProductPrompt: `Edit the image adding a photorealistic human hand emerging from the LEFT or BOTTOM-LEFT edge, staying within the LEFT 45% of the canvas. The hand holds the product with a natural grip — fingers curled with realistic compression against the product surface. Render anatomically accurate skin with visible pores, knuckles, tendons and subtle veins. Apply subsurface scattering on fingertips. Lighting must match the scene exactly: same light direction, color temperature and intensity. Add natural contact shadows between hand and product. No compositing artifacts, halos or color fringing. The product must be fully visible, upright and legible.`,
     templateHint: `TEMPLATE HINT for classic-editorial-right:
   This template has the product on the LEFT and copy on the RIGHT.
   - title: 3-5 keywords separated by " · ", max 50 chars.
@@ -154,16 +165,23 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
     icon: "⚡",
     tag: null,
     active: false,
-    description: "Layout de oferta centrado, copy en franja inferior, producto arriba",
+    description:
+      "Layout de oferta centrado, copy en franja inferior, producto arriba",
     supportedRatios: ["1:1", "4:5"],
     copyZone: "bottom",
     copySchema: ["badge", "headline", "cta", "backgroundColorHint"],
     requiresSceneGeneration: false,
     rawProductPrompt: true,
-    recommendedFor: ["belleza-cosmetica", "alimentos-bebidas", "moda-indumentaria", "fitness-deporte", "tecnologia"],
+    recommendedFor: [
+      "belleza-cosmetica",
+      "alimentos-bebidas",
+      "moda-indumentaria",
+      "fitness-deporte",
+      "tecnologia",
+    ],
     defaultBackgroundPrompt:
       "Fondo liso y uniforme, superficie completamente homogénea, sin texturas llamativas. Iluminación suave y envolvente, sin sombras duras. Sin objetos, sin texto, sin personas. Fondo muy claro. Estilo ciclorama fotográfico minimalista y limpio.",
-   
+
     defaultProductPrompt:
       "Integrate the product being held by an elegant hand emerging from below-center of the frame, within the TOP 58% of the canvas. The product should feel premium and desirable. Fully visible, no cropping.",
     templateHint: `TEMPLATE HINT for promo-urgencia-bottom:
@@ -183,14 +201,27 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
     icon: "🎯",
     tag: "Combo / Lanzamiento",
     active: true,
-    description: "Título arriba, producto centrado con IA, oferta grande abajo. Ideal para combos, lanzamientos y promociones especiales.",
+    description:
+      "Título arriba, producto centrado con IA, oferta grande abajo. Ideal para combos, lanzamientos y promociones especiales.",
     supportedRatios: ["1:1", "4:5"],
     copyZone: "center",
-     personScene: false,
-    copySchema: ["title", "headline", "subheadline", "badge", "backgroundColorHint"],
+    personScene: false,
+    copySchema: [
+      "title",
+      "headline",
+      "subheadline",
+      "badge",
+      "backgroundColorHint",
+    ],
     requiresSceneGeneration: false,
     rawProductPrompt: true,
-    recommendedFor: ["belleza-cosmetica", "moda-indumentaria", "turismo-viajes", "gastronomia", "mascotas"],
+    recommendedFor: [
+      "belleza-cosmetica",
+      "moda-indumentaria",
+      "turismo-viajes",
+      "gastronomia",
+      "mascotas",
+    ],
     defaultBackgroundPrompt:
       "Fondo satinado suave con textura sedosa muy sutil. Iluminación difusa y envolvente, reflejos suaves. Sin objetos, sin texto, sin personas. Estilo fotografía de estudio de lujo, fondo claro con sensación de suavidad.",
     defaultProductPrompt:
@@ -212,13 +243,25 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
     icon: "📰",
     tag: "Premium",
     active: false,
-    description: "Headline grande arriba, producto centrado abajo. Debes generar plataforma luxure con profundidad para ubicar el producto. Ideal para lanzamientos y productos premium.",
+    description:
+      "Headline grande arriba, producto centrado abajo. Debes generar plataforma luxure con profundidad para ubicar el producto. Ideal para lanzamientos y productos premium.",
     supportedRatios: ["1:1", "4:5"],
     copyZone: "bottom",
-    copySchema: ["headline", "subheadline", "disclaimer", "backgroundColorHint"],
+    copySchema: [
+      "headline",
+      "subheadline",
+      "disclaimer",
+      "backgroundColorHint",
+    ],
     requiresSceneGeneration: false,
     rawProductPrompt: true,
-    recommendedFor: ["belleza-cosmetica", "servicios-profesionales", "educacion-cursos", "salud-estetica-clinica", "bienes-raices"],
+    recommendedFor: [
+      "belleza-cosmetica",
+      "servicios-profesionales",
+      "educacion-cursos",
+      "salud-estetica-clinica",
+      "bienes-raices",
+    ],
     defaultBackgroundPrompt:
       "Fondo liso, superficie uniforme tipo ciclorama. Iluminación natural suave y difusa, sin sombras dramáticas. Sin texturas, sin objetos, sin texto, sin personas. Fondo claro. Minimalista y limpio, ideal para tipografía oscura.",
     defaultProductPrompt:
@@ -241,13 +284,27 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
     icon: "😟",
     tag: "Awareness",
     active: true,
-    description: "Copy del dolor a la izquierda, persona/escena a la derecha generada con IA. Ideal para contenido de awareness.",
+    description:
+      "Copy del dolor a la izquierda, persona/escena a la derecha generada con IA. Ideal para contenido de awareness.",
     supportedRatios: ["1:1"],
     copyZone: "left",
-    copySchema: ["headline", "subheadline", "badge", "backgroundColorHint", "sceneAction"],
+    copySchema: [
+      "headline",
+      "subheadline",
+      "badge",
+      "backgroundColorHint",
+      "sceneAction",
+    ],
     requiresSceneGeneration: true,
     supportsSequence: true,
-    recommendedFor: ["belleza-cosmetica", "salud-bienestar", "fitness-deporte", "servicios-profesionales", "educacion-cursos", "salud-estetica-clinica"],
+    recommendedFor: [
+      "belleza-cosmetica",
+      "salud-bienestar",
+      "fitness-deporte",
+      "servicios-profesionales",
+      "educacion-cursos",
+      "salud-estetica-clinica",
+    ],
     defaultBackgroundPrompt:
       "Fondo completamente liso y muy claro. Iluminación natural suave y uniforme. Sin sombras fuertes, sin texturas llamativas. Ambiente cotidiano y realista. Sin objetos, sin texto. Estilo lifestyle natural y auténtico, fondo claro que no compita con la tipografía oscura.",
     defaultProductPrompt:
@@ -290,13 +347,29 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
     icon: "⚖️",
     tag: "Vs Competencia",
     active: true,
-    description: "Izquierda: tu producto real. Derecha: versión genérica/inferior. Estilo 'US VS THEM' con fondo bicolor y puntos de comparación numerados.",
+    description:
+      "Izquierda: tu producto real. Derecha: versión genérica/inferior. Estilo 'US VS THEM' con fondo bicolor y puntos de comparación numerados.",
     supportedRatios: ["1:1"],
     copyZone: "full",
-    copySchema: ["headline", "badge", "columnTitle", "competitionTitle", "bullets", "competitionBullets", "backgroundColorHint", "primaryColor"],
+    copySchema: [
+      "headline",
+      "badge",
+      "columnTitle",
+      "competitionTitle",
+      "bullets",
+      "competitionBullets",
+      "backgroundColorHint",
+      "primaryColor",
+    ],
     requiresSceneGeneration: false,
     splitComparison: true,
-    recommendedFor: ["belleza-cosmetica", "tecnologia", "salud-bienestar", "fitness-deporte", "servicios-profesionales"],
+    recommendedFor: [
+      "belleza-cosmetica",
+      "tecnologia",
+      "salud-bienestar",
+      "fitness-deporte",
+      "servicios-profesionales",
+    ],
     defaultBackgroundPrompt:
       "Fondo completamente liso, sin texturas llamativas. Iluminación suave y uniforme sin sombras. Sin objetos, sin texto, sin personas, sin manos. Fondo claro. Ambiente minimalista premium.",
     defaultProductPrompt: "",
@@ -339,13 +412,27 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
     icon: "⚖️",
     tag: "Vs Competencia + IA",
     active: false,
-    description: "Izquierda: versión genérica/inferior del producto (✗). Derecha: tu producto real (✓). La IA duplica tu producto degradado a la izquierda con overlays semitransparentes.",
+    description:
+      "Izquierda: versión genérica/inferior del producto (✗). Derecha: tu producto real (✓). La IA duplica tu producto degradado a la izquierda con overlays semitransparentes.",
     supportedRatios: ["1:1"],
     copyZone: "full",
-    copySchema: ["title", "headline", "subheadline", "badge", "bullets", "backgroundColorHint"],
+    copySchema: [
+      "title",
+      "headline",
+      "subheadline",
+      "badge",
+      "bullets",
+      "backgroundColorHint",
+    ],
     requiresSceneGeneration: false,
     rawProductPrompt: true,
-    recommendedFor: ["belleza-cosmetica", "salud-bienestar", "fitness-deporte", "salud-estetica-clinica", "servicios-profesionales"],
+    recommendedFor: [
+      "belleza-cosmetica",
+      "salud-bienestar",
+      "fitness-deporte",
+      "salud-estetica-clinica",
+      "servicios-profesionales",
+    ],
     defaultBackgroundPrompt:
       "Fondo completamente liso, sin texturas llamativas. Iluminación suave y uniforme sin sombras. Sin objetos, sin texto, sin personas, sin manos. Fondo claro. Ambiente minimalista premium.",
     defaultProductPrompt:
@@ -357,15 +444,30 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
     icon: "🎁",
     tag: "Giveaway",
     active: true,
-    description: "Foto con personas full-bleed generada en el background, copy centrado en capas encima. Headline enorme uppercase, línea script italic debajo, badge de premios y CTA de colaboración al pie. Ideal para sorteos, giveaways y activaciones con influencers.",
+    description:
+      "Foto con personas full-bleed generada en el background, copy centrado en capas encima. Headline enorme uppercase, línea script italic debajo, badge de premios y CTA de colaboración al pie. Ideal para sorteos, giveaways y activaciones con influencers.",
     supportedRatios: ["1:1", "4:5"],
     copyZone: "center",
-    copySchema: ["title", "headline", "subheadline", "badge", "bullets", "backgroundPrompt"],
+    copySchema: [
+      "title",
+      "headline",
+      "subheadline",
+      "badge",
+      "bullets",
+      "backgroundPrompt",
+    ],
     requiresSceneGeneration: false,
     noProductLayer: true,
     logoPosition: "center",
     supportsSequence: false,
-    recommendedFor: ["belleza-cosmetica", "salud-bienestar", "moda-indumentaria", "salud-estetica-clinica", "gastronomia", "mascotas"],
+    recommendedFor: [
+      "belleza-cosmetica",
+      "salud-bienestar",
+      "moda-indumentaria",
+      "salud-estetica-clinica",
+      "gastronomia",
+      "mascotas",
+    ],
     defaultBackgroundPrompt:
       "Warm authentic lifestyle photo of two people — a mother and daughter or two close women — sharing a tender moment together, wearing soft white robes or towels, smiling naturally at each other or at a gift they are holding, this gift must be the product. Full-bleed scene, fills the entire canvas. Lighting warm and soft, cinematic quality. Slightly darker in the center-bottom area to ensure white text readability. No text, no logos, no products visible. Photorealistic, emotional and genuine, not stock-photo generic.",
     defaultProductPrompt: "",
@@ -415,14 +517,28 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
     icon: "📅",
     tag: "Transformación",
     active: true,
-    description: "Split Day 1 vs Day X: izquierda problemas (fondo blanco), derecha resultados (fondo amarillo/color), producto grande centrado abajo cruzando ambas columnas.",
+    description:
+      "Split Day 1 vs Day X: izquierda problemas (fondo blanco), derecha resultados (fondo amarillo/color), producto grande centrado abajo cruzando ambas columnas.",
     supportedRatios: ["1:1"],
     copyZone: "full",
-    copySchema: ["badge", "columnTitle", "competitionTitle", "bullets", "competitionBullets", "backgroundColorHint"],
+    copySchema: [
+      "badge",
+      "columnTitle",
+      "competitionTitle",
+      "bullets",
+      "competitionBullets",
+      "backgroundColorHint",
+    ],
     requiresSceneGeneration: false,
     rawProductPrompt: true,
     noLogo: true,
-    recommendedFor: ["belleza-cosmetica", "salud-bienestar", "fitness-deporte", "salud-estetica-clinica", "alimentos-bebidas"],
+    recommendedFor: [
+      "belleza-cosmetica",
+      "salud-bienestar",
+      "fitness-deporte",
+      "salud-estetica-clinica",
+      "alimentos-bebidas",
+    ],
     defaultBackgroundPrompt:
       "Fondo completamente liso y muy claro, sin texturas llamativas. Iluminación suave y uniforme sin sombras. Sin objetos, sin texto, sin personas, sin manos. Ambiente minimalista premium.",
     defaultProductPrompt:
@@ -468,16 +584,30 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
     icon: "✨",
     tag: "Beneficios",
     active: true,
-    description: "Producto hero grande a la izquierda, 4 beneficios con pills a la derecha. Fondo gris oscuro, estilo profesional y limpio.",
+    description:
+      "Producto hero grande a la izquierda, 4 beneficios con pills a la derecha. Fondo gris oscuro, estilo profesional y limpio.",
     supportedRatios: ["1:1"],
     copyZone: "right",
-    copySchema: ["headline", "subheadline", "badge", "bullets", "backgroundColorHint"],
+    copySchema: [
+      "headline",
+      "subheadline",
+      "badge",
+      "bullets",
+      "backgroundColorHint",
+    ],
     requiresSceneGeneration: false,
     rawProductPrompt: true,
-    recommendedFor: ["belleza-cosmetica", "salud-bienestar", "alimentos-bebidas", "fitness-deporte", "tecnologia", "hogar-deco"],
+    recommendedFor: [
+      "belleza-cosmetica",
+      "salud-bienestar",
+      "alimentos-bebidas",
+      "fitness-deporte",
+      "tecnologia",
+      "hogar-deco",
+    ],
     defaultBackgroundPrompt:
       "Fondo color gris medio uniforme (#7A7A7A). En la zona centro-izquierda del canvas, dibujar un GRAN CÍRCULO o ARCO decorativo semitransparente de color gris más claro (#9A9A9A, opacidad ~30%), con un diámetro de aproximadamente 65% del canvas. Este arco debe estar parcialmente detrás de donde irá el producto (centro-izquierda). Iluminación suave y envolvente estilo estudio fotográfico premium. Sin objetos, sin texto, sin personas, sin manos, sin productos. Solo el fondo gris con el arco decorativo sutil. Estilo minimalista profesional tipo BODY TALES.",
-      rawBackgroundPrompt: true,
+    rawBackgroundPrompt: true,
     defaultProductPrompt:
       "This is an IMAGE EDITING task, NOT image generation. The original background must be preserved exactly as provided — do not replace, recolor, or regenerate it under any circumstances. ONLY perform these actions: 1. Extract the existing product from the image 2. Reposition it to the LEFT of the canvas (horizontal center at ~22%) 3. Scale it so it occupies ~48% canvas width and ~70% canvas height 4. Tilt it slightly for dynamism 5. Add a soft shadow beneath matching the scene lighting. DO NOT touch anything else. The background, text, colors, textures, and all existing graphic elements must remain 100% unchanged. The RIGHT 50% of the canvas stays completely clean — do not add anything there. Product must be fully opaque, fully visible, never cropped or faded. No people, no hands, no new elements.",
     templateHint: `TEMPLATE HINT for beneficios-producto:
@@ -517,14 +647,29 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
     icon: "🎯",
     tag: "Razones",
     active: true,
-    description: "Producto CENTRADO con 4 beneficios distribuidos alrededor (esquinas). Fondo cálido durazno/crema. Estilo BODY TALES 'Reasons to use'.",
+    description:
+      "Producto CENTRADO con 4 beneficios distribuidos alrededor (esquinas). Fondo cálido durazno/crema. Estilo BODY TALES 'Reasons to use'.",
     supportedRatios: ["1:1"],
     copyZone: "center",
-    copySchema: ["title", "headline", "subheadline", "badge", "bullets", "backgroundColorHint"],
+    copySchema: [
+      "title",
+      "headline",
+      "subheadline",
+      "badge",
+      "bullets",
+      "backgroundColorHint",
+    ],
     requiresSceneGeneration: false,
     personScene: false,
     rawProductPrompt: true,
-    recommendedFor: ["belleza-cosmetica", "salud-bienestar", "alimentos-bebidas", "fitness-deporte", "tecnologia", "hogar-deco"],
+    recommendedFor: [
+      "belleza-cosmetica",
+      "salud-bienestar",
+      "alimentos-bebidas",
+      "fitness-deporte",
+      "tecnologia",
+      "hogar-deco",
+    ],
     defaultBackgroundPrompt:
       "Fondo liso uniforme, completamente plano. SIN gradientes, SIN brillos, SIN reflejos, SIN texturas visibles. Iluminación suave y envolvente. Sin objetos, sin texto, sin personas, sin manos, sin productos. Solo un bloque de color sólido y plano. Fondo claro. Estilo minimalista premium tipo BODY TALES.",
     // NOTE: Las líneas conectoras se dibujan por código (JS), no por Gemini
@@ -573,13 +718,28 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
     icon: "📸",
     tag: "Editorial",
     active: true,
-    description: "Headline enorme a la izquierda, persona/escena lifestyle a la derecha generada por IA. Estilo editorial beauty premium. Sin producto.",
+    description:
+      "Headline enorme a la izquierda, persona/escena lifestyle a la derecha generada por IA. Estilo editorial beauty premium. Sin producto.",
     supportedRatios: ["1:1"],
     copyZone: "left",
-    copySchema: ["headline", "subheadline", "badge", "backgroundColorHint", "sceneAction", "textSide"],
+    copySchema: [
+      "headline",
+      "subheadline",
+      "badge",
+      "backgroundColorHint",
+      "sceneAction",
+      "textSide",
+    ],
     requiresSceneGeneration: true,
     supportsSequence: true,
-    recommendedFor: ["belleza-cosmetica", "salud-bienestar", "moda-indumentaria", "salud-estetica-clinica", "fitness-deporte", "servicios-profesionales"],
+    recommendedFor: [
+      "belleza-cosmetica",
+      "salud-bienestar",
+      "moda-indumentaria",
+      "salud-estetica-clinica",
+      "fitness-deporte",
+      "servicios-profesionales",
+    ],
     rawBackgroundPrompt: true,
     defaultBackgroundPrompt:
       "Fondo completamente liso y muy claro. Iluminación natural suave y envolvente, tipo estudio editorial. Sin sombras duras, sin texturas llamativas. Sin objetos, sin texto, sin personas. Estilo fotografía editorial de revista de belleza, fondo claro y limpio.",
@@ -629,13 +789,28 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
     icon: "📸",
     tag: "Editorial",
     active: false,
-    description: "Persona/escena lifestyle a la izquierda generada por IA, headline enorme a la derecha. Estilo editorial beauty premium. Sin producto.",
+    description:
+      "Persona/escena lifestyle a la izquierda generada por IA, headline enorme a la derecha. Estilo editorial beauty premium. Sin producto.",
     supportedRatios: ["1:1"],
     copyZone: "right",
-    copySchema: ["headline", "subheadline", "badge", "backgroundColorHint", "sceneAction", "textSide"],
+    copySchema: [
+      "headline",
+      "subheadline",
+      "badge",
+      "backgroundColorHint",
+      "sceneAction",
+      "textSide",
+    ],
     requiresSceneGeneration: true,
     supportsSequence: true,
-    recommendedFor: ["belleza-cosmetica", "salud-bienestar", "moda-indumentaria", "salud-estetica-clinica", "fitness-deporte", "servicios-profesionales"],
+    recommendedFor: [
+      "belleza-cosmetica",
+      "salud-bienestar",
+      "moda-indumentaria",
+      "salud-estetica-clinica",
+      "fitness-deporte",
+      "servicios-profesionales",
+    ],
     defaultBackgroundPrompt:
       "Fondo completamente liso y muy claro. Iluminación natural suave y envolvente, tipo estudio editorial. Sin sombras duras, sin texturas llamativas. Sin objetos, sin texto, sin personas. Estilo fotografía editorial de revista de belleza, fondo claro y limpio.",
     defaultProductPrompt:
@@ -669,13 +844,27 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
     icon: "📸",
     tag: "Editorial",
     active: false,
-    description: "Escena lifestyle full-bleed, headline enorme blanco en la mitad inferior con gradiente oscuro. Estilo editorial beauty premium. Sin producto.",
+    description:
+      "Escena lifestyle full-bleed, headline enorme blanco en la mitad inferior con gradiente oscuro. Estilo editorial beauty premium. Sin producto.",
     supportedRatios: ["1:1", "4:5"],
     copyZone: "bottom",
-    copySchema: ["headline", "subheadline", "badge", "backgroundColorHint", "sceneAction"],
+    copySchema: [
+      "headline",
+      "subheadline",
+      "badge",
+      "backgroundColorHint",
+      "sceneAction",
+    ],
     requiresSceneGeneration: true,
     supportsSequence: true,
-    recommendedFor: ["belleza-cosmetica", "salud-bienestar", "moda-indumentaria", "salud-estetica-clinica", "fitness-deporte", "servicios-profesionales"],
+    recommendedFor: [
+      "belleza-cosmetica",
+      "salud-bienestar",
+      "moda-indumentaria",
+      "salud-estetica-clinica",
+      "fitness-deporte",
+      "servicios-profesionales",
+    ],
     defaultBackgroundPrompt:
       "Fondo neutro suave y claro. Iluminación envolvente tipo estudio. Sin objetos, sin texto, sin personas. Limpio y minimalista.",
     defaultProductPrompt:
@@ -712,13 +901,27 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
     icon: "📸",
     tag: "Editorial",
     active: false,
-    description: "Headline enorme blanco arriba con gradiente oscuro, escena lifestyle full-bleed abajo. Estilo editorial beauty premium. Sin producto.",
+    description:
+      "Headline enorme blanco arriba con gradiente oscuro, escena lifestyle full-bleed abajo. Estilo editorial beauty premium. Sin producto.",
     supportedRatios: ["1:1", "4:5"],
     copyZone: "center",
-    copySchema: ["headline", "subheadline", "badge", "backgroundColorHint", "sceneAction"],
+    copySchema: [
+      "headline",
+      "subheadline",
+      "badge",
+      "backgroundColorHint",
+      "sceneAction",
+    ],
     requiresSceneGeneration: true,
     supportsSequence: true,
-    recommendedFor: ["belleza-cosmetica", "salud-bienestar", "moda-indumentaria", "salud-estetica-clinica", "fitness-deporte", "servicios-profesionales"],
+    recommendedFor: [
+      "belleza-cosmetica",
+      "salud-bienestar",
+      "moda-indumentaria",
+      "salud-estetica-clinica",
+      "fitness-deporte",
+      "servicios-profesionales",
+    ],
     defaultBackgroundPrompt:
       "Fondo neutro suave y claro. Iluminación envolvente tipo estudio. Sin objetos, sin texto, sin personas. Limpio y minimalista.",
     defaultProductPrompt:
@@ -756,16 +959,32 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
     icon: "📸",
     tag: "Editorial",
     active: true,
-    description: "Headline y subheadline centrados en la parte superior, persona con producto ocupa el ancho completo inferior. Estilo editorial beauty premium.",
+    description:
+      "Headline y subheadline centrados en la parte superior, persona con producto ocupa el ancho completo inferior. Estilo editorial beauty premium.",
     supportedRatios: ["1:1"],
     copyZone: "top",
-    copySchema: ["title", "headline", "subheadline", "badge", "bullets", "productPrompt", "backgroundColorHint"],
+    copySchema: [
+      "title",
+      "headline",
+      "subheadline",
+      "badge",
+      "bullets",
+      "productPrompt",
+      "backgroundColorHint",
+    ],
     requiresSceneGeneration: true,
     sceneWithProduct: true,
     personScene: true,
     useGenericProductClone: true,
     supportsSequence: false,
-    recommendedFor: ["belleza-cosmetica", "salud-bienestar", "moda-indumentaria", "salud-estetica-clinica", "fitness-deporte", "servicios-profesionales"],
+    recommendedFor: [
+      "belleza-cosmetica",
+      "salud-bienestar",
+      "moda-indumentaria",
+      "salud-estetica-clinica",
+      "fitness-deporte",
+      "servicios-profesionales",
+    ],
     defaultBackgroundPrompt:
       "Fondo completamente liso y muy claro. Iluminación natural suave y envolvente, tipo estudio editorial. Sin sombras duras, sin texturas llamativas. Sin objetos, sin texto, sin personas. Estilo fotografía editorial de revista de belleza, fondo claro y limpio.",
     defaultProductPrompt:
@@ -803,17 +1022,33 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
     icon: "⚡",
     tag: "Vertical",
     active: true,
-    description: "Layout BODY TALES: dos columnas, izquierda lavanda pastel con 4 beneficios y círculos-icono SVG, derecha azul-gris oscuro con producto grande y nombre. Barra de títulos de columna y marca arriba. Ideal para 1:1 y 4:5.",
+    description:
+      "Layout BODY TALES: dos columnas, izquierda lavanda pastel con 4 beneficios y círculos-icono SVG, derecha azul-gris oscuro con producto grande y nombre. Barra de títulos de columna y marca arriba. Ideal para 1:1 y 4:5.",
     supportedRatios: ["1:1", "4:5"],
     copyZone: "left",
-    copySchema: ["title", "headline", "columnTitle", "competitionTitle", "badge", "bullets", "backgroundColorHint"],
+    copySchema: [
+      "title",
+      "headline",
+      "columnTitle",
+      "competitionTitle",
+      "badge",
+      "bullets",
+      "backgroundColorHint",
+    ],
     requiresSceneGeneration: false,
     rawProductPrompt: true,
-    recommendedFor: ["belleza-cosmetica", "salud-bienestar", "alimentos-bebidas", "fitness-deporte", "tecnologia", "hogar-deco", "salud-estetica-clinica"],
+    recommendedFor: [
+      "belleza-cosmetica",
+      "salud-bienestar",
+      "alimentos-bebidas",
+      "fitness-deporte",
+      "tecnologia",
+      "hogar-deco",
+      "salud-estetica-clinica",
+    ],
     defaultBackgroundPrompt:
       "Fondo completamente liso dividido en dos mitades verticales iguales (50/50). Mitad izquierda color lavanda pastel suave claro (#C8CEE8), uniforme y liso. Mitad derecha color azul-gris oscuro apagado (#6B7394), uniforme y liso. NO usar iluminación dramática, NO usar brillos, NO usar reflejos, NO usar gradientes. Ambas mitades deben ser completamente planas y uniformes. Sin texturas, sin objetos, sin texto, sin personas, sin manos, sin productos. Solo dos bloques de color plano lado a lado.",
-    defaultProductPrompt:
-     `This is an IMAGE EDITING task, NOT image generation.
+    defaultProductPrompt: `This is an IMAGE EDITING task, NOT image generation.
 Preserve the original background exactly as-is — do not replace,
 recolor, whiten, or regenerate it under any circumstance.
 
@@ -872,7 +1107,8 @@ or any existing graphic element. No people, no hands, no new elements.`,
     icon: "🌊",
     tag: "Hero",
     active: true,
-    description: "Producto hero en la parte superior, nombre de marca y tagline al pie. Fondo fotográfico suave con gradiente. Estilo editorial beauty premium.",
+    description:
+      "Producto hero en la parte superior, nombre de marca y tagline al pie. Fondo fotográfico suave con gradiente. Estilo editorial beauty premium.",
     supportedRatios: ["1:1", "4:5"],
     copyZone: "top",
     personScene: false,
@@ -880,21 +1116,158 @@ or any existing graphic element. No people, no hands, no new elements.`,
     // Text goes at BOTTOM, but PRODUCT_IA should place the product in CENTER
     productIAZone: "center",
     requiresSceneGeneration: false,
-    recommendedFor: ["belleza-cosmetica", "moda-indumentaria", "salud-bienestar", "hogar-deco", "alimentos-bebidas"],
+    recommendedFor: [
+      "belleza-cosmetica",
+      "moda-indumentaria",
+      "salud-bienestar",
+      "hogar-deco",
+      "alimentos-bebidas",
+    ],
     rawBackgroundPrompt: true,
     rawProductPrompt: true,
     defaultBackgroundPrompt:
       "Minimalist premium studio background. Very clean neutral surface with ultra-soft, barely visible texture. Soft diffused studio lighting, elegant and photographic. No text, no people, no products, no logos.",
     categoryBackgroundPrompts: {
-      "belleza-cosmetica":
-        "Extreme close-up macro photography of SMOOTH COSMETIC CREAM AND GEL TEXTURES on a soft surface tinted with the BRAND'S PRIMARY COLOR (use a pastel/muted version of it). Only 2-3 broad, THIN cream strokes flowing diagonally across the frame — NOT many small strokes, just a FEW large elegant ones with lots of breathing space between them. The cream textures are tinted with a lighter shade of the brand's primary color and white, semi-transparent, with a glossy wet surface. The strokes must be FLAT and SMOOTH — like thin layers of gel spread evenly with a spatula, NOT thick chunky impasto or heavy 3D relief. Very minimal surface variation, gentle soft edges. Subtle specular highlights but the overall surface should feel SLEEK and FLUID. Large areas of the brand-colored background are visible between the few cream strokes, giving the composition an airy, open feel. Lighting is bright, soft, and diffused — studio beauty lighting. Ultra high resolution, photorealistic macro photography, 4K, premium skincare brand aesthetic. No text, no people, no products, no logos.",
+      "belleza-cosmetica": `You are a background image generation expert for premium skincare advertising.
+
+TASK: Generate a full-bleed macro photography background. Before generating, 
+analyze the product being advertised and AUTO-SELECT the most fitting color 
+palette, texture ingredient, and mood from the system below.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SELECTION SYSTEM — match by product type:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+IF product contains → Vitamin C / Niacinamide / Brightening / Glow:
+  COLOR_BASE: warm ivory + golden amber
+  COLOR_ACCENT: soft turmeric glow
+  TEXTURE: luminous vitamin serum and lightweight oil strokes
+  MICRO_DETAIL: tiny suspended vitamin micro-spheres beneath surface
+  SHIMMER: warm gold iridescent edge on one stroke
+  MOOD: warm clinical luxury
+
+IF product contains → Hyaluronic Acid / Hydration / Cooling / Gel:
+  COLOR_BASE: pale sky blue + icy mint
+  COLOR_ACCENT: pearl white
+  TEXTURE: cooling hyaluronic gel strokes, flat and fluid like chilled glass
+  MICRO_DETAIL: micro-bubble texture like chilled water on skin + ultra-subtle 
+  linen grain on matte background
+  SHIMMER: faint lavender-mint iridescent edge on one stroke
+  MOOD: icy Korean skincare editorial
+
+IF product contains → Collagen / Rose / Lifting / Firming:
+  COLOR_BASE: blush rose + warm peach
+  COLOR_ACCENT: soft champagne
+  TEXTURE: rich collagen cream and rose extract strokes, thick yet smooth 
+  like whipped cream, semi-opaque with satin sheen
+  MICRO_DETAIL: fine rose petal veining beneath surface
+  SHIMMER: warm pink iridescent edge on one stroke
+  MOOD: Parisian luxury skincare
+
+IF product contains → Retinol / Peptides / Anti-age / Repair:
+  COLOR_BASE: cool pearl white + soft champagne
+  COLOR_ACCENT: whisper gold
+  TEXTURE: ultra-smooth peptide serum strokes, thin and fluid
+  MICRO_DETAIL: fine silk-like protein threads barely visible beneath
+  SHIMMER: faint silver iridescent edge on one stroke
+  MOOD: ice-cold clinical luxury
+
+IF product contains → SPF / Sunscreen / Solar / UV:
+  COLOR_BASE: clean white + soft warm yellow
+  COLOR_ACCENT: light sand beige
+  TEXTURE: lightweight fluid sunscreen strokes, very thin and watery
+  MICRO_DETAIL: ultra-fine sand micro-grain on matte background
+  SHIMMER: golden-white light flare edge on one stroke
+  MOOD: clean outdoor clinical
+
+IF product contains → Retinol / AHA / BHA / Exfoliant / Acids:
+  COLOR_BASE: deep ivory + warm ecru
+  COLOR_ACCENT: translucent gold
+  TEXTURE: fine exfoliating serum strokes with crystalline clarity
+  MICRO_DETAIL: fine suspended crystal micro-particles beneath surface
+  SHIMMER: gold-to-white iridescent edge on one stroke
+  MOOD: clinical premium apothecary
+
+IF product contains → CBD / Botanical / Natural / Organic / Herbal:
+  COLOR_BASE: sage green + warm linen
+  COLOR_ACCENT: soft moss white
+  TEXTURE: botanical extract and plant oil strokes, organic and fluid
+  MICRO_DETAIL: ultra-fine dried botanical fiber texture beneath surface
+  SHIMMER: muted olive-gold iridescent edge on one stroke
+  MOOD: clean clinical organic
+
+IF product contains → Caffeine / Eye / Depuff / Dark circles:
+  COLOR_BASE: cool lavender + soft grey-blue
+  COLOR_ACCENT: icy lilac white
+  TEXTURE: ultra-light eye serum strokes, extremely thin and watery
+  MICRO_DETAIL: fine silk micro-weave texture on matte background
+  SHIMMER: soft violet-silver iridescent edge on one stroke
+  MOOD: spa clinical minimal
+
+IF no match → DEFAULT:
+  COLOR_BASE: neutral pearl white + soft warm grey
+  COLOR_ACCENT: whisper ivory
+  TEXTURE: ultra-smooth serum strokes, thin and fluid
+  MICRO_DETAIL: barely visible fine linen grain
+  SHIMMER: faint silver-white iridescent edge on one stroke
+  MOOD: premium minimalist studio
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+IMAGE GENERATION INSTRUCTIONS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Using the auto-selected values above, generate the following scene:
+
+Extreme close-up macro photography of [TEXTURE] on a soft matte surface in 
+[COLOR_BASE] and [COLOR_ACCENT]. Exactly 2–3 broad sweeping diagonal strokes 
+across the frame — thin, flat and fluid, semi-transparent with a high-gloss 
+wet sheen. [MICRO_DETAIL] texture subtly visible beneath the strokes. Wide open 
+breathing space between strokes — large areas of matte background visible. 
+One stroke catches [SHIMMER]. 
+
+Lighting: strong beauty soft-box from upper-left, casting long elegant specular 
+highlights across the gel surface. Secondary very soft fill light from lower-right 
+at 15% intensity. Overall feeling: bright, airy, spacious.
+
+[MOOD] aesthetic. Full-bleed composition, no cropping. 
+
+Ultra high resolution photorealistic macro photography, 4K, premium skincare 
+brand editorial. No text, no people, no products, no logos, no hands.`,
       "salud-bienestar":
         "Extreme close-up macro photography of SMOOTH COSMETIC CREAM AND GEL TEXTURES on a soft surface tinted with the BRAND'S PRIMARY COLOR (use a pastel/muted version of it). Only 2-3 broad, THIN cream strokes flowing diagonally across the frame — NOT many small strokes, just a FEW large elegant ones with lots of breathing space between them. The cream textures are tinted with a lighter shade of the brand's primary color and white, semi-transparent, with a glossy wet surface. The strokes must be FLAT and SMOOTH — like thin layers of gel spread evenly with a spatula, NOT thick chunky impasto or heavy 3D relief. Very minimal surface variation, gentle soft edges. Subtle specular highlights but the overall surface should feel SLEEK and FLUID. Large areas of the brand-colored background are visible between the few cream strokes, giving the composition an airy, open feel. Lighting is bright, soft, and diffused — studio beauty lighting. Ultra high resolution, photorealistic macro photography, 4K, premium skincare brand aesthetic. No text, no people, no products, no logos.",
       "salud-estetica-clinica":
         "Extreme close-up macro photography of SMOOTH COSMETIC CREAM AND GEL TEXTURES on a soft surface tinted with the BRAND'S PRIMARY COLOR (use a pastel/muted version of it). Only 2-3 broad, THIN cream strokes flowing diagonally across the frame — NOT many small strokes, just a FEW large elegant ones with lots of breathing space between them. The cream textures are tinted with a lighter shade of the brand's primary color and white, semi-transparent, with a glossy wet surface. The strokes must be FLAT and SMOOTH — like thin layers of gel spread evenly with a spatula, NOT thick chunky impasto or heavy 3D relief. Very minimal surface variation, gentle soft edges. Subtle specular highlights but the overall surface should feel SLEEK and FLUID. Large areas of the brand-colored background are visible between the few cream strokes, giving the composition an airy, open feel. Lighting is bright, soft, and diffused — studio beauty lighting. Ultra high resolution, photorealistic macro photography, 4K, premium skincare brand aesthetic. No text, no people, no products, no logos.",
     },
-    defaultProductPrompt:
-      "Integrate the product CENTERED horizontally and vertically in the canvas. The product must be very SMALL — occupying approximately 13–14% of the canvas width. Position the product strictly between 42% and 80% from the top — the CENTER zone only. CRITICAL: the TOP 30% and BOTTOM 15% of the canvas MUST remain COMPLETELY CLEAN — no product, no shadow, nothing. TILT the product clearly to the RIGHT at approximately 4-18 degrees clockwise rotation — the tilt must be VISIBLE and give a dynamic, editorial feel, like the product is casually leaning. REALISM IS KEY: the product must look like it was physically photographed on this surface — Match lighting and color temperature ONLY. Do not match background blur or softness. The product must remain in perfect focus. Add a natural, realistic CONTACT SHADOW directly beneath the product (soft, diffused, slightly elongated in the light direction) plus a very subtle AMBIENT OCCLUSION where the product base meets the surface. Add faint reflected light from the background color onto the product edges to sell the integration. The product must feel premium and three-dimensional. Soft natural lighting matching the background, clean studio style. No hands, no people. The product is the absolute hero. CRITICAL SHARPNESS RULE: The product must remain razor-sharp and high-resolution. Do NOT apply blur, gaussian blur, softening, glow, diffusion, or haze to the product.",
+    defaultProductPrompt: `Integrate the product into the scene with PHOTOREALISTIC studio photography quality.
+
+CRITICAL — LABEL PRESERVATION:
+- The product label, text, logo, colors and design must remain 100% identical to the 
+  original. Do NOT alter, blur, distort, translate or reinterpret any text on the label.
+- Do NOT change bottle shape, cap color, or material finish.
+- Treat the product as a locked photographic object — only lighting and shadow interact 
+  with it, never its surface design.
+
+POSITION & ANGLE:
+- Place product slightly LEFT of center, tilted 8–12 degrees clockwise.
+- Product occupies 15–18% of canvas width. 
+- Vertically between 35% and 75% from top.
+
+SHADOW SYSTEM — Natural & Grounded:
+- Contact shadow: very soft, dark only at the base contact point (3–4px equivalent), 
+  fading to nothing within half the product width. Natural penumbra, not dramatic.
+- Cast shadow: follows the scene light direction, LENGTH equal to 0.6x product height 
+  (short, not elongated). Opacity 18–25% max. Feathered gaussian edges.
+- NO hard shadows. NO exaggerated long dramatic shadows.
+- The shadow should feel like a cloudy-day outdoor light or large soft-box studio — 
+  soft, close, grounded.
+
+LIGHT INTEGRATION:
+- Identify the dominant light direction from the background and match it exactly.
+- Add a subtle specular highlight on the product's upper curved surface.
+- Very faint background color bounce light on the product's shadow side (opacity 10–15%).
+
+SHARPNESS: Product razor-sharp at all times. Zero blur, zero softening, zero glow.
+No hands, no people. Photorealistic. 4K.`,
     templateHint: `TEMPLATE HINT for producto-hero-top:
   This is a HERO EDITORIAL layout. The product is CENTERED in the canvas (middle zone).
   Brand name + tagline appear at the TOP. A short disclaimer line sits at the BOTTOM.
@@ -946,13 +1319,21 @@ or any existing graphic element. No people, no hands, no new elements.`,
     icon: "⭐",
     tag: "Social Proof",
     active: false,
-    description: "Layout testimonial: 5 estrellas de rating arriba, cita grande centrada, nombre del testimoniante, y persona generada por IA en la mitad inferior. Fondo sólido de color. Ideal para social proof / reviews.",
+    description:
+      "Layout testimonial: 5 estrellas de rating arriba, cita grande centrada, nombre del testimoniante, y persona generada por IA en la mitad inferior. Fondo sólido de color. Ideal para social proof / reviews.",
     supportedRatios: ["9:16", "4:5", "1:1"],
     copyZone: "top",
     copySchema: ["headline", "badge", "backgroundColorHint", "sceneAction"],
     requiresSceneGeneration: true,
     logoPosition: "center",
-    recommendedFor: ["belleza-cosmetica", "salud-bienestar", "alimentos-bebidas", "fitness-deporte", "salud-estetica-clinica", "hogar-deco"],
+    recommendedFor: [
+      "belleza-cosmetica",
+      "salud-bienestar",
+      "alimentos-bebidas",
+      "fitness-deporte",
+      "salud-estetica-clinica",
+      "hogar-deco",
+    ],
     defaultBackgroundPrompt:
       "Fondo liso uniforme de un solo color, completamente plano. SIN gradientes, SIN texturas, SIN objetos, SIN personas. Solo un bloque de color sólido usando el color primario de la marca. Minimalista y limpio.",
     defaultProductPrompt:
@@ -996,15 +1377,30 @@ or any existing graphic element. No people, no hands, no new elements.`,
     icon: "🧍",
     tag: "Lifestyle Ad",
     active: true,
-    description: "Persona sosteniendo el producto a la derecha, claim grande y CTA a la izquierda. Gradiente oscuro lateral para texto blanco. Estilo lifestyle brand ad (Huel, Nike, etc.).",
+    description:
+      "Persona sosteniendo el producto a la derecha, claim grande y CTA a la izquierda. Gradiente oscuro lateral para texto blanco. Estilo lifestyle brand ad (Huel, Nike, etc.).",
     supportedRatios: ["1:1", "4:5"],
     copyZone: "left",
-    copySchema: ["badge", "headline", "subheadline", "title", "backgroundPrompt", "productPrompt"],
+    copySchema: [
+      "badge",
+      "headline",
+      "subheadline",
+      "title",
+      "backgroundPrompt",
+      "productPrompt",
+    ],
     requiresSceneGeneration: true,
     sceneWithProduct: true,
     personScene: true,
     supportsSequence: true,
-    recommendedFor: ["belleza-cosmetica", "alimentos-bebidas", "fitness-deporte", "salud-bienestar", "moda-indumentaria", "tecnologia"],
+    recommendedFor: [
+      "belleza-cosmetica",
+      "alimentos-bebidas",
+      "fitness-deporte",
+      "salud-bienestar",
+      "moda-indumentaria",
+      "tecnologia",
+    ],
     defaultBackgroundPrompt:
       "Soft blurred modern office or studio interior. Natural light streaming from a window on the right side. Warm neutral tones — light beige walls, soft shadows, clean environment. Shallow depth of field bokeh effect. No people, no text, no logos, no products. Background only, suitable for person compositing on the right half.",
     defaultProductPrompt:
@@ -1062,7 +1458,8 @@ or any existing graphic element. No people, no hands, no new elements.`,
     icon: "👥",
     tag: "Lifestyle Group",
     active: true,
-    description: "Panel blanco superior con logo, headline y subheadline centrados. Escena lifestyle full-bleed inferior con persona(s) y producto. Estilo Huel, Nike. CTA al pie.",
+    description:
+      "Panel blanco superior con logo, headline y subheadline centrados. Escena lifestyle full-bleed inferior con persona(s) y producto. Estilo Huel, Nike. CTA al pie.",
     supportedRatios: ["1:1", "4:5"],
     copyZone: "top",
     copySchema: ["headline", "subheadline", "title", "productPrompt"],
@@ -1071,7 +1468,14 @@ or any existing graphic element. No people, no hands, no new elements.`,
     personScene: true,
     logoPosition: "center",
     supportsSequence: false,
-    recommendedFor: ["alimentos-bebidas", "fitness-deporte", "salud-bienestar", "belleza-cosmetica", "moda-indumentaria", "tecnologia"],
+    recommendedFor: [
+      "alimentos-bebidas",
+      "fitness-deporte",
+      "salud-bienestar",
+      "belleza-cosmetica",
+      "moda-indumentaria",
+      "tecnologia",
+    ],
     defaultBackgroundPrompt:
       "Warm, inviting modern interior — kitchen, open living space, or studio with large windows. Soft natural light from the side, warm neutral tones (light wood, cream walls). Slightly blurred background with shallow depth of field bokeh. No people, no text, no logos, no products visible. Clean, premium lifestyle brand aesthetic.",
     rawBackgroundPrompt: true,
@@ -1113,7 +1517,8 @@ or any existing graphic element. No people, no hands, no new elements.`,
     icon: "🔥",
     tag: "Urgencia",
     active: true,
-    description: "Escena de urgencia full-bleed, headline enorme en Bebas Neue, overlay oscuro. Un solo titular potente, sin producto. Logo arriba a la izquierda.",
+    description:
+      "Escena de urgencia full-bleed, headline enorme en Bebas Neue, overlay oscuro. Un solo titular potente, sin producto. Logo arriba a la izquierda.",
     supportedRatios: ["1:1", "4:5"],
     copyZone: "center",
     copySchema: ["headline", "backgroundColorHint", "sceneAction"],
@@ -1137,7 +1542,7 @@ or any existing graphic element. No people, no hands, no new elements.`,
         "Dark premium gym interior, charcoal and black rubber flooring, dim dramatic spotlights from above creating pools of light, heavy shadows, no equipment in frame, atmospheric and cinematic. No people, no products, no text.",
       "servicios-profesionales":
         "Minimalist dark office interior, near-black walls, a single warm desk lamp glow barely visible off-frame, long dramatic shadows, matte textures. Sophisticated and cinematic. No people, no products, no text.",
-      "tecnologia":
+      tecnologia:
         "Dark minimal studio, charcoal walls with subtle cool undertone, a single soft blue-tinted light from the side casting elegant shadows, clean and cinematic. No people, no products, no text.",
       "salud-bienestar":
         "Serene dark spa-like interior, deep charcoal stone or concrete walls, warm amber candle-like ambient light barely illuminating the edges, soft and moody. No people, no products, no text. Cinematic wellness aesthetic.",
@@ -1192,11 +1597,7 @@ or any existing graphic element. No people, no hands, no new elements.`,
   },
 ];
 
-
 /** Helper: get metadata for a single template ID */
 export function getTemplateMeta(id: string): TemplateMetadata | undefined {
   return TEMPLATE_META_LIST.find((t) => t.id === id);
 }
-
-
-

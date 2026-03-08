@@ -33,6 +33,24 @@ export function ensureFontsRegistered(): void {
     path.join(fontsDir, "BebasNeue-Regular.ttf"),
     "Bebas Neue"
   );
+  // Futura substitute (commercial font → free open-source alternative)
+  GlobalFonts.registerFromPath(
+    path.join(fontsDir, "Jost-Regular.ttf"),
+    "Jost"
+  );
+  GlobalFonts.registerFromPath(
+    path.join(fontsDir, "Jost-Bold.ttf"),
+    "Jost Bold"
+  );
+  // Recoleta substitute (commercial font → free open-source alternative)
+  GlobalFonts.registerFromPath(
+    path.join(fontsDir, "DMSerifDisplay-Regular.ttf"),
+    "DM Serif Display"
+  );
+  GlobalFonts.registerFromPath(
+    path.join(fontsDir, "DMSerifDisplay-Italic.ttf"),
+    "DM Serif Display Italic"
+  );
 
   fontsRegistered = true;
 }

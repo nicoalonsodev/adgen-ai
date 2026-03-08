@@ -49,9 +49,13 @@ function normalizeFontFamily(fontFamily: string): string {
   // Map fonts we don't have to the closest available
   if (key.includes("playfair")) return "Lora";
   if (key.includes("poppins") || key.includes("arial") || key.includes("helvetica")) return "Montserrat";
+  // Futura (commercial) → Jost, free geometric sans-serif alternative
+  if (key.includes("futura")) return "Jost";
+  // Recoleta (commercial) → DM Serif Display, free display serif alternative
+  if (key.includes("recoleta")) return "DM Serif Display";
   // Bebas Neue → available directly via fontBuffers
   if (key.includes("bebas")) return "Bebas Neue";
-  // Inter, Lora, Montserrat, Bebas Neue → available directly via fontBuffers
+  // Inter, Lora, Montserrat, Bebas Neue, Jost, DM Serif Display → available directly
   return fontFamily;
 }
 
@@ -242,8 +246,8 @@ if (!tb.content || tb.content.trim() === "") return "";
 
     const normalizedContent = normalizeBoldSpacing(tb.content);
     const lines = (tb as any).textBalance
-      ? wrapTextBalanced(normalizedContent, tb.w, tb.fontSize, tb.fontWeight, tb.maxLines, tb.fontFamily)
-      : wrapTextPrecise(normalizedContent, tb.w, tb.fontSize, tb.fontWeight, tb.maxLines, tb.fontFamily);
+      ? wrapTextBalanced(normalizedContent, tb.w, tb.fontSize, tb.fontWeight, tb.maxLines, tb.fontFamily, tb.textTransform)
+      : wrapTextPrecise(normalizedContent, tb.w, tb.fontSize, tb.fontWeight, tb.maxLines, tb.fontFamily, tb.textTransform);
     const lineHeightPx = tb.fontSize * tb.lineHeight;
     const totalTextHeight = lines.length * lineHeightPx;
     
@@ -386,9 +390,15 @@ const FONT_FAMILY_FACTORS: Record<string, number> = {
   "helvetica":        1.00,
   "roboto":           1.00,
   "georgia":          1.05,
-  // Bebas Neue: condensed display font, characters are narrow
-  "bebas neue":       0.62,
-  "bebas":            0.62,
+  // Bebas Neue: condensed display font — factor calibrated against resvg rendering
+  "bebas neue":       0.80,
+  "bebas":            0.80,
+  // Jost (Futura substitute): geometric sans, similar proportions to Inter
+  "jost":             1.00,
+  "futura":           1.00,  // Futura → Jost at render time
+  // DM Serif Display (Recoleta substitute): wide display serif
+  "dm serif display": 1.08,
+  "recoleta":         1.08,  // Recoleta → DM Serif Display at render time
 };
 
 function getFontFamilyFactor(fontFamily: string): number {
@@ -422,10 +432,17 @@ function wrapTextPrecise(
   fontWeight: string,
   maxLines: number,
   fontFamily: string,
+  textTransform?: string,
 ): string[] {
   const isBold = ["bold", "700", "800", "900"].includes(String(fontWeight));
   const familyFactor = getFontFamilyFactor(fontFamily);
   const spaceWidth = measureTextWidth(" ", fontSize, isBold, familyFactor);
+
+  function applyTransformForMeasure(s: string): string {
+    if (textTransform === "uppercase") return s.toUpperCase();
+    if (textTransform === "lowercase") return s.toLowerCase();
+    return s;
+  }
 
   // ── STEP 1: honour explicit hard line-breaks ──────────────────────────────
   const segments = text.split("\n");
@@ -449,7 +466,7 @@ function wrapTextPrecise(
     for (const word of words) {
       if (allLines.length >= maxLines) break;
 
-      const wordWidth = measureTextWidth(stripBoldMarkers(word), fontSize, isBold, familyFactor);
+      const wordWidth = measureTextWidth(applyTransformForMeasure(stripBoldMarkers(word)), fontSize, isBold, familyFactor);
       const testWidth = currentLine
         ? currentWidth + spaceWidth + wordWidth
         : wordWidth;
@@ -505,13 +522,15 @@ function wrapGreedySingleSegment(
   familyFactor: number,
   maxLines: number,
   spaceWidth: number,
+  applyTransform?: (s: string) => string,
 ): string[] {
   const lines: string[] = [];
   let currentLine = "";
   let currentWidth = 0;
   for (const word of words) {
     if (lines.length >= maxLines) break;
-    const wordWidth = measureTextWidth(stripBoldMarkers(word), fontSize, isBold, familyFactor);
+    const measured = applyTransform ? applyTransform(stripBoldMarkers(word)) : stripBoldMarkers(word);
+    const wordWidth = measureTextWidth(measured, fontSize, isBold, familyFactor);
     const testWidth = currentLine ? currentWidth + spaceWidth + wordWidth : wordWidth;
     if (testWidth <= effectiveWidth) {
       currentLine = currentLine ? `${currentLine} ${word}` : word;
@@ -541,37 +560,44 @@ function wrapTextBalanced(
   fontWeight: string,
   maxLines: number,
   fontFamily: string,
+  textTransform?: string,
 ): string[] {
   const isBold = ["bold", "700", "800", "900"].includes(String(fontWeight));
   const familyFactor = getFontFamilyFactor(fontFamily);
   const spaceWidth = measureTextWidth(" ", fontSize, isBold, familyFactor);
 
+  function applyTransform(s: string): string {
+    if (textTransform === "uppercase") return s.toUpperCase();
+    if (textTransform === "lowercase") return s.toLowerCase();
+    return s;
+  }
+
   // Explicit \n in content → normal wrapping (balance within hard-break segments isn't needed)
   if (text.includes("\n")) {
-    return wrapTextPrecise(text, maxWidth, fontSize, fontWeight, maxLines, fontFamily);
+    return wrapTextPrecise(text, maxWidth, fontSize, fontWeight, maxLines, fontFamily, textTransform);
   }
 
   const words = text.split(" ").filter(Boolean);
   if (words.length <= 1) return words.length ? [text] : [];
 
   // Natural wrap to find how many lines the text needs
-  const naturalLines = wrapGreedySingleSegment(words, maxWidth, fontSize, isBold, familyFactor, maxLines, spaceWidth);
+  const naturalLines = wrapGreedySingleSegment(words, maxWidth, fontSize, isBold, familyFactor, maxLines, spaceWidth, applyTransform);
   if (naturalLines.length <= 1) return naturalLines;
 
   const targetLines = naturalLines.length;
-  const longestWordW = Math.max(...words.map((w) => measureTextWidth(stripBoldMarkers(w), fontSize, isBold, familyFactor)));
+  const longestWordW = Math.max(...words.map((w) => measureTextWidth(applyTransform(stripBoldMarkers(w)), fontSize, isBold, familyFactor)));
 
   // Binary search: find minimum effective width that still wraps into targetLines
   let lo = longestWordW;
   let hi = maxWidth;
   for (let i = 0; i < 20; i++) {
     const mid = (lo + hi) / 2;
-    const lines = wrapGreedySingleSegment(words, mid, fontSize, isBold, familyFactor, maxLines, spaceWidth);
+    const lines = wrapGreedySingleSegment(words, mid, fontSize, isBold, familyFactor, maxLines, spaceWidth, applyTransform);
     if (lines.length <= targetLines) hi = mid;
     else lo = mid;
   }
 
-  return wrapGreedySingleSegment(words, hi, fontSize, isBold, familyFactor, maxLines, spaceWidth);
+  return wrapGreedySingleSegment(words, hi, fontSize, isBold, familyFactor, maxLines, spaceWidth, applyTransform);
 }
 
 // Emoji regex — matches any Unicode emoji sequence (including ZWJ, variation selectors, flags)

@@ -106,30 +106,48 @@ const CHAR_WIDTHS: Record<string, number> = {
 
 const DEFAULT_CW = 0.55;
 
-// Bebas Neue is condensed — chars render narrower than standard-width fonts
-const BEBAS_FACTOR = 0.62;
+// Must match textRenderer's FONT_FAMILY_FACTORS["bebas neue"] for consistent measurement
+const BEBAS_FACTOR = 0.80;
 
-function measureBebasLine(text: string, fontSize: number): number {
+function measureBebasWord(text: string, fontSize: number): number {
   let w = 0;
   for (const ch of text.toUpperCase())
     w += (CHAR_WIDTHS[ch] ?? DEFAULT_CW) * fontSize;
   return w * BEBAS_FACTOR;
 }
 
-/** Reduce fontSize until the longest line fits within maxWidth, down to minSize */
-function fitBebasFontSize(
+/**
+ * Reduce fontSize until the word-wrapped text fits within `maxLines` lines.
+ * Starts at startSize and decrements by 2px until the wrap count ≤ maxLines or minSize is reached.
+ */
+function fitBebasToLines(
   text: string,
   maxWidth: number,
+  maxLines: number,
   startSize: number,
   minSize: number,
 ): number {
+  const words = text.toUpperCase().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return startSize;
+
+  function countLines(size: number): number {
+    const spaceW = measureBebasWord(" ", size);
+    let lineWidth = 0;
+    let lines = 1;
+    for (const word of words) {
+      const ww = measureBebasWord(word, size);
+      if (lineWidth > 0 && lineWidth + spaceW + ww > maxWidth) {
+        lines++;
+        lineWidth = ww;
+      } else {
+        lineWidth = lineWidth === 0 ? ww : lineWidth + spaceW + ww;
+      }
+    }
+    return lines;
+  }
+
   let size = startSize;
-  const lines = text.split(/\n/);
-  while (size > minSize) {
-    const longest = lines.reduce((a, b) =>
-      measureBebasLine(a, 1) > measureBebasLine(b, 1) ? a : b,
-    );
-    if (measureBebasLine(longest, size) <= maxWidth) break;
+  while (size > minSize && countLines(size) > maxLines) {
     size -= 2;
   }
   return size;
@@ -145,30 +163,33 @@ export function buildBebasUrgenciaTopLayout(
   const MARGIN = Math.round(CW * 0.04); // ~43px
 
   // ── Headline sizing ──────────────────────────────────────────────────────
+  // Symmetric margins so centering anchors at CW/2
   const HL_X = MARGIN;
-  const HL_W = Math.round(CW * 0.92);
+  const HL_W = CW - 2 * MARGIN; // ~994px — anchor at MARGIN + HL_W/2 = CW/2
+  // Moderate-large display size — only shrinks if a single word overflows
   const HL_MAX_FS = Math.round(CW * 0.115); // ~124px for 1080
-  const HL_MIN_FS = Math.round(CW * 0.065); // ~70px
+  const HL_MIN_FS = Math.round(CW * 0.065); // ~70px floor
   const HL_LINE_H = 0.95; // Bebas Neue tight line-height
 
+  const MAX_HL_LINES = 2;
   const rawHeadline = copy.headline ?? "";
-  const hlFontSize = fitBebasFontSize(rawHeadline, HL_W, HL_MAX_FS, HL_MIN_FS);
+  const hlFontSize = fitBebasToLines(rawHeadline, HL_W, MAX_HL_LINES, HL_MAX_FS, HL_MIN_FS);
 
-  // Estimate wrapped line count for height allocation
-  const words = rawHeadline.split(/\s+/).filter(Boolean);
+  // Estimate wrapped line count for height allocation (word-wrap at HL_W)
+  const spaceW = measureBebasWord(" ", hlFontSize);
+  const words = rawHeadline.toUpperCase().split(/\s+/).filter(Boolean);
   let lineWidth = 0;
   let lineCount = 1;
   for (const word of words) {
-    const ww = measureBebasLine(word, hlFontSize);
-    const sw = measureBebasLine(" ", hlFontSize);
-    if (lineWidth > 0 && lineWidth + sw + ww > HL_W) {
+    const ww = measureBebasWord(word, hlFontSize);
+    if (lineWidth > 0 && lineWidth + spaceW + ww > HL_W) {
       lineCount++;
       lineWidth = ww;
     } else {
-      lineWidth = lineWidth === 0 ? ww : lineWidth + sw + ww;
+      lineWidth = lineWidth === 0 ? ww : lineWidth + spaceW + ww;
     }
   }
-  const hlLines = Math.min(lineCount, 4);
+  const hlLines = Math.min(lineCount, MAX_HL_LINES);
   const HL_H = Math.ceil(hlFontSize * HL_LINE_H * hlLines) + 20;
 
   // ── Vertical position: start at ~10% to leave room for logo ─────────────
@@ -204,7 +225,7 @@ export function buildBebasUrgenciaTopLayout(
     ],
 
     textBlocks: [
-      // ── HEADLINE: Bebas Neue, left-anchored, top area ─────────────────────
+      // ── HEADLINE: Bebas Neue, centered, top area ─────────────────────────
       {
         id: "headline",
         content: rawHeadline,
@@ -212,14 +233,14 @@ export function buildBebasUrgenciaTopLayout(
         y: HL_Y,
         w: HL_W,
         h: HL_H,
-        align: "left",
+        align: "center",
         fontFamily: "Bebas Neue",
         fontWeight: "400",
         fontSize: hlFontSize,
         color: "#FFFFFF",
         lineHeight: HL_LINE_H,
         letterSpacing: 0.01,
-        maxLines: 4,
+        maxLines: MAX_HL_LINES,
         textTransform: "uppercase",
       },
     ],
