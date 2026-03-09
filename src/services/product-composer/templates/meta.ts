@@ -54,6 +54,13 @@ export interface TemplateMetadata {
    */
   sceneFullBleed?: boolean;
   /**
+   * true = expandSceneBrief will describe ONLY the person (appearance, pose,
+   * expression, clothing) without any environment/setting details.
+   * Use on templates where the background is pre-generated and must not be
+   * overridden by scene environment descriptions (e.g. dark studio backgrounds).
+   */
+  personOnly?: boolean;
+  /**
    * true = when this template falls through to Flujo D (product injection),
    * the prompt intentionally describes a person in the scene.
    * Enables ABSOLUTE_RULES_ANATOMY in buildProductIAPrompt.
@@ -1535,6 +1542,7 @@ No hands, no people. Photorealistic. 4K.`,
     requiresSceneGeneration: true,
     personScene: true,
     sceneFullBleed: true,
+    personOnly: true,
     supportsSequence: false,
     recommendedFor: [
       "servicios-profesionales",

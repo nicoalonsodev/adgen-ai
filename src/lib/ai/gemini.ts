@@ -766,7 +766,7 @@ export async function expandSceneBrief(args: {
   productCategory: string;
   tone: string;
   copyZone?: string;
-  fullBleed?: boolean;
+  personOnly?: boolean;
   backgroundPrompt?: string;
   businessProfile?: {
     nombre?: string;
@@ -781,13 +781,13 @@ export async function expandSceneBrief(args: {
     ? `Brand: ${args.businessProfile.nombre || ""}. Ideal client: ${args.businessProfile.clienteIdeal || ""}.`
     : "";
 
-  // Full-bleed: the background is pre-generated separately. The expanded prompt must describe
+  // personOnly: the background is pre-generated separately. The expanded prompt must describe
   // ONLY the person (appearance, pose, expression, clothing) — NOT the environment/setting,
   // because Gemini will receive the pre-generated background as Image 1 and must composite
   // the person INTO it without altering the background.
-  const fullBleedInstructions = args.fullBleed
+  const personOnlyInstructions = args.personOnly
     ? `
-CRITICAL — FULL-BLEED COMPOSITE MODE:
+CRITICAL — PERSON-ONLY COMPOSITE MODE:
 A dark cinematic background has ALREADY been generated separately${args.backgroundPrompt ? ` ("${args.backgroundPrompt}")` : ""}.
 Gemini will receive that background as an image and must ADD the person to it.
 Therefore your prompt must describe ONLY THE PERSON — do NOT describe any environment, room,
@@ -798,7 +798,7 @@ DO NOT mention kitchens, bathrooms, living rooms, counters, mirrors, gyms, or an
 The person should look like they BELONG in a dark, moody, cinematic environment.`
     : "";
 
-  const environmentInstruction = args.fullBleed
+  const environmentInstruction = args.personOnly
     ? `   - Do NOT describe any environment, room, setting, or background — the background is pre-generated
    - Describe lighting ON THE PERSON only (matching dark cinematic mood)`
     : `   - Environment details: textures, props, depth of field, atmosphere`;
@@ -806,7 +806,7 @@ The person should look like they BELONG in a dark, moody, cinematic environment.
   const prompt = `You are a visual prompt engineer specializing in cinematic advertising photography direction.
 
 Your task: expand a SHORT scene description into a FULL, hyper-detailed visual prompt for Gemini AI image generation.
-${fullBleedInstructions}
+${personOnlyInstructions}
 
 SHORT SCENE DESCRIPTION (from the creative director):
 "${args.sceneAction}"
