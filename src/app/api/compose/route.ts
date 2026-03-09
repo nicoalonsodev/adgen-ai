@@ -19,6 +19,8 @@ import { composeWithTemplateBeta } from "@/services/product-composer/composeWith
 import { generateBackground, analyzeCreativeQuality, generateImageBriefGemini, expandSceneBrief } from "@/lib/ai/gemini";
 import { generateTemplateCopyOpenAI, analyzeCreativeReference, generateSequenceCopy } from "@/lib/ai/openai";
 import type { ImageBriefType } from "@/lib/ai/promptLibrary";
+import { composePipelineV2 } from "@/lib/meta/pipeline/v2";
+import { deriveStrategicCore } from "@/lib/ai/copyGenerator";
 import { listPresets } from "@/services/product-composer/presets";
 import { createLogger, generateRequestId } from "@/lib/logger";
 import { createMetrics } from "@/lib/metrics";
@@ -573,6 +575,68 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ success: true, data: { slides: result } });
         } catch (err) {
           const message = err instanceof Error ? err.message : "Unknown error";
+          return NextResponse.json({ success: false, error: message }, { status: 500 });
+        }
+      }
+    }
+
+    // PIPELINE_V2: early return — full creative pipeline (brief → bg → scene) in one call
+    if (contentType.includes("application/json")) {
+      const clone = request.clone();
+      const body = await clone.json().catch(() => ({}));
+      if (body.mode === "PIPELINE_V2") {
+        try {
+          const productName = body.productName ?? body.product ?? "";
+          const productDescription = body.productDescription ?? "";
+
+          // Derive strategic core from product info
+          const strategicCore = await deriveStrategicCore(productName, productDescription);
+
+          // Override category with business profile category if available
+          if (body.businessProfile?.category) {
+            strategicCore.category = body.businessProfile.category;
+          }
+
+          const result = await composePipelineV2({
+            templateId: body.templateId,
+            productName,
+            productDescription,
+            strategicCore,
+            businessProfile: body.businessProfile
+              ? {
+                  nombre: body.businessProfile.nombre,
+                  rubro: body.businessProfile.rubro,
+                  propuestaValor: body.businessProfile.propuestaValor,
+                  diferenciacion: body.businessProfile.diferenciacion,
+                  clienteIdeal: body.businessProfile.clienteIdeal,
+                  dolores: body.businessProfile.dolores,
+                  motivaciones: body.businessProfile.motivaciones,
+                  tono: body.businessProfile.tono,
+                  coloresMarca: body.businessProfile.coloresMarca,
+                }
+              : undefined,
+            offer: body.offer,
+            variantIndex: body.variantIndex ?? 0,
+            aspectRatio: body.aspectRatio ?? "1:1",
+          });
+
+          if (cachedUserTokens) await consumeTokensWithData(cachedUserTokens, tokensNeeded, operation);
+
+          return NextResponse.json({
+            success: true,
+            requestId,
+            data: {
+              sceneImage: result.sceneDataUrl,
+              backgroundImage: result.backgroundDataUrl,
+              brief: result.brief,
+              prompts: result.prompts,
+              timing: result.timing,
+              debugDir: result.debugDir,
+            },
+          });
+        } catch (err) {
+          const message = err instanceof Error ? err.message : "Unknown error";
+          console.error("[compose:PIPELINE_V2] Error:", message);
           return NextResponse.json({ success: false, error: message }, { status: 500 });
         }
       }

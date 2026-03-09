@@ -54,40 +54,49 @@ Pipeline V2 reemplaza al pipeline legacy (V1) para templates marcados con `pipel
 ## 2. Flujo Completo
 
 ```
-POST /api/meta/v1/generate
+Frontend (fabrica-de-contenido/page.tsx)
 │
-├─ deriveStrategicCore (OpenAI gpt-4.1-mini)
-│   → { coreBenefit, category, positioning, keyProof }
+├─ GENERATE_COPY via POST /api/compose          ← OpenAI gpt-4o-mini
+│   → { headline, subheadline, badge, etc. }
 │
 ├─ [Si template.pipelineV2 === true]
 │   │
-│   ├─ composePipelineV2()                       ← ORQUESTADOR
+│   ├─ PIPELINE_V2 via POST /api/compose        ← NUEVO HANDLER
 │   │   │
-│   │   ├─ Step 1: generateCreativeBrief()       ← OpenAI gpt-4.1-mini
-│   │   │   ├─ System prompt: scene-orchestrator-instructions.md
-│   │   │   ├─ + Template context (copyZone, hints, categoryBg)
-│   │   │   ├─ User prompt: producto + core + ADN + oferta
-│   │   │   └─ → CreativeBrief (validado con Zod)
+│   │   ├─ deriveStrategicCore()                ← OpenAI gpt-4.1-mini
+│   │   │   → { coreBenefit, category, positioning, keyProof }
 │   │   │
-│   │   ├─ Step 2: generateGeminiPrompts()       ← función pura (0ms)
-│   │   │   ├─ brief.background_prompt → backgroundPrompt enriquecido
-│   │   │   ├─ brief.person_prompt → personPrompt enriquecido
-│   │   │   └─ → GeminiPrompts { backgroundPrompt, personPrompt }
-│   │   │
-│   │   ├─ Step 3: generateBackground()          ← Gemini 2.5 Flash
-│   │   │   ├─ Input: backgroundPrompt + aspectRatio
-│   │   │   └─ → Buffer PNG (fondo oscuro, sin persona)
-│   │   │
-│   │   └─ Step 4: generateScene()               ← Gemini 2.5 Flash
-│   │       ├─ Input: backgroundBuffer + personPrompt + aspectRatio
-│   │       ├─ [Solo si template.personScene === true]
-│   │       └─ → Buffer PNG (escena final con persona)
+│   │   └─ composePipelineV2()                  ← ORQUESTADOR
+│   │       │
+│   │       ├─ Step 1: generateCreativeBrief()  ← OpenAI gpt-4.1-mini
+│   │       │   ├─ System: scene-orchestrator-instructions.md
+│   │       │   ├─ + Template context (copyZone, hints, categoryBg)
+│   │       │   ├─ User: producto + core + ADN + oferta
+│   │       │   └─ → CreativeBrief (validado con Zod)
+│   │       │
+│   │       ├─ Step 2: generateGeminiPrompts()  ← función pura (0ms)
+│   │       │   ├─ brief.background_prompt → backgroundPrompt enriquecido
+│   │       │   ├─ brief.person_prompt → personPrompt enriquecido
+│   │       │   └─ → GeminiPrompts { backgroundPrompt, personPrompt }
+│   │       │
+│   │       ├─ Step 3: generateBackground()     ← Gemini 2.5 Flash
+│   │       │   ├─ Input: backgroundPrompt + aspectRatio
+│   │       │   └─ → Buffer PNG (fondo oscuro, sin persona)
+│   │       │
+│   │       └─ Step 4: generateScene()          ← Gemini 2.5 Flash
+│   │           ├─ Input: backgroundBuffer + personPrompt + aspectRatio
+│   │           ├─ [Solo si template.personScene === true]
+│   │           └─ → Buffer PNG (escena final con persona)
 │   │
-│   └─ [En paralelo]
-│       └─ generateExtendedCopyVariants()        ← OpenAI (copy de texto)
-│           → headline, subheadline, sceneAction, etc.
+│   └─ TEMPLATE_BETA via POST /api/compose      ← texto + logo sobre escena
+│       → imagen final renderizada
 │
-└─ Template renderer → overlay copy sobre escena → Response
+├─ [Si template.pipelineV2 !== true → V1 legacy]
+│   ├─ GENERATE_BACKGROUND via POST /api/compose
+│   ├─ TEMPLATE_BETA via POST /api/compose
+│   └─ PRODUCT_IA via POST /api/compose
+│
+└─ saveCreativo() → Supabase + localStorage
 ```
 
 ---
@@ -259,7 +268,8 @@ Se ejecuta **en paralelo** con los Steps 1-4. Genera los textos que el template 
 | `src/lib/ai/promptRules.ts` | Reglas absolutas compartidas | Constantes |
 | `src/lib/ai/copyGenerator.ts` | Strategic core + copy variants | LLM call |
 | `src/services/product-composer/templates/meta.ts` | Metadata de templates | Config |
-| `src/app/api/meta/v1/generate/route.ts` | Entry point HTTP | API Route |
+| `src/app/api/compose/route.ts` | Entry point HTTP (handler PIPELINE_V2) | API Route |
+| `src/app/dashboard/fabrica-de-contenido/page.tsx` | Frontend que orquesta el flujo | React Client |
 
 ---
 
