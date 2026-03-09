@@ -10,12 +10,14 @@
 1. [Visión General](#1-visión-general)
 2. [Flujo Completo (Diagrama)](#2-flujo-completo)
 3. [Paso a Paso Detallado](#3-paso-a-paso-detallado)
-   - [Step 0: Entrada y Strategic Core](#step-0-entrada-y-strategic-core)
-   - [Step 1: Creative Brief (OpenAI)](#step-1-creative-brief-openai)
-   - [Step 2: Gemini Prompts (función pura)](#step-2-gemini-prompts-función-pura)
-   - [Step 3: Background (Gemini)](#step-3-background-gemini)
-   - [Step 4: Scene / Persona (Gemini)](#step-4-scene--persona-gemini)
-   - [Step 5: Copy + Renderizado Final](#step-5-copy--renderizado-final)
+   - [Step 0: Frontend → GENERATE_COPY](#step-0-frontend--generate_copy)
+   - [Step 1: PIPELINE_V2 Handler (compose route)](#step-1-pipeline_v2-handler-compose-route)
+   - [Step 2: deriveStrategicCore (OpenAI)](#step-2-derivestrategiccore-openai)
+   - [Step 3: Creative Brief (OpenAI)](#step-3-creative-brief-openai)
+   - [Step 4: Gemini Prompts (función pura)](#step-4-gemini-prompts-función-pura)
+   - [Step 5: Background (Gemini)](#step-5-background-gemini)
+   - [Step 6: Scene / Persona (Gemini)](#step-6-scene--persona-gemini)
+   - [Step 7: TEMPLATE_BETA (texto + logo)](#step-7-template_beta-texto--logo)
 4. [Archivos del Pipeline](#4-archivos-del-pipeline)
 5. [Puntos de Mejora](#5-puntos-de-mejora)
    - [5.1 Ejemplos de nutrición por vertical](#51-ejemplos-de-nutrición-por-vertical)
@@ -24,14 +26,19 @@
    - [5.4 Category Background Prompts](#54-category-background-prompts)
    - [5.5 Strategic Core](#55-strategic-core)
 6. [Debug Logging](#6-debug-logging)
+7. [Cómo Agregar un Nuevo Template V2](#7-cómo-agregar-un-nuevo-template-v2)
 
 ---
 
 ## 1. Visión General
 
-Pipeline V2 reemplaza al pipeline legacy (V1) para templates marcados con `pipelineV2: true`.
+Pipeline V2 reemplaza al pipeline legacy (V1) para templates marcados con `pipelineV2: true` en `meta.ts`.
 
 **Innovación clave:** Un LLM (OpenAI) genera un *Creative Brief* estructurado que actúa como **única fuente de verdad** para toda la generación visual. Esto garantiza coherencia entre background, persona, iluminación y copy.
+
+**Diferencia con V1:**
+- **V1**: Background genérico (Gemini) → Template (texto) → PRODUCT_IA (persona/producto con Gemini) — cada paso decide independientemente.
+- **V2**: Un brief unificado coordina todo — background, persona, iluminación, mood, paleta — produciendo escenas más coherentes y cinematográficas.
 
 **Modelo mental:**
 
@@ -46,52 +53,60 @@ Pipeline V2 reemplaza al pipeline legacy (V1) para templates marcados con `pipel
               ↓
      👤 Scene + Persona (Gemini)     ← persona compuesta sobre el background
               ↓
-     ✍️ Copy overlay (template)      ← headline + texto sobre la imagen
+     ✍️ Copy overlay (TEMPLATE_BETA) ← headline + texto + logo sobre la imagen
 ```
 
 ---
 
 ## 2. Flujo Completo
 
+### Flujo V2 (templates con `pipelineV2: true`)
+
 ```
 Frontend (fabrica-de-contenido/page.tsx)
 │
-├─ GENERATE_COPY via POST /api/compose          ← OpenAI gpt-4o-mini
+├─ GENERATE_COPY via POST /api/compose             ← OpenAI gpt-4o-mini
 │   → { headline, subheadline, badge, etc. }
 │
-├─ [Si template.pipelineV2 === true]
+├─ Detección: templateDef.pipelineV2 === true ?
+│
+├─ [SI → Pipeline V2]
 │   │
-│   ├─ PIPELINE_V2 via POST /api/compose        ← NUEVO HANDLER
+│   ├─ PIPELINE_V2 via POST /api/compose            ← HANDLER en compose route
 │   │   │
-│   │   ├─ deriveStrategicCore()                ← OpenAI gpt-4.1-mini
-│   │   │   → { coreBenefit, category, positioning, keyProof }
+│   │   │  ┌─ compose/route.ts (server-side) ──────────────────────┐
+│   │   │  │                                                        │
+│   │   ├──┤  1. deriveStrategicCore()          ← OpenAI gpt-4.1-mini
+│   │   │  │     → { coreBenefit, category, positioning, keyProof } │
+│   │   │  │                                                        │
+│   │   │  │  2. Override category con businessProfile.category     │
+│   │   │  │     (si está disponible)                               │
+│   │   │  │                                                        │
+│   │   ├──┤  3. composePipelineV2()            ← ORQUESTADOR      │
+│   │   │  │     │                                                  │
+│   │   │  │     ├─ generateCreativeBrief()     ← OpenAI gpt-4.1-mini
+│   │   │  │     │   System: scene-orchestrator-instructions.md     │
+│   │   │  │     │   User: producto + core + ADN + oferta           │
+│   │   │  │     │   → CreativeBrief (validado con Zod)             │
+│   │   │  │     │                                                  │
+│   │   │  │     ├─ generateGeminiPrompts()     ← función pura     │
+│   │   │  │     │   → backgroundPrompt + personPrompt              │
+│   │   │  │     │                                                  │
+│   │   │  │     ├─ generateBackground()        ← Gemini 2.5 Flash │
+│   │   │  │     │   → Buffer PNG (fondo oscuro, sin persona)       │
+│   │   │  │     │                                                  │
+│   │   │  │     └─ generateScene()             ← Gemini 2.5 Flash │
+│   │   │  │         → Buffer PNG (escena con persona)              │
+│   │   │  │                                                        │
+│   │   │  └────────────────────────────────────────────────────────┘
 │   │   │
-│   │   └─ composePipelineV2()                  ← ORQUESTADOR
-│   │       │
-│   │       ├─ Step 1: generateCreativeBrief()  ← OpenAI gpt-4.1-mini
-│   │       │   ├─ System: scene-orchestrator-instructions.md
-│   │       │   ├─ + Template context (copyZone, hints, categoryBg)
-│   │       │   ├─ User: producto + core + ADN + oferta
-│   │       │   └─ → CreativeBrief (validado con Zod)
-│   │       │
-│   │       ├─ Step 2: generateGeminiPrompts()  ← función pura (0ms)
-│   │       │   ├─ brief.background_prompt → backgroundPrompt enriquecido
-│   │       │   ├─ brief.person_prompt → personPrompt enriquecido
-│   │       │   └─ → GeminiPrompts { backgroundPrompt, personPrompt }
-│   │       │
-│   │       ├─ Step 3: generateBackground()     ← Gemini 2.5 Flash
-│   │       │   ├─ Input: backgroundPrompt + aspectRatio
-│   │       │   └─ → Buffer PNG (fondo oscuro, sin persona)
-│   │       │
-│   │       └─ Step 4: generateScene()          ← Gemini 2.5 Flash
-│   │           ├─ Input: backgroundBuffer + personPrompt + aspectRatio
-│   │           ├─ [Solo si template.personScene === true]
-│   │           └─ → Buffer PNG (escena final con persona)
+│   │   └─ Response: { sceneImage, backgroundImage, brief, prompts, timing }
 │   │
-│   └─ TEMPLATE_BETA via POST /api/compose      ← texto + logo sobre escena
+│   └─ TEMPLATE_BETA via POST /api/compose          ← texto + logo sobre escena
+│       Input: sceneImage del paso anterior
 │       → imagen final renderizada
 │
-├─ [Si template.pipelineV2 !== true → V1 legacy]
+├─ [NO → Pipeline V1 legacy]
 │   ├─ GENERATE_BACKGROUND via POST /api/compose
 │   ├─ TEMPLATE_BETA via POST /api/compose
 │   └─ PRODUCT_IA via POST /api/compose
@@ -99,14 +114,85 @@ Frontend (fabrica-de-contenido/page.tsx)
 └─ saveCreativo() → Supabase + localStorage
 ```
 
+### Flujo V2 para Múltiples Ángulos
+
+```
+handleGenerateAngles()
+│
+├─ GENERATE_COPY × N templates × M ángulos       ← en paralelo
+│
+└─ Por cada tarea (templateId, angleIndex, copy):
+    │
+    ├─ [Si tplMeta.pipelineV2 === true]
+    │   ├─ PIPELINE_V2 (variantIndex = angleIndex)
+    │   ├─ TEMPLATE_BETA (texto sobre escena)
+    │   └─ return variant (early return, skip V1)
+    │
+    └─ [Si no → V1 legacy]
+        ├─ GENERATE_BACKGROUND
+        ├─ TEMPLATE_BETA
+        └─ PRODUCT_IA
+```
+
 ---
 
 ## 3. Paso a Paso Detallado
 
-### Step 0: Entrada y Strategic Core
+### Step 0: Frontend → GENERATE_COPY
 
-**Archivo:** `src/app/api/meta/v1/generate/route.ts`
-**Función:** `deriveStrategicCore()` en `src/lib/ai/copyGenerator.ts`
+**Archivo:** `src/app/dashboard/fabrica-de-contenido/page.tsx`
+**Handler:** `handleGenerate()` (single) / `handleGenerateAngles()` (multi)
+
+El frontend envía `mode: "GENERATE_COPY"` a `/api/compose` con:
+- `product`, `offer`, `targetAudience`, `problem`, `tone`
+- `templateSchema` (campos de copy que necesita el template)
+- `templateHint` (hint de estilo para el copy)
+- `businessProfile` (ADN del negocio)
+- `copyZone` (dónde va el texto)
+
+Recibe: `copy` con campos como `headline`, `subheadline`, `badge`, `primaryColor`, etc.
+
+**Decisión V1 vs V2** (en el frontend):
+```typescript
+const templateDef = TEMPLATES.find((t) => t.id === primaryTemplate);
+if (templateDef?.pipelineV2 === true) {
+  // → Pipeline V2
+} else {
+  // → Pipeline V1 legacy
+}
+```
+
+---
+
+### Step 1: PIPELINE_V2 Handler (compose route)
+
+**Archivo:** `src/app/api/compose/route.ts`
+**Mode:** `"PIPELINE_V2"` (JSON body)
+
+El frontend envía:
+```typescript
+{
+  mode: "PIPELINE_V2",
+  templateId: "bebas-urgencia-top",
+  productName: "H70 - SHOCK DE VIT C",
+  productDescription: "...",
+  businessProfile: { nombre, rubro, propuestaValor, dolores, tono, coloresMarca, ... },
+  offer: { active: true, type: "general", label: "20% OFF" },
+  variantIndex: 0,
+  aspectRatio: "1:1",
+}
+```
+
+**Sanitización de datos:**
+- `dolores`, `motivaciones`, `coloresMarca` se validan como arrays (descartan si no lo son)
+- `category` del businessProfile se usa para override del strategic core
+
+---
+
+### Step 2: deriveStrategicCore (OpenAI)
+
+**Archivo:** `src/lib/ai/copyGenerator.ts`
+**Modelo:** `gpt-4.1-mini` | **Temperatura:** `0.2`
 
 | Campo | Descripción |
 |-------|-------------|
@@ -115,14 +201,11 @@ Frontend (fabrica-de-contenido/page.tsx)
 | `positioning` | Diferenciación vs competencia |
 | `keyProof` | Dato duro de respaldo (ej: "12 horas de duración") |
 
-**Decisión V1 vs V2:**
-```typescript
-const usePipelineV2 = resolvedTemplateMeta?.pipelineV2 === true;
-```
+**Nota:** La `category` se sobreescribe con `businessProfile.category` si está disponible, para matchear con los `categoryBackgroundPrompts` del template.
 
 ---
 
-### Step 1: Creative Brief (OpenAI)
+### Step 3: Creative Brief (OpenAI)
 
 **Archivo:** `src/lib/meta/pipeline/v2/generateCreativeBrief.ts`
 **Knowledge base:** `src/lib/meta/pipeline/v2/scene-orchestrator-instructions.md`
@@ -165,7 +248,7 @@ Secciones inyectadas:
 
 ---
 
-### Step 2: Gemini Prompts (función pura)
+### Step 4: Gemini Prompts (función pura)
 
 **Archivo:** `src/lib/meta/pipeline/v2/generateBackgroundPrompt.ts`
 **Función:** `generateGeminiPrompts(brief, templateId)`
@@ -205,7 +288,7 @@ Se construye así:
 
 ---
 
-### Step 3: Background (Gemini)
+### Step 5: Background (Gemini)
 
 **Archivo:** `src/lib/ai/gemini.ts`
 **Función:** `generateBackground()`
@@ -222,7 +305,7 @@ El prompt se prefija con `"Generate an image:"` para forzar modo de generación 
 
 ---
 
-### Step 4: Scene / Persona (Gemini)
+### Step 6: Scene / Persona (Gemini)
 
 **Archivo:** `src/lib/ai/gemini.ts`
 **Función:** `generateScene()`
@@ -241,16 +324,28 @@ Si no se cumple, el background se usa como escena final.
 
 ---
 
-### Step 5: Copy + Renderizado Final
+### Step 7: TEMPLATE_BETA (texto + logo)
 
-**Archivo:** `src/lib/ai/copyGenerator.ts`
-**Función:** `generateExtendedCopyVariants()`
+**Archivo:** `src/services/product-composer/composeWithTemplateBeta.ts`
+**Llamada desde:** Frontend via `POST /api/compose` con `mode: "TEMPLATE_BETA"`
 
-Se ejecuta **en paralelo** con los Steps 1-4. Genera los textos que el template renderer superpone sobre la escena:
-- `headline` — frase emocional principal
-- `subheadline` — línea de beneficio
-- `sceneAction` — descripción de acción (usado como contexto)
-- `backgroundColorHint` — sugerencia de paleta de color
+Recibe la escena generada por V2 como `background` (FormData) y aplica:
+1. Resize al canvas (1080x1080)
+2. Build layout desde el template (headline, subheadline, badge, etc.)
+3. `renderTextOnImage()` — renderiza texto sobre la escena
+4. Logo overlay (si el negocio tiene logo configurado)
+
+**Input copy (del frontend):**
+```typescript
+{
+  cta: copy.title,
+  headline: copy.headline,
+  subheadline: copy.subheadline,
+  badge: copy.badge,
+  primaryColor: copy.primaryColor,
+  brandColors: businessProfile.coloresMarca,
+}
+```
 
 ---
 
@@ -258,7 +353,9 @@ Se ejecuta **en paralelo** con los Steps 1-4. Genera los textos que el template 
 
 | Archivo | Rol | Tipo |
 |---------|-----|------|
-| `v2/composePipelineV2.ts` | Orquestador principal | Función async |
+| `src/app/api/compose/route.ts` | Entry point HTTP — handler `PIPELINE_V2` | API Route |
+| `src/app/dashboard/fabrica-de-contenido/page.tsx` | Frontend — detección V2, orquesta llamadas | React Client |
+| `v2/composePipelineV2.ts` | Orquestador server-side (brief → bg → scene) | Función async |
 | `v2/generateCreativeBrief.ts` | Genera el brief via OpenAI | LLM call |
 | `v2/scene-orchestrator-instructions.md` | Knowledge base del director de arte | System prompt |
 | `v2/generateBackgroundPrompt.ts` | Transforma brief → prompts Gemini | Función pura |
@@ -266,10 +363,9 @@ Se ejecuta **en paralelo** con los Steps 1-4. Genera los textos que el template 
 | `v2/index.ts` | Barrel export | Re-exports |
 | `src/lib/ai/gemini.ts` | Llamadas a Gemini API | LLM calls |
 | `src/lib/ai/promptRules.ts` | Reglas absolutas compartidas | Constantes |
-| `src/lib/ai/copyGenerator.ts` | Strategic core + copy variants | LLM call |
-| `src/services/product-composer/templates/meta.ts` | Metadata de templates | Config |
-| `src/app/api/compose/route.ts` | Entry point HTTP (handler PIPELINE_V2) | API Route |
-| `src/app/dashboard/fabrica-de-contenido/page.tsx` | Frontend que orquesta el flujo | React Client |
+| `src/lib/ai/copyGenerator.ts` | `deriveStrategicCore()` + copy generation | LLM call |
+| `src/services/product-composer/composeWithTemplateBeta.ts` | Renderizado de texto + logo sobre imagen | Composición |
+| `src/services/product-composer/templates/meta.ts` | Metadata de templates (`pipelineV2: true`) | Config |
 
 ---
 
@@ -377,16 +473,16 @@ const negativeConstraints = [
 
 | Categoría | Tiene prompt | Calidad |
 |-----------|:------------:|---------|
-| `belleza-cosmetica` | ✅ | Básico — "Minimalist dark studio" |
-| `fitness-deporte` | ✅ | Básico — "Dark gym with spotlights" |
-| `servicios-profesionales` | ✅ | Básico — "Dark office with desk lamp" |
-| `tecnologia` | ✅ | Básico — "Dark studio with blue-tinted light" |
-| `salud-bienestar` | ✅ | Básico — "Dark spa with candle light" |
-| `alimentacion` | ❌ | Sin prompt |
-| `educacion` | ❌ | Sin prompt |
-| `hogar` | ❌ | Sin prompt |
-| `moda` | ❌ | Sin prompt |
-| `mascotas` | ❌ | Sin prompt |
+| `belleza-cosmetica` | Si | Básico — "Minimalist dark studio" |
+| `fitness-deporte` | Si | Básico — "Dark gym with spotlights" |
+| `servicios-profesionales` | Si | Básico — "Dark office with desk lamp" |
+| `tecnologia` | Si | Básico — "Dark studio with blue-tinted light" |
+| `salud-bienestar` | Si | Básico — "Dark spa with candle light" |
+| `alimentacion` | No | Sin prompt |
+| `educacion` | No | Sin prompt |
+| `hogar` | No | Sin prompt |
+| `moda` | No | Sin prompt |
+| `mascotas` | No | Sin prompt |
 
 **Mejoras posibles:**
 
@@ -477,6 +573,28 @@ cat /tmp/pipeline-v2-debug/*/05_summary.json | jq '.brief.mood'
 
 ---
 
+## 7. Cómo Agregar un Nuevo Template V2
+
+1. **En `meta.ts`:** Agregar `pipelineV2: true` al template:
+   ```typescript
+   {
+     id: "mi-nuevo-template",
+     pipelineV2: true,
+     personScene: true,                    // si necesita persona
+     requiresSceneGeneration: true,        // si genera escena
+     sceneFullBleed: true,                 // si la escena cubre todo el canvas
+     personOnly: true,                     // si el person prompt solo describe persona (no entorno)
+     categoryBackgroundPrompts: { ... },   // prompts por categoría de negocio
+     // ... resto de la metadata
+   }
+   ```
+
+2. **El frontend lo detecta automáticamente:** No requiere cambios en `page.tsx` — la detección de `pipelineV2: true` ya está implementada tanto en `handleGenerate()` como en `handleGenerateAngles()`.
+
+3. **Opcional:** Agregar patrones de escena para el nuevo template en `scene-orchestrator-instructions.md`.
+
+---
+
 ## Apéndice: Template V2 Actual
 
 Actualmente solo **1 template** usa Pipeline V2:
@@ -485,6 +603,5 @@ Actualmente solo **1 template** usa Pipeline V2:
 - Copy zone: `top`
 - Escena: full-bleed con persona
 - Sin producto visible (vende el dolor, no la solución)
-- Categorías soportadas: belleza, fitness, servicios profesionales, tecnología, salud
-
-Para agregar un nuevo template al Pipeline V2, setear `pipelineV2: true` en su metadata en `src/services/product-composer/templates/meta.ts`.
+- Categorías con background prompts: belleza, fitness, servicios profesionales, tecnología, salud
+- Copy schema: `headline`, `backgroundColorHint`, `sceneAction`
