@@ -161,9 +161,9 @@ function buildUserPrompt(input: CreativeBriefInput, templateMeta: TemplateMetada
     if (businessProfile.rubro) adnParts.push(`Industry: ${businessProfile.rubro}`);
     if (businessProfile.propuestaValor) adnParts.push(`Value prop: ${businessProfile.propuestaValor}`);
     if (businessProfile.clienteIdeal) adnParts.push(`Ideal client: ${businessProfile.clienteIdeal}`);
-    if (businessProfile.dolores?.length) adnParts.push(`Pain points: ${businessProfile.dolores.join(", ")}`);
+    if (businessProfile.dolores?.length) adnParts.push(`Pain points: ${Array.isArray(businessProfile.dolores) ? businessProfile.dolores.join(", ") : String(businessProfile.dolores)}`);
     if (businessProfile.tono) adnParts.push(`Tone: ${businessProfile.tono}`);
-    if (businessProfile.coloresMarca?.length) adnParts.push(`Brand colors: ${businessProfile.coloresMarca.join(", ")}`);
+    if (businessProfile.coloresMarca?.length) adnParts.push(`Brand colors: ${Array.isArray(businessProfile.coloresMarca) ? businessProfile.coloresMarca.join(", ") : String(businessProfile.coloresMarca)}`);
     if (adnParts.length > 0) sections.push(`\nBRAND DNA:\n${adnParts.join("\n")}`);
   }
 

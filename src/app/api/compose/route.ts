@@ -609,10 +609,10 @@ export async function POST(request: NextRequest) {
                   propuestaValor: body.businessProfile.propuestaValor,
                   diferenciacion: body.businessProfile.diferenciacion,
                   clienteIdeal: body.businessProfile.clienteIdeal,
-                  dolores: body.businessProfile.dolores,
-                  motivaciones: body.businessProfile.motivaciones,
+                  dolores: Array.isArray(body.businessProfile.dolores) ? body.businessProfile.dolores : undefined,
+                  motivaciones: Array.isArray(body.businessProfile.motivaciones) ? body.businessProfile.motivaciones : undefined,
                   tono: body.businessProfile.tono,
-                  coloresMarca: body.businessProfile.coloresMarca,
+                  coloresMarca: Array.isArray(body.businessProfile.coloresMarca) ? body.businessProfile.coloresMarca : undefined,
                 }
               : undefined,
             offer: body.offer,
