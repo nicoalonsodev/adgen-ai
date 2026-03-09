@@ -51,6 +51,10 @@ import {
   createPreviewComposite,
 } from "@/lib/meta/shadows";
 
+// Pipeline V2
+import { composePipelineV2, type PipelineV2Result } from "@/lib/meta/pipeline/v2";
+import { getTemplateMeta } from "@/services/product-composer/templates/meta";
+
 export const runtime = "nodejs";
 
 /**
@@ -249,38 +253,131 @@ export async function POST(req: Request) {
     console.log(`[meta/v1/generate] Style: ${styleResult.packId} (${styleResult.reason})`);
 
     /* ════════════════════════════════════════════════════════════════
-       STAGE 2.5: Creative Mode Pipeline
+       CHECK: Pipeline V2 (creative-brief-driven)
     ════════════════════════════════════════════════════════════════ */
-    const pipelineStart2 = Date.now();
-    console.log(`[meta/v1/generate] Stage 2.5: Running creative mode pipeline (mode: ${input.creative_mode})…`);
+    const resolvedTemplateMeta = getTemplateMeta(
+      input.force_template ?? templateResult.templateId
+    );
+    const usePipelineV2 = resolvedTemplateMeta?.pipelineV2 === true;
 
-    // Run the creative mode orchestrator
     let pipelineResult: OrchestratorResult | null = null;
-    try {
-      pipelineResult = await orchestratePipeline({
-        productName: input.product_name,
-        productDescription: input.product_description,
-        strategicCore: {
-          coreBenefit: core.coreBenefit,
-          category: core.category,
-        },
-        offer: input.offer ? {
-          active: input.offer.active,
-          type: input.offer.type,
-          value: input.offer.value,
-        } : undefined,
-        selectedTemplateId: templateResult.templateId,
-        stylePackId: styleResult.packId,
-        creativeModeInput: input.creative_mode as CreativeModeInput,
-        verbose: false,
-      });
-      
-      console.log(`[meta/v1/generate] Pipeline: mode=${pipelineResult.mode}, template=${pipelineResult.templateId}`);
-    } catch (err: any) {
-      console.error("[meta/v1/generate] Pipeline failed, using fallback:", err?.message);
+    let pipelineV2Result: PipelineV2Result | null = null;
+    let pipelineTimeMs = 0;
+    let backgroundDataUrl: string = "";
+    let foregroundDataUrl: string | undefined;
+    let backgroundTimeMs = 0;
+
+    if (usePipelineV2) {
+      /* ════════════════════════════════════════════════════════════════
+         PIPELINE V2: Creative Brief → Background → Scene
+      ════════════════════════════════════════════════════════════════ */
+      const v2Start = Date.now();
+      console.log(`[meta/v1/generate] Pipeline V2 activated for template="${resolvedTemplateMeta!.id}"`);
+
+      try {
+        pipelineV2Result = await composePipelineV2({
+          templateId: resolvedTemplateMeta!.id,
+          productName: input.product_name,
+          productDescription: input.product_description,
+          strategicCore: {
+            coreBenefit: core.coreBenefit,
+            category: core.category,
+            positioning: core.positioning,
+            keyProof: core.keyProof,
+          },
+          offer: input.offer,
+          variantIndex: 0,
+        });
+
+        backgroundDataUrl = pipelineV2Result.sceneDataUrl;
+        pipelineTimeMs = Date.now() - v2Start;
+        backgroundTimeMs = pipelineV2Result.timing.backgroundMs + pipelineV2Result.timing.sceneMs;
+
+        console.log(
+          `[meta/v1/generate] Pipeline V2 complete: mood="${pipelineV2Result.brief.mood}" ` +
+          `total=${pipelineTimeMs}ms (brief=${pipelineV2Result.timing.briefMs}ms ` +
+          `bg=${pipelineV2Result.timing.backgroundMs}ms scene=${pipelineV2Result.timing.sceneMs}ms)`,
+        );
+      } catch (err: any) {
+        console.error("[meta/v1/generate] Pipeline V2 failed, falling back to V1:", err?.message);
+        // Fall through to V1 below
+      }
     }
 
-    const pipelineTimeMs = Date.now() - pipelineStart2;
+    if (!usePipelineV2 || !pipelineV2Result) {
+      /* ════════════════════════════════════════════════════════════════
+         STAGE 2.5: Creative Mode Pipeline (V1 — legacy)
+      ════════════════════════════════════════════════════════════════ */
+      const pipelineStart2 = Date.now();
+      console.log(`[meta/v1/generate] Stage 2.5: Running creative mode pipeline (mode: ${input.creative_mode})…`);
+
+      try {
+        pipelineResult = await orchestratePipeline({
+          productName: input.product_name,
+          productDescription: input.product_description,
+          strategicCore: {
+            coreBenefit: core.coreBenefit,
+            category: core.category,
+          },
+          offer: input.offer ? {
+            active: input.offer.active,
+            type: input.offer.type,
+            value: input.offer.value,
+          } : undefined,
+          selectedTemplateId: templateResult.templateId,
+          stylePackId: styleResult.packId,
+          creativeModeInput: input.creative_mode as CreativeModeInput,
+          verbose: false,
+        });
+
+        console.log(`[meta/v1/generate] Pipeline: mode=${pipelineResult.mode}, template=${pipelineResult.templateId}`);
+      } catch (err: any) {
+        console.error("[meta/v1/generate] Pipeline failed, using fallback:", err?.message);
+      }
+
+      pipelineTimeMs = Date.now() - pipelineStart2;
+
+      /* ════════════════════════════════════════════════════════════════
+         STAGE 4: Background (use pipeline result or fallback)
+      ════════════════════════════════════════════════════════════════ */
+      const bgStart = Date.now();
+
+      if (pipelineResult?.backgroundDataUrl) {
+        backgroundDataUrl = pipelineResult.backgroundDataUrl;
+        console.log(`[meta/v1/generate] Stage 4: Using pipeline background (mode: ${pipelineResult.mode})`);
+      } else {
+        console.log("[meta/v1/generate] Stage 4: Generating fallback background…");
+
+        const primaryScenePlan = generateScenePlan(0);
+        console.log(`[meta/v1/generate] Scene: ${primaryScenePlan.sceneType}/${primaryScenePlan.surface}`);
+
+        try {
+          const sceneResult = await generateSceneBackground(primaryScenePlan, {
+            verbose: false,
+            skipForeground: false,
+          });
+          backgroundDataUrl = sceneResult.dataUrl;
+          foregroundDataUrl = sceneResult.foreground?.dataUrl;
+        } catch (err: any) {
+          console.warn(`[meta/v1/generate] Scene generation failed, using editorial: ${err?.message}`);
+
+          let layoutId: "hero_left" | "hero_center" | "floating" = "hero_left";
+          if (templateResult.templateId === "T_BEFORE_AFTER_V1") {
+            layoutId = "hero_center";
+          } else if (templateResult.templateId === "T_QUOTE_TESTIMONIAL_V1") {
+            layoutId = "floating";
+          }
+
+          const fallbackResult = await generateEditorialBackground(layoutId, {
+            verbose: false,
+          });
+          backgroundDataUrl = fallbackResult.dataUrl;
+        }
+      }
+
+      backgroundTimeMs = Date.now() - bgStart;
+      console.log(`[meta/v1/generate] Background ready (${backgroundTimeMs}ms)`);
+    }
 
     /* ════════════════════════════════════════════════════════════════
        STAGE 3: Generate Extended Copy Variants
@@ -305,51 +402,6 @@ export async function POST(req: Request) {
 
     const copyTimeMs = Date.now() - copyStart;
     console.log(`[meta/v1/generate] Generated ${copyResult.variants.length} variants (${copyTimeMs}ms)`);
-
-    /* ════════════════════════════════════════════════════════════════
-       STAGE 4: Background (use pipeline result or fallback)
-    ════════════════════════════════════════════════════════════════ */
-    const bgStart = Date.now();
-    let backgroundDataUrl: string;
-    let foregroundDataUrl: string | undefined;
-
-    // Use pipeline background if available
-    if (pipelineResult?.backgroundDataUrl) {
-      backgroundDataUrl = pipelineResult.backgroundDataUrl;
-      console.log(`[meta/v1/generate] Stage 4: Using pipeline background (mode: ${pipelineResult.mode})`);
-    } else {
-      // Fallback to legacy scene/editorial background
-      console.log("[meta/v1/generate] Stage 4: Generating fallback background…");
-      
-      const primaryScenePlan = generateScenePlan(0);
-      console.log(`[meta/v1/generate] Scene: ${primaryScenePlan.sceneType}/${primaryScenePlan.surface}`);
-
-      try {
-        const sceneResult = await generateSceneBackground(primaryScenePlan, {
-          verbose: false,
-          skipForeground: false,
-        });
-        backgroundDataUrl = sceneResult.dataUrl;
-        foregroundDataUrl = sceneResult.foreground?.dataUrl;
-      } catch (err: any) {
-        console.warn(`[meta/v1/generate] Scene generation failed, using editorial: ${err?.message}`);
-        
-        let layoutId: "hero_left" | "hero_center" | "floating" = "hero_left";
-        if (templateResult.templateId === "T_BEFORE_AFTER_V1") {
-          layoutId = "hero_center";
-        } else if (templateResult.templateId === "T_QUOTE_TESTIMONIAL_V1") {
-          layoutId = "floating";
-        }
-
-        const fallbackResult = await generateEditorialBackground(layoutId, {
-          verbose: false,
-        });
-        backgroundDataUrl = fallbackResult.dataUrl;
-      }
-    }
-
-    const backgroundTimeMs = Date.now() - bgStart;
-    console.log(`[meta/v1/generate] Background ready (${backgroundTimeMs}ms)`);
 
     /* ════════════════════════════════════════════════════════════════
        STAGE 4.5: AI Shadow Layer (optional)
@@ -538,12 +590,16 @@ export async function POST(req: Request) {
         totalTimeMs,
         templateId: pipelineResult?.templateId || templateResult.templateId,
         stylePackId: styleResult.packId,
-        // New metadata
-        mode: pipelineResult?.mode,
+        // Pipeline metadata (V1 or V2)
+        mode: pipelineResult?.mode ?? (pipelineV2Result ? "pipelineV2" : undefined),
         scene: pipelineResult?.sceneBrief ? {
           environment: pipelineResult.sceneBrief.environment,
           mood: pipelineResult.sceneBrief.mood,
           light: pipelineResult.sceneBrief.light,
+        } : pipelineV2Result?.brief ? {
+          environment: pipelineV2Result.brief.scene_description.slice(0, 100),
+          mood: pipelineV2Result.brief.mood,
+          light: pipelineV2Result.brief.lighting.slice(0, 100),
         } : undefined,
         typography: pipelineResult?.typographyPlan ? {
           textColor: pipelineResult.typographyPlan.textColor,
