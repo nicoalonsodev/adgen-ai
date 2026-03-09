@@ -494,9 +494,114 @@ export default function FabricaDeContenido() {
       const _imageBriefLog: { input: Record<string, unknown>; output: string } | null = copyData.data?.imageBriefLog ?? null;
       _timings["Copy"] = Date.now() - _t0;
 
+      const templateDef = TEMPLATES.find((t) => t.id === primaryTemplate);
+
+      // ═══════════════════════════════════════════════════════════════
+      // PIPELINE V2: Creative Brief → Background → Scene (all-in-one)
+      // Activated when template has pipelineV2: true
+      // ═══════════════════════════════════════════════════════════════
+      if (templateDef?.pipelineV2 === true) {
+        setAutoStep("Pipeline V2: Generando brief + escena...");
+        const _t1 = Date.now();
+        const v2Res = await fetch("/api/compose", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({
+            mode: "PIPELINE_V2",
+            templateId: primaryTemplate,
+            productName: bizProduct,
+            productDescription: bizProblem,
+            businessProfile: businessProfile ?? undefined,
+            offer: bizOffer ? { active: true, type: "general", label: bizOffer } : undefined,
+            variantIndex: 0,
+            aspectRatio: "1:1",
+          }),
+        });
+        const v2Data = await v2Res.json();
+        if (!v2Res.ok) throw new Error(v2Data.error || `Error ${v2Res.status}`);
+        _timings["Pipeline V2 (Brief+BG+Scene)"] = Date.now() - _t1;
+
+        const sceneDataUrl = v2Data.data?.sceneImage;
+        if (!sceneDataUrl) throw new Error("Pipeline V2 no generó escena");
+        setResultImage(sceneDataUrl); // show intermediate scene
+
+        // Apply TEMPLATE_BETA: text overlay on top of the V2 scene
+        setAutoStep("Aplicando texto y diseño...");
+        const sceneBlob = await fetch(sceneDataUrl).then((r) => r.blob());
+        const sceneBgFile = new File([sceneBlob], "v2-scene.png", { type: "image/png" });
+
+        const fd = new FormData();
+        fd.append("background", sceneBgFile);
+        if (businessLogo) {
+          fd.append("logoBase64", businessLogo.base64);
+          fd.append("logoMimeType", businessLogo.mimeType);
+        }
+        if (businessLogoDark) {
+          fd.append("logoDarkBase64", businessLogoDark.base64);
+          fd.append("logoDarkMimeType", businessLogoDark.mimeType);
+        }
+        if (businessLogoLight) {
+          fd.append("logoLightBase64", businessLogoLight.base64);
+          fd.append("logoLightMimeType", businessLogoLight.mimeType);
+        }
+        fd.append("config", JSON.stringify({
+          mode: "TEMPLATE_BETA",
+          outputFormat: "png",
+          quality: 95,
+          copy: {
+            cta: copy.title || undefined,
+            headline: copy.headline || undefined,
+            subheadline: copy.subheadline || undefined,
+            badge: copy.badge || undefined,
+            bullets: Array.isArray(copy.bullets) ? copy.bullets : undefined,
+            primaryColor: typeof copy.primaryColor === "string" ? copy.primaryColor : undefined,
+            brandColors: Array.isArray(businessProfile?.coloresMarca) && (businessProfile.coloresMarca as string[]).some(Boolean)
+              ? businessProfile.coloresMarca as string[]
+              : undefined,
+          },
+          templateBetaOptions: {
+            templateId: primaryTemplate,
+            canvas: { width: 1080, height: 1080 },
+            includeLayoutSpec: true,
+          },
+        }));
+        const _t2 = Date.now();
+        const templateRes = await fetch("/api/compose", {
+          method: "POST",
+          headers: { Accept: "application/json" },
+          body: fd,
+        });
+        const templateData = await templateRes.json();
+        if (!templateRes.ok) throw new Error(templateData.error || `Error ${templateRes.status}`);
+        _timings["Template"] = Date.now() - _t2;
+
+        const finalImage = templateData.data?.image || templateData.data?.imageUrl;
+        if (finalImage) {
+          setResultImage(finalImage);
+          _timings["Total"] = Date.now() - _t0;
+          setSingleTimings({ ..._timings });
+          const v2Brief = v2Data.data?.brief;
+          const promptsUsed: PromptsUsed = {
+            layers: [
+              { name: "Copy", model: "gpt-4o-mini", prompt: `Schema: ${getTemplateSchema(primaryTemplate).join(", ")}`, status: "completed" },
+              { name: "Creative Brief", model: "gpt-4.1-mini", prompt: v2Brief ? `mood="${v2Brief.mood}" scene="${v2Brief.scene_description?.slice(0, 80)}…"` : "V2 brief", status: "completed" },
+              { name: "Background", model: "gemini-2.5-flash", prompt: v2Data.data?.prompts?.backgroundPrompt?.slice(0, 120) ?? "V2 background", status: "completed" },
+              { name: "Escena con Persona", model: "gemini-2.5-flash", prompt: v2Data.data?.prompts?.personPrompt?.slice(0, 120) ?? "V2 person", status: "completed" },
+              { name: "Template", prompt: primaryTemplate, status: "completed" },
+            ],
+          };
+          saveCreativo(finalImage, primaryTemplate, undefined, copy, undefined, undefined, promptsUsed);
+        }
+
+        // Skip the rest of handleGenerate (V1 flow)
+        return;
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // PIPELINE V1: Legacy flow (GENERATE_BACKGROUND → PRODUCT_IA → TEMPLATE_BETA)
+      // ═══════════════════════════════════════════════════════════════
       setAutoStep("Generando background...");
       const _t1 = Date.now();
-      const templateDef = TEMPLATES.find((t) => t.id === primaryTemplate);
       const bgPrompt = resolveBgPrompt(templateDef, copy, businessProfile);
       const bgRes = await fetch("/api/compose", {
         method: "POST",
@@ -839,6 +944,87 @@ export default function FabricaDeContenido() {
           const baseAngleName = ANGLE_NAMES[angleIndex] ?? `Ángulo ${angleIndex + 1}`;
           const angleName = colorMode ? `${baseAngleName} · ${colorMode === "dark" ? "Dark" : "Light"}` : baseAngleName;
           const tplMeta = TEMPLATES.find((t) => t.id === templateId);
+
+          // ═══════════════════════════════════════════════════════════
+          // PIPELINE V2 (angles): Brief → BG → Scene all-in-one
+          // ═══════════════════════════════════════════════════════════
+          if (tplMeta?.pipelineV2 === true) {
+            const _tV2 = Date.now();
+            const _taskTimings: Record<string, number> = {};
+            const v2Res = await fetch("/api/compose", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Accept: "application/json" },
+              body: JSON.stringify({
+                mode: "PIPELINE_V2",
+                templateId,
+                productName: bizProduct,
+                productDescription: bizProblem,
+                businessProfile: businessProfile ?? undefined,
+                offer: bizOffer ? { active: true, type: "general", label: bizOffer } : undefined,
+                variantIndex: angleIndex,
+                aspectRatio: "1:1",
+              }),
+            });
+            const v2Data = await v2Res.json();
+            if (!v2Res.ok) throw new Error(v2Data.error || `Error ${v2Res.status}`);
+            _taskTimings["Pipeline V2"] = Date.now() - _tV2;
+
+            const sceneDataUrl = v2Data.data?.sceneImage;
+            if (!sceneDataUrl) throw new Error(`Pipeline V2 no generó escena para ${angleName}`);
+
+            // TEMPLATE_BETA: text overlay
+            const sceneBlob = await fetch(sceneDataUrl).then((r) => r.blob());
+            const sceneBgFile = new File([sceneBlob], `v2-scene-${templateId}-${angleIndex}.png`, { type: "image/png" });
+            const fd = new FormData();
+            fd.append("background", sceneBgFile);
+            if (businessLogo) { fd.append("logoBase64", businessLogo.base64); fd.append("logoMimeType", businessLogo.mimeType); }
+            if (businessLogoDark) { fd.append("logoDarkBase64", businessLogoDark.base64); fd.append("logoDarkMimeType", businessLogoDark.mimeType); }
+            if (businessLogoLight) { fd.append("logoLightBase64", businessLogoLight.base64); fd.append("logoLightMimeType", businessLogoLight.mimeType); }
+            fd.append("config", JSON.stringify({
+              mode: "TEMPLATE_BETA",
+              outputFormat: "png",
+              quality: 95,
+              copy: {
+                cta: copy.title || undefined,
+                headline: copy.headline || undefined,
+                subheadline: copy.subheadline || undefined,
+                badge: copy.badge || undefined,
+                bullets: Array.isArray(copy.bullets) ? copy.bullets : undefined,
+                primaryColor: typeof copy.primaryColor === "string" ? copy.primaryColor : undefined,
+                brandColors: Array.isArray(businessProfile?.coloresMarca) && (businessProfile.coloresMarca as string[]).some(Boolean)
+                  ? businessProfile.coloresMarca as string[]
+                  : undefined,
+                colorMode: colorMode ?? undefined,
+              },
+              templateBetaOptions: { templateId, canvas: { width: 1080, height: 1080 }, includeLayoutSpec: false },
+            }));
+            const _tTpl = Date.now();
+            const templateRes = await fetch("/api/compose", { method: "POST", headers: { Accept: "application/json" }, body: fd });
+            const templateData = await templateRes.json();
+            if (!templateRes.ok) throw new Error(templateData.error || `Error ${templateRes.status}`);
+            _taskTimings["Template"] = Date.now() - _tTpl;
+            _taskTimings["Total"] = Date.now() - _tV2;
+
+            const finalImg = (templateData.data?.image || templateData.data?.imageUrl || sceneDataUrl) as string;
+            const v2Brief = v2Data.data?.brief;
+            const promptsUsed: PromptsUsed = {
+              layers: [
+                { name: "Copy", model: "gpt-4o-mini", prompt: `Schema: ${getTemplateSchema(templateId).join(", ")}`, status: "completed" },
+                { name: "Creative Brief", model: "gpt-4.1-mini", prompt: v2Brief ? `mood="${v2Brief.mood}"` : "V2 brief", status: "completed" },
+                { name: "Background + Scene", model: "gemini-2.5-flash", prompt: v2Data.data?.prompts?.backgroundPrompt?.slice(0, 80) ?? "V2", status: "completed" },
+                { name: "Template", prompt: templateId, status: "completed" },
+              ],
+            };
+            const variant: GeneratedVariant = { copy, backgroundImage: v2Data.data?.backgroundImage ?? sceneDataUrl, resultImage: finalImg, template: templateId, angle: angleIndex, angleName, promptsUsed, timings: _taskTimings };
+            variantAccumulator.push(variant);
+            setVariants([...variantAccumulator]);
+            saveCreativo(finalImg, templateId, angleName, copy, undefined, undefined, promptsUsed);
+            return variant;
+          }
+
+          // ═══════════════════════════════════════════════════════════
+          // PIPELINE V1 (angles): Legacy flow
+          // ═══════════════════════════════════════════════════════════
 
           // 1. Generar fondo para este creativo específico
           const bgPrompt = resolveBgPrompt(tplMeta, copy, businessProfile, colorMode);
