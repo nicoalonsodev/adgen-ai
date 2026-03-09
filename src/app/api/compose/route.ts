@@ -507,8 +507,8 @@ export async function POST(request: NextRequest) {
               productCategory: (body.businessProfile as any)?.category ?? "",
               tone: body.tone ?? "",
               copyZone: body.copyZone,
-              fullBleed: body.sceneFullBleed === true ? true : undefined,
-              backgroundPrompt: body.sceneFullBleed === true ? (body.backgroundStyleGuide as string | undefined) : undefined,
+              personOnly: body.personOnly === true ? true : undefined,
+              backgroundPrompt: body.personOnly === true ? (body.backgroundStyleGuide as string | undefined) : undefined,
               businessProfile: {
                 nombre: (body.businessProfile as any)?.nombre,
                 clienteIdeal: (body.businessProfile as any)?.clienteIdeal,

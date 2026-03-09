@@ -476,7 +476,7 @@ export default function FabricaDeContenido() {
           templateHint: getTemplateHint(primaryTemplate),
           copyZone: TEMPLATES.find((t) => t.id === primaryTemplate)?.copyZone ?? "left",
           rawProductPrompt: TEMPLATES.find((t) => t.id === primaryTemplate)?.rawProductPrompt === true || undefined,
-          sceneFullBleed: TEMPLATES.find((t) => t.id === primaryTemplate)?.sceneFullBleed === true || undefined,
+          personOnly: TEMPLATES.find((t) => t.id === primaryTemplate)?.personOnly === true || undefined,
           businessProfile: businessProfile ?? undefined,
           referenceStyle: referenceAnalysis ? referenceAnalysis.recommendations : undefined,
           backgroundStyleGuide: (() => {
@@ -769,7 +769,7 @@ export default function FabricaDeContenido() {
               templateHint: getTemplateHint(templateId),
               copyZone: TEMPLATES.find((t) => t.id === templateId)?.copyZone ?? "left",
               rawProductPrompt: TEMPLATES.find((t) => t.id === templateId)?.rawProductPrompt === true || undefined,
-              sceneFullBleed: TEMPLATES.find((t) => t.id === templateId)?.sceneFullBleed === true || undefined,
+              personOnly: TEMPLATES.find((t) => t.id === templateId)?.personOnly === true || undefined,
               businessProfile: businessProfile ?? undefined,
               referenceStyle: referenceAnalysis ? referenceAnalysis.recommendations : undefined,
               backgroundStyleGuide: (() => {
