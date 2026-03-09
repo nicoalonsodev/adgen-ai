@@ -12,12 +12,16 @@
  * template renderer to overlay text (headline, logo, dark overlay).
  *
  * Coexists with V1: only activated when the template has `pipelineV2: true`.
+ *
+ * Debug logging: set DEBUG_PIPELINE_V2=true to write full step logs to
+ * /tmp/pipeline-v2-debug/<timestamp>_<product>/
  */
 
 import { generateCreativeBrief, type CreativeBriefInput, type CreativeBrief } from "./generateCreativeBrief";
 import { generateGeminiPrompts, type GeminiPrompts } from "./generateBackgroundPrompt";
 import { generateBackground, generateScene } from "@/lib/ai/gemini";
 import { getTemplateMeta } from "@/services/product-composer/templates/meta";
+import { createDebugRun } from "./debugLogger";
 
 /* ════════════════════════════════════════════════════════════════
    TYPES
@@ -67,6 +71,8 @@ export interface PipelineV2Result {
     sceneMs: number;
     totalMs: number;
   };
+  /** Debug log directory (if DEBUG_PIPELINE_V2=true) */
+  debugDir?: string | null;
 }
 
 /* ════════════════════════════════════════════════════════════════
@@ -78,6 +84,8 @@ export interface PipelineV2Result {
  *
  * Flow:
  *   Brief (OpenAI) → Prompts (pure) → Background (Gemini) → Scene (Gemini)
+ *
+ * Set DEBUG_PIPELINE_V2=true to write detailed logs to /tmp/pipeline-v2-debug/.
  *
  * @param input - Pipeline input with product/brand/template context
  * @returns Composed scene buffer + metadata
@@ -92,17 +100,16 @@ export async function composePipelineV2(
     throw new Error(`[pipelineV2] Template not found: ${input.templateId}`);
   }
 
+  // Create debug run (no-op if DEBUG_PIPELINE_V2 is not set)
+  const debug = createDebugRun(input.productName);
+
   console.log(
     `[pipelineV2] Starting for template=${input.templateId} ` +
     `product="${input.productName}" variant=${input.variantIndex ?? 0}`,
   );
 
-  /* ═══════════════════════════════════════════════════════════════
-     STEP 1: Generate Creative Brief (OpenAI)
-  ═══════════════════════════════════════════════════════════════ */
-  const briefStart = Date.now();
-
-  const { brief } = await generateCreativeBrief({
+  // Debug: log full pipeline input
+  debug.write("00_pipeline_input.json", {
     templateId: input.templateId,
     productName: input.productName,
     productDescription: input.productDescription,
@@ -110,8 +117,38 @@ export async function composePipelineV2(
     businessProfile: input.businessProfile,
     offer: input.offer,
     variantIndex: input.variantIndex,
+    aspectRatio: input.aspectRatio,
+    templateMeta: {
+      id: templateMeta.id,
+      name: templateMeta.name,
+      copyZone: templateMeta.copyZone,
+      sceneFullBleed: templateMeta.sceneFullBleed,
+      personOnly: templateMeta.personOnly,
+      personScene: templateMeta.personScene,
+      requiresSceneGeneration: templateMeta.requiresSceneGeneration,
+      pipelineV2: templateMeta.pipelineV2,
+    },
   });
 
+  /* ═══════════════════════════════════════════════════════════════
+     STEP 1: Generate Creative Brief (OpenAI)
+  ═══════════════════════════════════════════════════════════════ */
+  const briefStart = Date.now();
+
+  const briefResult = await generateCreativeBrief(
+    {
+      templateId: input.templateId,
+      productName: input.productName,
+      productDescription: input.productDescription,
+      strategicCore: input.strategicCore,
+      businessProfile: input.businessProfile,
+      offer: input.offer,
+      variantIndex: input.variantIndex,
+    },
+    debug,
+  );
+
+  const { brief } = briefResult;
   const briefMs = Date.now() - briefStart;
   console.log(`[pipelineV2] Step 1 (brief): ${briefMs}ms — mood="${brief.mood}"`);
 
@@ -125,6 +162,15 @@ export async function composePipelineV2(
     `person_chars=${prompts.personPrompt.length}`,
   );
 
+  // Debug: log generated prompts
+  debug.write("02_gemini_prompts.json", {
+    backgroundPrompt: prompts.backgroundPrompt,
+    personPrompt: prompts.personPrompt,
+    rawBackground: prompts.rawBackground,
+  });
+  debug.writeText("02_background_prompt.txt", prompts.backgroundPrompt);
+  debug.writeText("02_person_prompt.txt", prompts.personPrompt);
+
   /* ═══════════════════════════════════════════════════════════════
      STEP 3: Generate Background (Gemini — text → image)
   ═══════════════════════════════════════════════════════════════ */
@@ -136,9 +182,16 @@ export async function composePipelineV2(
   });
 
   const backgroundMs = Date.now() - bgStart;
-  console.log(`[pipelineV2] Step 3 (background): ${backgroundMs}ms`);
+  console.log(`[pipelineV2] Step 3 (background): ${backgroundMs}ms — ${(backgroundBuffer.length / 1024).toFixed(0)}KB`);
 
   const backgroundDataUrl = `data:image/png;base64,${backgroundBuffer.toString("base64")}`;
+
+  // Debug: log background generation result
+  debug.write("03_background_result.json", {
+    durationMs: backgroundMs,
+    sizeBytes: backgroundBuffer.length,
+    prompt: prompts.backgroundPrompt,
+  });
 
   /* ═══════════════════════════════════════════════════════════════
      STEP 4: Generate Scene — composite person onto background
@@ -160,10 +213,23 @@ export async function composePipelineV2(
     });
 
     sceneMs = Date.now() - sceneStart;
-    console.log(`[pipelineV2] Step 4 (scene): ${sceneMs}ms`);
+    console.log(`[pipelineV2] Step 4 (scene): ${sceneMs}ms — ${(sceneBuffer.length / 1024).toFixed(0)}KB`);
+
+    // Debug: log scene generation result
+    debug.write("04_scene_result.json", {
+      durationMs: sceneMs,
+      sizeBytes: sceneBuffer.length,
+      prompt: prompts.personPrompt,
+      skipped: false,
+    });
   } else {
     sceneBuffer = backgroundBuffer;
     console.log(`[pipelineV2] Step 4 (scene): skipped — no person scene required`);
+
+    debug.write("04_scene_result.json", {
+      skipped: true,
+      reason: "Template does not require scene generation",
+    });
   }
 
   const sceneDataUrl = `data:image/png;base64,${sceneBuffer.toString("base64")}`;
@@ -173,6 +239,32 @@ export async function composePipelineV2(
     `[pipelineV2] Pipeline complete in ${totalMs}ms ` +
     `(brief=${briefMs}ms bg=${backgroundMs}ms scene=${sceneMs}ms)`,
   );
+
+  // Debug: write final summary
+  debug.write("05_summary.json", {
+    templateId: input.templateId,
+    productName: input.productName,
+    category: input.strategicCore.category,
+    brief: {
+      mood: brief.mood,
+      lighting: brief.lighting,
+      camera: brief.camera,
+      color_palette: brief.color_palette,
+      scene_description: brief.scene_description,
+      person_description: brief.person_description,
+    },
+    timing: {
+      briefMs,
+      backgroundMs,
+      sceneMs,
+      totalMs,
+    },
+    sizes: {
+      backgroundKB: Math.round(backgroundBuffer.length / 1024),
+      sceneKB: Math.round(sceneBuffer.length / 1024),
+    },
+    debugDir: debug.dir,
+  });
 
   return {
     sceneBuffer,
@@ -187,5 +279,6 @@ export async function composePipelineV2(
       sceneMs,
       totalMs,
     },
+    debugDir: debug.dir,
   };
 }
