@@ -13,6 +13,7 @@ import { z } from "zod";
 import fs from "fs";
 import path from "path";
 import { getTemplateMeta, type TemplateMetadata } from "@/services/product-composer/templates/meta";
+import type { DebugRun } from "./debugLogger";
 
 // Load the knowledge base as raw text (server-side only)
 let _sceneInstructionsCache: string | null = null;
@@ -85,6 +86,12 @@ export type CreativeBrief = z.infer<typeof CreativeBriefSchema>;
 export interface CreativeBriefResult {
   brief: CreativeBrief;
   generationTimeMs: number;
+  /** Raw prompts sent to OpenAI (for debugging) */
+  _debug?: {
+    systemPrompt: string;
+    userPrompt: string;
+    rawResponse: string;
+  };
 }
 
 /* ════════════════════════════════════════════════════════════════
@@ -197,6 +204,7 @@ function buildUserPrompt(input: CreativeBriefInput, templateMeta: TemplateMetada
  */
 export async function generateCreativeBrief(
   input: CreativeBriefInput,
+  debugRun?: DebugRun,
 ): Promise<CreativeBriefResult> {
   const start = Date.now();
 
@@ -215,6 +223,19 @@ export async function generateCreativeBrief(
     `product="${input.productName}" category=${input.strategicCore.category}`,
   );
 
+  // Debug: log input and prompts
+  debugRun?.write("01_brief_input.json", {
+    templateId: input.templateId,
+    productName: input.productName,
+    productDescription: input.productDescription,
+    strategicCore: input.strategicCore,
+    businessProfile: input.businessProfile,
+    offer: input.offer,
+    variantIndex: input.variantIndex,
+  });
+  debugRun?.writeText("01_brief_system_prompt.txt", systemPrompt);
+  debugRun?.writeText("01_brief_user_prompt.txt", userPrompt);
+
   const response = await client.chat.completions.create({
     model: MODEL,
     temperature: TEMPERATURE,
@@ -231,6 +252,15 @@ export async function generateCreativeBrief(
     throw new Error("[generateCreativeBrief] Empty response from OpenAI");
   }
 
+  // Debug: log raw response and usage
+  debugRun?.writeText("01_brief_raw_response.json", raw);
+  debugRun?.write("01_brief_usage.json", {
+    model: MODEL,
+    temperature: TEMPERATURE,
+    usage: response.usage,
+    finishReason: response.choices[0]?.finish_reason,
+  });
+
   // Parse and validate
   let parsed: unknown;
   try {
@@ -242,6 +272,7 @@ export async function generateCreativeBrief(
   const validated = CreativeBriefSchema.safeParse(parsed);
   if (!validated.success) {
     console.error("[generateCreativeBrief] Validation errors:", validated.error.flatten());
+    debugRun?.write("01_brief_validation_errors.json", validated.error.flatten());
     throw new Error(
       `[generateCreativeBrief] Brief validation failed: ${validated.error.issues.map((issue: { message: string }) => issue.message).join(", ")}`,
     );
@@ -253,8 +284,19 @@ export async function generateCreativeBrief(
     `mood="${validated.data.mood}" lighting="${validated.data.lighting.slice(0, 50)}…"`,
   );
 
+  // Debug: log validated output
+  debugRun?.write("01_brief_output.json", {
+    brief: validated.data,
+    generationTimeMs,
+  });
+
   return {
     brief: validated.data,
     generationTimeMs,
+    _debug: {
+      systemPrompt,
+      userPrompt,
+      rawResponse: raw,
+    },
   };
 }
