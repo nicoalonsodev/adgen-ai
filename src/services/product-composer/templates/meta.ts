@@ -125,6 +125,12 @@ export interface TemplateMetadata {
     /** Clockwise rotation in degrees (default 0) */
     rotation?: number;
   };
+  /**
+   * true = use Pipeline V2 (creative-brief-driven generation) for this template.
+   * V2 flow: generateCreativeBrief (OpenAI) → generateGeminiPrompts → generateBackground → generateScene.
+   * When false/undefined, the template uses the legacy V1 pipeline.
+   */
+  pipelineV2?: boolean;
 }
 
 export const TEMPLATE_META_LIST: TemplateMetadata[] = [
@@ -1534,6 +1540,7 @@ No hands, no people. Photorealistic. 4K.`,
     icon: "🔥",
     tag: "Urgencia",
     active: true,
+    pipelineV2: true,
     description:
       "Escena de urgencia full-bleed, headline enorme en Bebas Neue, overlay oscuro. Un solo titular potente, sin producto. Logo arriba a la izquierda.",
     supportedRatios: ["1:1", "4:5"],
