@@ -32,7 +32,7 @@ export function buildProductoHeroTopLayout(
   const headlineText = (copy.headline || copy.badge || "Brand Name").toUpperCase();
   const charWidthFactor = 0.72;
   const maxFontByWidth = Math.floor(HL_W / (headlineText.length * charWidthFactor));
-const HL_FONT = Math.max(24, Math.min(Math.round(CW * 0.095), maxFontByWidth));
+const HL_FONT = Math.max(24, Math.min(Math.round(CW * 0.075), maxFontByWidth));
 
   const HL_H = Math.ceil(HL_FONT * 1.2) + 8;
 

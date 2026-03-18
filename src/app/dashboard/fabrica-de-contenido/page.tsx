@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { BUSINESS_CATEGORIES } from "@/lib/businessCategories";
-import { TEMPLATE_META_LIST } from "@/services/product-composer/templates/meta";
+import { TEMPLATE_META_LIST, buildProductIAOptions } from "@/services/product-composer/templates/meta";
 import { PromptsPanel, type PromptsUsed, type PromptLayer } from "@/components/PromptsPanel";
 import { CreativeAnalysisPanel } from "@/components/CreativeAnalysisPanel";
 import type { CreativeAnalysisResult } from "@/lib/ai/gemini";
@@ -15,13 +15,6 @@ import type { CreativeAnalysisResult } from "@/lib/ai/gemini";
  */
 const TEMPLATES = TEMPLATE_META_LIST;
 
-/**
- * Zone constraint passed to PRODUCT_IA per template.
- * Uses productIAZone when set (intentional override), otherwise falls back to copyZone.
- */
-const TEMPLATE_COPY_ZONES: Record<string, "right" | "left" | "top" | "bottom" | "center" | "none" | "full"> = Object.fromEntries(
-  TEMPLATE_META_LIST.map((t) => [t.id, t.productIAZone ?? t.copyZone]),
-);
 
 
 const ANGLE_NAMES = [
@@ -163,6 +156,22 @@ function makeImageBriefLayer(log: { input: Record<string, unknown>; output: stri
     model: "gemini-flash",
     input: JSON.stringify(log.input, null, 2),
     prompt: log.output,
+    status: "completed",
+  };
+}
+
+function makeCopyLayer(args: {
+  inputParams: Record<string, unknown>;
+  copyOutput: unknown;
+  systemPrompt?: string | null;
+  userPrompt?: string | null;
+}): PromptLayer {
+  return {
+    name: "Copy",
+    model: "gpt-4o-mini",
+    systemPrompt: args.systemPrompt ?? undefined,
+    input: args.userPrompt ?? JSON.stringify(args.inputParams, null, 2),
+    prompt: JSON.stringify(args.copyOutput, null, 2),
     status: "completed",
   };
 }
@@ -328,16 +337,18 @@ export default function FabricaDeContenido() {
   const [resultImage, setResultImage] = useState<string | null>(null);
   const [variants, setVariants] = useState<GeneratedVariant[]>([]);
   const [singleTimings, setSingleTimings] = useState<Record<string, number> | null>(null);
+  const [singlePromptsUsed, setSinglePromptsUsed] = useState<PromptsUsed | null>(null);
 
   // ─── Helpers ─────────────────────────────────────────────────────────────────
 
   const templateNeedsSceneOrProduct = (templateId: string): boolean => {
-    const template = TEMPLATES.find((t) => t.id === templateId);
-    if (template?.noProductLayer) return false;
-    return (
-      TEMPLATE_COPY_ZONES[templateId] !== undefined &&
-      (productFile !== null || template?.requiresSceneGeneration === true)
-    );
+    const meta = TEMPLATES.find((t) => t.id === templateId);
+    if (!meta) return false;
+    const mode = meta.compositionMode;
+    if (mode === "none") return false;
+    if (mode === "scene-only" || mode === "scene-with-product") return true;
+    // product-inject / split-comparison: only if user uploaded a product image
+    return productFile !== null;
   };
 
   // ─── Save creativo to Supabase + localStorage (backup) ────────────────────
@@ -458,6 +469,7 @@ export default function FabricaDeContenido() {
     setResultImage(null);
     setVariants([]);
     setSingleTimings(null);
+    setSinglePromptsUsed(null);
     const _t0 = Date.now();
     const _timings: Record<string, number> = {};
 
@@ -467,6 +479,7 @@ export default function FabricaDeContenido() {
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({
           mode: "GENERATE_COPY",
+          templateId: primaryTemplate,
           product: bizProduct,
           offer: bizOffer,
           targetAudience: bizAudience,
@@ -492,6 +505,8 @@ export default function FabricaDeContenido() {
       const copy = copyData.data?.copy;
       if (!copy) throw new Error("No se generó copy");
       const _imageBriefLog: { input: Record<string, unknown>; output: string } | null = copyData.data?.imageBriefLog ?? null;
+      const _copySystemPrompt: string | null = copyData.data?.systemPrompt ?? null;
+      const _copyUserPrompt: string | null = copyData.data?.userPrompt ?? null;
       _timings["Copy"] = Date.now() - _t0;
 
       const templateDef = TEMPLATES.find((t) => t.id === primaryTemplate);
@@ -549,7 +564,8 @@ export default function FabricaDeContenido() {
           outputFormat: "png",
           quality: 95,
           copy: {
-            cta: copy.title || undefined,
+            title: copy.title || undefined,
+            cta: copy.cta || undefined,
             headline: copy.headline || undefined,
             subheadline: copy.subheadline || undefined,
             badge: copy.badge || undefined,
@@ -581,15 +597,53 @@ export default function FabricaDeContenido() {
           _timings["Total"] = Date.now() - _t0;
           setSingleTimings({ ..._timings });
           const v2Brief = v2Data.data?.brief;
+          const v2BD = v2Data.data?.briefDebug;
+          const v2SC = v2Data.data?.strategicCore;
+          const copyInputLog = {
+            product: bizProduct,
+            offer: bizOffer,
+            audience: bizAudience,
+            problem: bizProblem,
+            tone: bizTone,
+            schema: getTemplateSchema(primaryTemplate),
+            templateId: primaryTemplate,
+            numberOfVariants: 1,
+            template: (() => { const t = TEMPLATES.find((t) => t.id === primaryTemplate); return t ? { id: t.id, name: t.name, description: t.description, copyZone: t.copyZone, pipelineV2: t.pipelineV2, sceneFullBleed: t.sceneFullBleed, personScene: t.personScene, personOnly: t.personOnly, defaultBackgroundPrompt: t.defaultBackgroundPrompt, defaultProductPrompt: t.defaultProductPrompt || undefined } : undefined; })(),
+            businessProfile: businessProfile ?? undefined,
+          };
           const promptsUsed: PromptsUsed = {
             layers: [
-              { name: "Copy", model: "gpt-4o-mini", prompt: `Schema: ${getTemplateSchema(primaryTemplate).join(", ")}`, status: "completed" },
-              { name: "Creative Brief", model: "gpt-4.1-mini", prompt: v2Brief ? `mood="${v2Brief.mood}" scene="${v2Brief.scene_description?.slice(0, 80)}…"` : "V2 brief", status: "completed" },
-              { name: "Background", model: "gemini-2.5-flash", prompt: v2Data.data?.prompts?.backgroundPrompt?.slice(0, 120) ?? "V2 background", status: "completed" },
-              { name: "Escena con Persona", model: "gemini-2.5-flash", prompt: v2Data.data?.prompts?.personPrompt?.slice(0, 120) ?? "V2 person", status: "completed" },
+              makeCopyLayer({ inputParams: copyInputLog, copyOutput: copy, systemPrompt: _copySystemPrompt, userPrompt: _copyUserPrompt }),
+              {
+                name: "Strategic Core",
+                model: "gpt-4.1-mini",
+                input: `PRODUCTO: ${bizProduct}\nDESCRIPCIÓN: ${bizProblem}`,
+                prompt: v2SC ? JSON.stringify(v2SC, null, 2) : "—",
+                status: "completed",
+              },
+              {
+                name: "Creative Brief",
+                model: "gpt-4.1-mini",
+                input: v2BD ? `--- SYSTEM PROMPT ---\n${v2BD.systemPrompt}\n\n--- USER PROMPT ---\n${v2BD.userPrompt}` : (v2Brief ? `mood="${v2Brief.mood}"` : "V2 brief"),
+                prompt: v2BD?.rawResponse ?? (v2Brief ? JSON.stringify(v2Brief, null, 2) : "—"),
+                status: "completed",
+              },
+              {
+                name: "Background (Gemini)",
+                model: "gemini-2.5-flash",
+                prompt: v2Data.data?.prompts?.backgroundPrompt ?? "V2 background",
+                status: "completed",
+              },
+              {
+                name: "Escena con Persona (Gemini)",
+                model: "gemini-2.5-flash",
+                prompt: v2Data.data?.prompts?.personPrompt ?? "V2 person",
+                status: "completed",
+              },
               { name: "Template", prompt: primaryTemplate, status: "completed" },
             ],
           };
+          setSinglePromptsUsed(promptsUsed);
           saveCreativo(finalImage, primaryTemplate, undefined, copy, undefined, undefined, promptsUsed);
         }
 
@@ -620,10 +674,13 @@ export default function FabricaDeContenido() {
       const bgBlob = await fetch(bgDataUrl).then((r) => r.blob());
       const bgFile = new File([bgBlob], "generated-bg.png", { type: "image/png" });
 
-      // sceneWithProduct + avatar: run PRODUCT_IA first (clean bg) → TEMPLATE_BETA second (text on top).
-      // This prevents Gemini from overwriting pre-rendered copy when the person lands in the wrong zone.
-      const _sceneWithProductAuto = TEMPLATES.find((t) => t.id === primaryTemplate)?.sceneWithProduct === true;
-      const isSceneWithProductFlow = _sceneWithProductAuto && !!avatarFile && templateNeedsSceneOrProduct(primaryTemplate);
+      const templateMeta = TEMPLATES.find((t) => t.id === primaryTemplate);
+      const { productIAOptions: builtProductIAOptions, compositionOrder, needsProductIA } = buildProductIAOptions(
+        templateMeta!,
+        { copy, hasProductFile: !!productFile, hasAvatarFile: !!avatarFile },
+      );
+      // scene-with-product: run PRODUCT_IA on clean bg first → TEMPLATE_BETA on top (prevents Gemini from erasing pre-rendered text)
+      const isSceneWithProductFlow = compositionOrder === "scene-first" && needsProductIA;
 
       // Helper: build the TEMPLATE_BETA FormData (used in both flow paths)
       const buildTemplateBetaForm = (bgInputFile: File) => {
@@ -646,7 +703,8 @@ export default function FabricaDeContenido() {
           outputFormat: "png",
           quality: 95,
           copy: {
-            cta: copy.title || undefined,
+            title: copy.title || undefined,
+            cta: copy.cta || undefined,
             headline: copy.headline || undefined,
             subheadline: copy.subheadline || undefined,
             badge: copy.badge || undefined,
@@ -669,31 +727,19 @@ export default function FabricaDeContenido() {
       };
 
       if (isSceneWithProductFlow) {
-        // ── NEW ORDER: PRODUCT_IA (clean bg) → TEMPLATE_BETA (text on top) ──────────
+        // ── PRODUCT_IA (clean bg) → TEMPLATE_BETA (text on top) ──────────────────
         setAutoStep("Generando escena con persona...");
-        const templateMeta = TEMPLATES.find((t) => t.id === primaryTemplate);
-        const effectiveProductPromptScene = (templateMeta?.copySchema?.includes("productPrompt") ? (copy.productPrompt as string) : undefined) || templateMeta?.defaultProductPrompt || "";
-        const zoneSideScene: "left" | "right" | "bottom" | "top" | "center" =
-          (TEMPLATE_COPY_ZONES[primaryTemplate] ?? "left") as "left" | "right" | "bottom" | "top" | "center";
 
         const productFormData = new FormData();
-        productFormData.append("background", bgFile); // clean background — no text pre-rendered
+        productFormData.append("background", bgFile);
         productFormData.append("product", productFile ?? TRANSPARENT_PNG_FILE());
-        productFormData.append("avatarFile", avatarFile);
+        if (avatarFile) productFormData.append("avatarFile", avatarFile);
         productFormData.append("config", JSON.stringify({
           mode: "PRODUCT_IA",
           outputFormat: "png",
           quality: 95,
           copy: {},
-          productIAOptions: {
-            prompt: effectiveProductPromptScene,
-            copyZone: zoneSideScene,
-            includeLayoutSpec: false,
-            skipTextRender: true,
-            avatarSceneWithProduct: true,
-            rawProductPrompt: (templateMeta as any)?.rawProductPrompt === true ? true : undefined,
-            sharpProductOverlay: (templateMeta as any)?.sharpProductOverlay ?? undefined,
-          },
+          productIAOptions: builtProductIAOptions,
         }));
         const _t2 = Date.now();
         const productRes = await fetch("/api/compose", {
@@ -730,13 +776,14 @@ export default function FabricaDeContenido() {
           setSingleTimings({ ..._timings });
           const promptsUsed: PromptsUsed = {
             layers: ([
-              { name: "Copy", model: "gpt-4o-mini", prompt: `Schema: ${getTemplateSchema(primaryTemplate).join(", ")}`, status: "completed" },
+              makeCopyLayer({ inputParams: { product: bizProduct, offer: bizOffer, audience: bizAudience, problem: bizProblem, tone: bizTone, schema: getTemplateSchema(primaryTemplate), templateId: primaryTemplate, businessProfile: businessProfile ?? undefined }, copyOutput: copy, systemPrompt: _copySystemPrompt, userPrompt: _copyUserPrompt }),
               makeImageBriefLayer(_imageBriefLog),
-              { name: "Background", model: "gemini", prompt: bgData.data?.promptUsed ?? bgPrompt, status: "completed" },
-              { name: "Escena con Persona", model: "gemini", prompt: productData.data?.promptUsed, status: "completed" },
-              { name: "Template", prompt: primaryTemplate, status: "completed" },
+              { name: "Background", model: "imagen-4.0", input: bgData.data?.promptUsed ?? bgPrompt, status: "completed" },
+              { name: "Escena con Persona", model: "gemini-flash-image", input: (builtProductIAOptions as any)?.prompt ?? "", prompt: productData.data?.promptUsed, status: "completed" },
+              { name: "Template", model: "resvg/sharp", input: JSON.stringify({ mode: "TEMPLATE_BETA", templateId: primaryTemplate, canvas: "1080x1080", copyFields: Object.keys(copy) }, null, 2), prompt: JSON.stringify({ templateId: primaryTemplate, copy: { headline: copy.headline, subheadline: copy.subheadline, badge: copy.badge, cta: copy.title } }, null, 2), status: "completed" },
             ] as (PromptLayer | null)[]).filter((l): l is PromptLayer => l !== null),
           };
+          setSinglePromptsUsed(promptsUsed);
           saveCreativo(finalImage, primaryTemplate, undefined, copy, undefined, undefined, promptsUsed);
         }
       } else {
@@ -754,49 +801,23 @@ export default function FabricaDeContenido() {
         const templateResultImage = templateData.data?.image || templateData.data?.imageUrl;
         if (templateResultImage) setResultImage(templateResultImage);
 
-        if (templateNeedsSceneOrProduct(primaryTemplate) && templateResultImage) {
+        if (needsProductIA && templateResultImage) {
           setAutoStep("Integrando producto...");
           const composedBgBlob = await fetch(templateResultImage).then((r) => r.blob());
           const composedBgFile = new File([composedBgBlob], "composed-bg.png", { type: "image/png" });
 
-          const isSceneTemplate = TEMPLATES.find((t) => t.id === primaryTemplate)?.requiresSceneGeneration === true;
           const effectiveProductFile = productFile ?? TRANSPARENT_PNG_FILE();
           const productFormData = new FormData();
           productFormData.append("background", composedBgFile);
           productFormData.append("product", effectiveProductFile);
-          if (isSceneTemplate && avatarFile) {
-            productFormData.append("avatarFile", avatarFile);
-          }
-          const templateMeta = TEMPLATES.find((t) => t.id === primaryTemplate);
-          const hasRawProductPrompt = (templateMeta as any)?.rawProductPrompt === true;
-          const effectiveProductPrompt = (templateMeta?.copySchema?.includes("productPrompt") ? (copy.productPrompt as string) : undefined) || templateMeta?.defaultProductPrompt || "";
-          console.log(`[page:productIA] templateId=${primaryTemplate} copy.productPrompt=${JSON.stringify((copy as Record<string,unknown>).productPrompt ?? null)} inSchema=${templateMeta?.copySchema?.includes("productPrompt")} effectiveProductPrompt="${effectiveProductPrompt.slice(0, 80)}"`);
-          const zoneSide: "left" | "right" | "bottom" | "top" | "center" = (
-            primaryTemplate === "editorial-lifestyle-left" &&
-            (copy as Record<string, unknown>).textSide === "right"
-          ) ? "right" : ((TEMPLATE_COPY_ZONES[primaryTemplate] ?? "left") as "left" | "right" | "bottom" | "top" | "center");
-          const effectiveScenePrompt = isSceneTemplate
-            ? ((copy.sceneAction as string) || effectiveProductPrompt)
-            : effectiveProductPrompt;
+          if (avatarFile) productFormData.append("avatarFile", avatarFile);
+          console.log(`[page:productIA] templateId=${primaryTemplate} prompt="${((builtProductIAOptions as any)?.prompt ?? "").slice(0, 80)}"`);
           productFormData.append("config", JSON.stringify({
             mode: "PRODUCT_IA",
             outputFormat: "png",
             quality: 95,
             copy: {},
-            productIAOptions: {
-              prompt: effectiveScenePrompt,
-              copyZone: zoneSide,
-              includeLayoutSpec: false,
-              skipTextRender: true,
-              sceneMode: isSceneTemplate && !templateMeta?.sceneWithProduct && !avatarFile,
-              useAvatarAsScene: isSceneTemplate && !templateMeta?.sceneWithProduct && !!avatarFile,
-              splitComparison: templateMeta?.splitComparison ?? false,
-              rawProductPrompt: hasRawProductPrompt ? true : undefined,
-              personScene: templateMeta?.personScene === true ? true : undefined,
-              sharpProductOverlay: (templateMeta as any)?.sharpProductOverlay ?? undefined,
-              hasRealProduct: !!productFile,
-              sceneFullBleed: templateMeta?.sceneFullBleed === true ? true : undefined,
-            },
+            productIAOptions: builtProductIAOptions,
           }));
           const _t3 = Date.now();
           const productRes = await fetch("/api/compose", {
@@ -814,13 +835,14 @@ export default function FabricaDeContenido() {
             setSingleTimings({ ..._timings });
             const promptsUsed: PromptsUsed = {
               layers: ([
-                { name: "Copy", model: "gpt-4o-mini", prompt: `Schema: ${getTemplateSchema(primaryTemplate).join(", ")}`, status: "completed" },
+                makeCopyLayer({ inputParams: { product: bizProduct, offer: bizOffer, audience: bizAudience, problem: bizProblem, tone: bizTone, schema: getTemplateSchema(primaryTemplate), templateId: primaryTemplate, businessProfile: businessProfile ?? undefined }, copyOutput: copy, systemPrompt: _copySystemPrompt, userPrompt: _copyUserPrompt }),
                 makeImageBriefLayer(_imageBriefLog),
-                { name: "Background", model: "gemini", prompt: bgData.data?.promptUsed ?? bgPrompt, status: "completed" },
-                { name: "Template", prompt: primaryTemplate, status: "completed" },
-                { name: "Producto/Escena", model: "gemini", prompt: productData.data?.promptUsed, status: "completed" },
+                { name: "Background", model: "imagen-4.0", input: bgData.data?.promptUsed ?? bgPrompt, status: "completed" },
+                { name: "Template", model: "resvg/sharp", input: JSON.stringify({ mode: "TEMPLATE_BETA", templateId: primaryTemplate, canvas: "1080x1080", copyFields: Object.keys(copy) }, null, 2), prompt: JSON.stringify({ templateId: primaryTemplate, copy: { headline: copy.headline, subheadline: copy.subheadline, badge: copy.badge, cta: copy.title } }, null, 2), status: "completed" },
+                { name: "Producto/Escena", model: "gemini-flash-image", input: (builtProductIAOptions as any)?.prompt ?? "", prompt: productData.data?.promptUsed, status: "completed" },
               ] as (PromptLayer | null)[]).filter((l): l is PromptLayer => l !== null),
             };
+            setSinglePromptsUsed(promptsUsed);
             saveCreativo(finalImage, primaryTemplate, undefined, copy, undefined, undefined, promptsUsed);
           }
         } else if (templateResultImage) {
@@ -828,13 +850,14 @@ export default function FabricaDeContenido() {
           setSingleTimings({ ..._timings });
           const promptsUsed: PromptsUsed = {
             layers: ([
-              { name: "Copy", model: "gpt-4o-mini", prompt: `Schema: ${getTemplateSchema(primaryTemplate).join(", ")}`, status: "completed" },
+              makeCopyLayer({ inputParams: { product: bizProduct, offer: bizOffer, audience: bizAudience, problem: bizProblem, tone: bizTone, schema: getTemplateSchema(primaryTemplate), templateId: primaryTemplate, businessProfile: businessProfile ?? undefined }, copyOutput: copy, systemPrompt: _copySystemPrompt, userPrompt: _copyUserPrompt }),
               makeImageBriefLayer(_imageBriefLog),
-              { name: "Background", model: "gemini", prompt: bgData.data?.promptUsed ?? bgPrompt, status: "completed" },
-              { name: "Template", prompt: primaryTemplate, status: "completed" },
+              { name: "Background", model: "imagen-4.0", input: bgData.data?.promptUsed ?? bgPrompt, status: "completed" },
+              { name: "Template", model: "resvg/sharp", input: JSON.stringify({ mode: "TEMPLATE_BETA", templateId: primaryTemplate, canvas: "1080x1080", copyFields: Object.keys(copy) }, null, 2), prompt: JSON.stringify({ templateId: primaryTemplate, copy: { headline: copy.headline, subheadline: copy.subheadline, badge: copy.badge, cta: copy.title } }, null, 2), status: "completed" },
               { name: "Producto/Escena", status: "skipped" },
             ] as (PromptLayer | null)[]).filter((l): l is PromptLayer => l !== null),
           };
+          setSinglePromptsUsed(promptsUsed);
           saveCreativo(templateResultImage, primaryTemplate, undefined, copy, undefined, undefined, promptsUsed);
         }
       }
@@ -864,6 +887,7 @@ export default function FabricaDeContenido() {
             headers: { "Content-Type": "application/json", Accept: "application/json" },
             body: JSON.stringify({
               mode: "GENERATE_COPY",
+              templateId,
               product: bizProduct,
               offer: bizOffer,
               targetAudience: bizAudience,
@@ -900,12 +924,20 @@ export default function FabricaDeContenido() {
             );
           }
           const imageBriefLog: { input: Record<string, unknown>; output: string } | null = copyData.data?.imageBriefLog ?? null;
-          return { copies, imageBriefLog };
+          const copySystemPrompt: string | null = copyData.data?.systemPrompt ?? null;
+          const copyUserPrompt: string | null = copyData.data?.userPrompt ?? null;
+          return { copies, imageBriefLog, copySystemPrompt, copyUserPrompt };
         })
       );
       const allCopies = allCopiesAndLogs.map((r) => r.copies);
       const imageBriefLogByTemplate = new Map(
         selectedTemplates.map((id, i) => [id, allCopiesAndLogs[i].imageBriefLog])
+      );
+      const copySystemPromptByTemplate = new Map(
+        selectedTemplates.map((id, i) => [id, allCopiesAndLogs[i].copySystemPrompt])
+      );
+      const copyUserPromptByTemplate = new Map(
+        selectedTemplates.map((id, i) => [id, allCopiesAndLogs[i].copyUserPrompt])
       );
 
       // Step 2: Build task list — background se genera dentro de cada pipeline individual
@@ -985,7 +1017,8 @@ export default function FabricaDeContenido() {
               outputFormat: "png",
               quality: 95,
               copy: {
-                cta: copy.title || undefined,
+                title: copy.title || undefined,
+                cta: copy.cta || undefined,
                 headline: copy.headline || undefined,
                 subheadline: copy.subheadline || undefined,
                 badge: copy.badge || undefined,
@@ -1007,11 +1040,37 @@ export default function FabricaDeContenido() {
 
             const finalImg = (templateData.data?.image || templateData.data?.imageUrl || sceneDataUrl) as string;
             const v2Brief = v2Data.data?.brief;
+            const v2BD = v2Data.data?.briefDebug;
+            const v2SC = v2Data.data?.strategicCore;
             const promptsUsed: PromptsUsed = {
               layers: [
-                { name: "Copy", model: "gpt-4o-mini", prompt: `Schema: ${getTemplateSchema(templateId).join(", ")}`, status: "completed" },
-                { name: "Creative Brief", model: "gpt-4.1-mini", prompt: v2Brief ? `mood="${v2Brief.mood}"` : "V2 brief", status: "completed" },
-                { name: "Background + Scene", model: "gemini-2.5-flash", prompt: v2Data.data?.prompts?.backgroundPrompt?.slice(0, 80) ?? "V2", status: "completed" },
+                makeCopyLayer({ inputParams: { product: bizProduct, offer: bizOffer, audience: bizAudience, problem: bizProblem, tone: bizTone, schema: getTemplateSchema(templateId) }, copyOutput: copy, systemPrompt: copySystemPromptByTemplate.get(templateId), userPrompt: copyUserPromptByTemplate.get(templateId) }),
+                {
+                  name: "Strategic Core",
+                  model: "gpt-4.1-mini",
+                  input: `PRODUCTO: ${bizProduct}\nDESCRIPCIÓN: ${bizProblem}`,
+                  prompt: v2SC ? JSON.stringify(v2SC, null, 2) : "—",
+                  status: "completed",
+                },
+                {
+                  name: "Creative Brief",
+                  model: "gpt-4.1-mini",
+                  input: v2BD ? `--- SYSTEM PROMPT ---\n${v2BD.systemPrompt}\n\n--- USER PROMPT ---\n${v2BD.userPrompt}` : (v2Brief ? `mood="${v2Brief.mood}"` : "V2 brief"),
+                  prompt: v2BD?.rawResponse ?? (v2Brief ? JSON.stringify(v2Brief, null, 2) : "—"),
+                  status: "completed",
+                },
+                {
+                  name: "Background (Gemini)",
+                  model: "gemini-2.5-flash",
+                  prompt: v2Data.data?.prompts?.backgroundPrompt ?? "V2 background",
+                  status: "completed",
+                },
+                {
+                  name: "Escena con Persona (Gemini)",
+                  model: "gemini-2.5-flash",
+                  prompt: v2Data.data?.prompts?.personPrompt ?? "V2 person",
+                  status: "completed",
+                },
                 { name: "Template", prompt: templateId, status: "completed" },
               ],
             };
@@ -1048,8 +1107,11 @@ export default function FabricaDeContenido() {
           const bgFile = new File([_bgBlob], `bg-${templateId}-${angleIndex}.png`, { type: "image/png" });
 
           // 2. Componer template + producto/escena
-          const _sceneWithProductAngles = tplMeta?.sceneWithProduct === true;
-          const isSceneWithProductFlowAngles = _sceneWithProductAngles && !!avatarFile && templateNeedsSceneOrProduct(templateId);
+          const { productIAOptions: angleProductIAOptions, compositionOrder: angleOrder, needsProductIA: angleNeedsIA } = buildProductIAOptions(
+            tplMeta!,
+            { copy, hasProductFile: !!productFile, hasAvatarFile: !!avatarFile },
+          );
+          const isSceneWithProductFlowAngles = angleOrder === "scene-first" && angleNeedsIA;
 
           // Helper: build TEMPLATE_BETA FormData for this angle
           const buildAngleTemplateBetaForm = (bgInputFile: File) => {
@@ -1072,7 +1134,8 @@ export default function FabricaDeContenido() {
               outputFormat: "png",
               quality: 95,
               copy: {
-                cta: copy.title || undefined,
+                title: copy.title || undefined,
+                cta: copy.cta || undefined,
                 headline: copy.headline || undefined,
                 subheadline: copy.subheadline || undefined,
                 badge: copy.badge || undefined,
@@ -1096,27 +1159,17 @@ export default function FabricaDeContenido() {
           };
 
           if (isSceneWithProductFlowAngles) {
-            // ── NEW ORDER: PRODUCT_IA (clean bg) → TEMPLATE_BETA (text on top) ──────────
-            const effectiveProductPromptScene = (tplMeta?.copySchema?.includes("productPrompt") ? (copy.productPrompt as string) : undefined) || tplMeta?.defaultProductPrompt || "";
-            const zoneSideScene = (TEMPLATE_COPY_ZONES[templateId] ?? "left") as "left" | "right" | "bottom" | "top" | "center";
-
+            // ── PRODUCT_IA (clean bg) → TEMPLATE_BETA (text on top) ──────────────────
             const productForm = new FormData();
-            productForm.append("background", bgFile); // clean bg — no text pre-rendered
+            productForm.append("background", bgFile);
             productForm.append("product", productFile ?? TRANSPARENT_PNG_FILE());
-            productForm.append("avatarFile", avatarFile);
+            if (avatarFile) productForm.append("avatarFile", avatarFile);
             productForm.append("config", JSON.stringify({
               mode: "PRODUCT_IA",
               outputFormat: "png",
               quality: 95,
               copy: {},
-              productIAOptions: {
-                prompt: effectiveProductPromptScene,
-                copyZone: zoneSideScene,
-                includeLayoutSpec: false,
-                skipTextRender: true,
-                avatarSceneWithProduct: true,
-                sharpProductOverlay: (tplMeta as any)?.sharpProductOverlay ?? undefined,
-              },
+              productIAOptions: angleProductIAOptions,
             }));
             const _tTask = Date.now();
             const _taskTimings: Record<string, number> = {};
@@ -1151,11 +1204,11 @@ export default function FabricaDeContenido() {
 
             const promptsUsed: PromptsUsed = {
               layers: ([
-                { name: "Copy", model: "gpt-4o-mini", prompt: `Schema: ${getTemplateSchema(templateId).join(", ")}`, status: "completed" },
+                makeCopyLayer({ inputParams: { product: bizProduct, offer: bizOffer, audience: bizAudience, problem: bizProblem, tone: bizTone, schema: getTemplateSchema(templateId), templateId, numberOfVariants: numAngles, businessProfile: businessProfile ?? undefined }, copyOutput: copy, systemPrompt: copySystemPromptByTemplate.get(templateId), userPrompt: copyUserPromptByTemplate.get(templateId) }),
                 makeImageBriefLayer(imageBriefLogByTemplate.get(templateId)),
-                { name: "Background", model: "gemini", prompt: bgDataUrl ? bgPrompt : undefined, status: "completed" },
-                { name: "Escena con Persona", model: "gemini", prompt: productData.data?.promptUsed, status: "completed" },
-                { name: "Template", prompt: templateId, status: "completed" },
+                { name: "Background", model: "imagen-4.0", input: bgDataUrl ? bgPrompt : undefined, status: "completed" },
+                { name: "Escena con Persona", model: "gemini-flash-image", input: (angleProductIAOptions as any)?.prompt ?? "", prompt: productData.data?.promptUsed, status: "completed" },
+                { name: "Template", model: "resvg/sharp", input: JSON.stringify({ mode: "TEMPLATE_BETA", templateId, canvas: "1080x1080", copyFields: Object.keys(copy) }, null, 2), prompt: JSON.stringify({ templateId, copy: { headline: copy.headline, subheadline: copy.subheadline, badge: copy.badge, cta: copy.title } }, null, 2), status: "completed" },
               ] as (PromptLayer | null)[]).filter((l): l is PromptLayer => l !== null),
             };
             const variant: GeneratedVariant = { copy, backgroundImage: bgDataUrl, resultImage: finalImg, template: templateId, angle: angleIndex, angleName, promptsUsed, timings: _taskTimings };
@@ -1186,44 +1239,22 @@ export default function FabricaDeContenido() {
             );
           }
 
-          // PRODUCT_IA (optional — runs if product file exists OR template requires scene generation)
+          // PRODUCT_IA (optional — runs when compositionMode requires it)
           let finalImg = resultImg;
-          if (templateNeedsSceneOrProduct(templateId)) {
-            const isSceneTemplate = tplMeta?.requiresSceneGeneration === true;
+          if (angleNeedsIA) {
             const effectiveProductFile = productFile ?? TRANSPARENT_PNG_FILE();
             const variantBgBlob = await fetch(resultImg).then((r) => r.blob());
             const variantBgFile = new File([variantBgBlob], `composed-${templateId}-${angleIndex}.png`, { type: "image/png" });
             const productForm = new FormData();
             productForm.append("background", variantBgFile);
             productForm.append("product", effectiveProductFile);
-            if (isSceneTemplate && avatarFile) {
-              productForm.append("avatarFile", avatarFile);
-            }
-            const hasRawProductPromptAngles = (tplMeta as any)?.rawProductPrompt === true;
-            const effectiveProductPrompt = (tplMeta?.copySchema?.includes("productPrompt") ? (copy.productPrompt as string) : undefined) || tplMeta?.defaultProductPrompt || "";
-            const zoneSide = TEMPLATE_COPY_ZONES[templateId] ?? "left";
-            const effectiveScenePrompt = isSceneTemplate
-              ? ((copy.sceneAction as string) || effectiveProductPrompt)
-              : effectiveProductPrompt;
+            if (avatarFile) productForm.append("avatarFile", avatarFile);
             productForm.append("config", JSON.stringify({
               mode: "PRODUCT_IA",
               outputFormat: "png",
               quality: 95,
               copy: {},
-              productIAOptions: {
-                prompt: effectiveScenePrompt,
-                copyZone: zoneSide,
-                includeLayoutSpec: false,
-                skipTextRender: true,
-                sceneMode: isSceneTemplate && !tplMeta?.sceneWithProduct && !avatarFile,
-                useAvatarAsScene: isSceneTemplate && !tplMeta?.sceneWithProduct && !!avatarFile,
-                splitComparison: tplMeta?.splitComparison ?? false,
-                rawProductPrompt: hasRawProductPromptAngles ? true : undefined,
-                personScene: tplMeta?.personScene === true ? true : undefined,
-                sharpProductOverlay: (tplMeta as any)?.sharpProductOverlay ?? undefined,
-                hasRealProduct: !!productFile,
-                sceneFullBleed: tplMeta?.sceneFullBleed === true ? true : undefined,
-              },
+              productIAOptions: angleProductIAOptions,
             }));
             const _tProd = Date.now();
             const productRes = await fetch("/api/compose", {
@@ -1238,11 +1269,11 @@ export default function FabricaDeContenido() {
             finalImg = productData.data?.image || productData.data?.imageUrl || resultImg;
             const promptsUsed: PromptsUsed = {
               layers: ([
-                { name: "Copy", model: "gpt-4o-mini", prompt: `Schema: ${getTemplateSchema(templateId).join(", ")}`, status: "completed" },
+                makeCopyLayer({ inputParams: { product: bizProduct, offer: bizOffer, audience: bizAudience, problem: bizProblem, tone: bizTone, schema: getTemplateSchema(templateId), templateId, numberOfVariants: numAngles, businessProfile: businessProfile ?? undefined }, copyOutput: copy, systemPrompt: copySystemPromptByTemplate.get(templateId), userPrompt: copyUserPromptByTemplate.get(templateId) }),
                 makeImageBriefLayer(imageBriefLogByTemplate.get(templateId)),
-                { name: "Background", model: "gemini", prompt: bgDataUrl ? bgPrompt : undefined, status: "completed" },
-                { name: "Template", prompt: templateId, status: "completed" },
-                { name: "Producto/Escena", model: "gemini", prompt: productData.data?.promptUsed, status: "completed" },
+                { name: "Background", model: "imagen-4.0", input: bgDataUrl ? bgPrompt : undefined, status: "completed" },
+                { name: "Template", model: "resvg/sharp", input: JSON.stringify({ mode: "TEMPLATE_BETA", templateId, canvas: "1080x1080", copyFields: Object.keys(copy) }, null, 2), prompt: JSON.stringify({ templateId, copy: { headline: copy.headline, subheadline: copy.subheadline, badge: copy.badge, cta: copy.title } }, null, 2), status: "completed" },
+                { name: "Producto/Escena", model: "gemini-flash-image", input: (angleProductIAOptions as any)?.prompt ?? "", prompt: productData.data?.promptUsed, status: "completed" },
               ] as (PromptLayer | null)[]).filter((l): l is PromptLayer => l !== null),
             };
             const variant: GeneratedVariant = { copy, backgroundImage: bgDataUrl, resultImage: finalImg, template: templateId, angle: angleIndex, angleName, promptsUsed, timings: _taskTimings };
@@ -1255,10 +1286,10 @@ export default function FabricaDeContenido() {
           _taskTimings["Total"] = Date.now() - _tTask;
           const promptsUsedNoProduct: PromptsUsed = {
             layers: ([
-              { name: "Copy", model: "gpt-4o-mini", prompt: `Schema: ${getTemplateSchema(templateId).join(", ")}`, status: "completed" },
+              makeCopyLayer({ inputParams: { product: bizProduct, offer: bizOffer, audience: bizAudience, problem: bizProblem, tone: bizTone, schema: getTemplateSchema(templateId), templateId, numberOfVariants: numAngles, businessProfile: businessProfile ?? undefined }, copyOutput: copy, systemPrompt: copySystemPromptByTemplate.get(templateId), userPrompt: copyUserPromptByTemplate.get(templateId) }),
               makeImageBriefLayer(imageBriefLogByTemplate.get(templateId)),
-              { name: "Background", model: "gemini", prompt: bgDataUrl ? bgPrompt : undefined, status: "completed" },
-              { name: "Template", prompt: templateId, status: "completed" },
+              { name: "Background", model: "imagen-4.0", input: bgDataUrl ? bgPrompt : undefined, status: "completed" },
+              { name: "Template", model: "resvg/sharp", input: JSON.stringify({ mode: "TEMPLATE_BETA", templateId, canvas: "1080x1080", copyFields: Object.keys(copy) }, null, 2), prompt: JSON.stringify({ templateId, copy: { headline: copy.headline, subheadline: copy.subheadline, badge: copy.badge, cta: copy.title } }, null, 2), status: "completed" },
               { name: "Producto/Escena", status: "skipped" },
             ] as (PromptLayer | null)[]).filter((l): l is PromptLayer => l !== null),
           };
@@ -1350,6 +1381,7 @@ export default function FabricaDeContenido() {
           const bgFile = new File([bgBlob], `bg-slide-${slideIndex}.png`, { type: "image/png" });
 
           let finalImg: string;
+          let _seqPrompts: PromptsUsed | undefined;
 
           if (isSceneWithProductSequence) {
             // sceneWithProduct order: PRODUCT_IA (clean bg) → TEMPLATE_BETA (text on scene)
@@ -1436,6 +1468,14 @@ export default function FabricaDeContenido() {
             const templateData = await templateRes.json();
             if (!templateRes.ok) throw new Error(templateData.error || `Error ${templateRes.status}`);
             finalImg = (templateData.data?.image || templateData.data?.imageUrl || sceneDataUrl) as string;
+            _seqPrompts = {
+              layers: [
+                { name: "Sequence Copy", model: "gpt-4o-mini", input: JSON.stringify({ mode: "GENERATE_SEQUENCE_COPY", product: bizProduct, narrative: sequenceNarrative, slideCount: sequenceCount, sceneWithProduct: true, businessProfile: businessProfile ?? undefined }, null, 2), prompt: JSON.stringify(slide, null, 2), status: "completed" },
+                { name: "Background", model: "imagen-4.0", input: bgPrompt, status: "completed" },
+                { name: "Escena con Persona", model: "gemini-flash-image", input: productPromptForSlide, prompt: productData.data?.promptUsed, status: "completed" },
+                { name: "Template", model: "resvg/sharp", input: JSON.stringify({ mode: "TEMPLATE_BETA", templateId, canvas: "1080x1080", copy: { headline: slide.headline, subheadline: slide.subheadline, badge: slide.badge } }, null, 2), prompt: templateId, status: "completed" },
+              ],
+            };
           } else {
             // Default order: TEMPLATE_BETA (text on clean bg) → PRODUCT_IA (scene on text)
             const variantForm = new FormData();
@@ -1531,6 +1571,14 @@ Full body or 3/4 shot. Natural lighting. Hyper-realistic. No text, no objects, n
             const productData = await productRes.json();
             if (!productRes.ok) throw new Error(productData.error || `Error ${productRes.status}`);
             finalImg = (productData.data?.image || productData.data?.imageUrl || templateResultImage) as string;
+            _seqPrompts = {
+              layers: [
+                { name: "Sequence Copy", model: "gpt-4o-mini", input: JSON.stringify({ mode: "GENERATE_SEQUENCE_COPY", product: bizProduct, narrative: sequenceNarrative, slideCount: sequenceCount, businessProfile: businessProfile ?? undefined }, null, 2), prompt: JSON.stringify(slide, null, 2), status: "completed" },
+                { name: "Background", model: "imagen-4.0", input: bgPrompt, status: "completed" },
+                { name: "Template", model: "resvg/sharp", input: JSON.stringify({ mode: "TEMPLATE_BETA", templateId, canvas: "1080x1080", copy: { headline: slide.headline, subheadline: slide.subheadline, badge: slide.badge } }, null, 2), prompt: templateId, status: "completed" },
+                { name: "Escena/Persona", model: "gemini-flash-image", input: scenePrompt, prompt: productData.data?.promptUsed, status: "completed" },
+              ],
+            };
           }
 
           const variant: GeneratedVariant = {
@@ -1542,6 +1590,7 @@ Full body or 3/4 shot. Natural lighting. Hyper-realistic. No text, no objects, n
             angleName: (slide.slideRole as string) ?? `Slide ${slideIndex + 1}`,
             slideNumber: slideIndex + 1,
             slideRole: (slide.slideRole as string) ?? undefined,
+            promptsUsed: _seqPrompts,
           };
 
           variantAccumulator.push(variant);
@@ -1554,6 +1603,7 @@ Full body or 3/4 shot. Natural lighting. Hyper-realistic. No text, no objects, n
             slide,
             (slide.slideRole as string) ?? undefined,
             slideIndex + 1,
+            _seqPrompts,
           );
           return variant;
         }
@@ -1767,6 +1817,7 @@ Full body or 3/4 shot. Natural lighting. Hyper-realistic. No text, no objects, n
             creationMode={creationMode}
             sequenceCount={sequenceCount}
             singleTimings={singleTimings}
+            singlePromptsUsed={singlePromptsUsed}
           />
         )}
       </div>
@@ -2937,6 +2988,7 @@ function StepGenerar({
   creationMode,
   sequenceCount,
   singleTimings,
+  singlePromptsUsed,
 }: {
   bizProduct: string;
   bizOffer: string;
@@ -2965,6 +3017,7 @@ function StepGenerar({
   creationMode: "independiente" | "secuencia" | "sorteo";
   sequenceCount: number;
   singleTimings: Record<string, number> | null;
+  singlePromptsUsed: PromptsUsed | null;
 }) {
   const isGenerating = autoGenerating || variantsGenerating;
   const showSingleResult = resultImage && !variantsGenerating && variants.length === 0;
@@ -3164,6 +3217,11 @@ function StepGenerar({
           {singleTimings && (
             <div style={{ maxWidth: "540px", margin: "12px auto 0" }}>
               <TimingBar timings={singleTimings} />
+            </div>
+          )}
+          {singlePromptsUsed && (
+            <div style={{ maxWidth: "540px", margin: "8px auto 0" }}>
+              <PromptsPanel prompts={singlePromptsUsed} />
             </div>
           )}
         </div>

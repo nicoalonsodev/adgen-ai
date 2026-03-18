@@ -128,6 +128,19 @@ const InputSchema = z.object({
   creative_mode: z.enum(["auto", "clean", "lifestyle", "narrative"]).default("auto"),
   // Shadow mode: off, ai (uses Gemini to generate shadow layer)
   shadow_mode: z.enum(["off", "ai"]).default("off"),
+  // Business profile for brand-aligned copy
+  businessProfile: z.object({
+    nombre: z.string().optional(),
+    rubro: z.string().optional(),
+    propuestaValor: z.string().optional(),
+    diferenciacion: z.string().optional(),
+    clienteIdeal: z.string().optional(),
+    dolores: z.union([z.string(), z.array(z.string())]).optional(),
+    motivaciones: z.union([z.string(), z.array(z.string())]).optional(),
+    tono: z.union([z.string(), z.array(z.string())]).optional(),
+    coloresMarca: z.array(z.string()).optional(),
+    category: z.string().optional(),
+  }).optional(),
   // Dev mode overrides
   force_template: z.enum(TEMPLATE_IDS).optional(),
   force_style: z.enum(STYLE_PACK_IDS).optional(),
@@ -226,7 +239,10 @@ export async function POST(req: Request) {
 
     const core = await deriveStrategicCore(
       input.product_name,
-      input.product_description
+      input.product_description,
+      {
+        businessProfile: input.businessProfile ?? undefined,
+      },
     );
 
     const coreTimeMs = Date.now() - coreStart;
@@ -398,6 +414,20 @@ export async function POST(req: Request) {
       offer: input.offer,
       count,
       templateHint,
+      businessProfile: input.businessProfile ?? undefined,
+      template: resolvedTemplateMeta
+        ? {
+            id: resolvedTemplateMeta.id,
+            name: resolvedTemplateMeta.name,
+            description: resolvedTemplateMeta.description,
+            copyZone: resolvedTemplateMeta.copyZone,
+            copySchema: resolvedTemplateMeta.copySchema,
+            sceneFullBleed: resolvedTemplateMeta.sceneFullBleed,
+            personOnly: resolvedTemplateMeta.personOnly,
+            personScene: resolvedTemplateMeta.personScene,
+            pipelineV2: resolvedTemplateMeta.pipelineV2,
+          }
+        : undefined,
     });
 
     const copyTimeMs = Date.now() - copyStart;

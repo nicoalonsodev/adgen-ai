@@ -19,12 +19,14 @@ import { composeWithTemplateBeta } from "@/services/product-composer/composeWith
 import { generateBackground, analyzeCreativeQuality, generateImageBriefGemini, expandSceneBrief } from "@/lib/ai/gemini";
 import { generateTemplateCopyOpenAI, analyzeCreativeReference, generateSequenceCopy } from "@/lib/ai/openai";
 import type { ImageBriefType } from "@/lib/ai/promptLibrary";
+import { getSceneLibrarySection } from "@/lib/ai/promptLibrary";
 import { composePipelineV2 } from "@/lib/meta/pipeline/v2";
 import { deriveStrategicCore } from "@/lib/ai/copyGenerator";
+import { getTemplateMeta } from "@/services/product-composer/templates/meta";
 import { listPresets } from "@/services/product-composer/presets";
 import { createLogger, generateRequestId } from "@/lib/logger";
 import { createMetrics } from "@/lib/metrics";
-import { getUserWithTokens, consumeTokensWithData } from "@/lib/supabase/server";
+import { getUserWithTokens, consumeTokensWithData, supabaseAdmin } from "@/lib/supabase/server";
 import { calculateTokensForOperation } from "@/lib/tokens/tokenCalculator";
 
 const logger = createLogger({ service: "api:compose" });
@@ -118,7 +120,8 @@ interface ComposeJsonBody {
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function parseMultipartRequest(
-  request: NextRequest
+  request: NextRequest,
+  apiKeys?: string[]
 ): Promise<{ request: ComposeRequest; generatedBackground?: boolean; debugInfo: DebugInfo }> {
   const formData = await request.formData();
   const debugInfo: DebugInfo = {
@@ -165,6 +168,7 @@ if (!productFile && requestedMode !== "TEMPLATE_BETA") {
     backgroundBuffer = await generateBackground({
       prompt: config.backgroundPrompt,
       aspectRatio: config.aspectRatio || "4:5",
+      apiKeys,
     });
     generatedBackground = true;
     debugInfo.backgroundSource = "prompt";
@@ -236,7 +240,7 @@ if (debugInfo.productBytes === 0 && requestedMode !== "TEMPLATE_BETA") {
   };
 }
 
-async function parseJsonRequest(request: NextRequest): Promise<{ request: ComposeRequest; generatedBackground?: boolean; debugInfo: DebugInfo }> {
+async function parseJsonRequest(request: NextRequest, apiKeys?: string[]): Promise<{ request: ComposeRequest; generatedBackground?: boolean; debugInfo: DebugInfo }> {
   const body: ComposeJsonBody = await request.json();
   const debugInfo: DebugInfo = {
     contentType: "application/json",
@@ -260,6 +264,7 @@ async function parseJsonRequest(request: NextRequest): Promise<{ request: Compos
     const result = await generateBackground({
       prompt: body.backgroundPrompt,
       aspectRatio: body.aspectRatio || "4:5",
+      apiKeys,
     });
     backgroundUrl = `data:image/png;base64,${result.toString("base64")}`;
     generatedBackground = true;
@@ -355,6 +360,37 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 
+    // Resolve user Gemini API keys
+    let userGeminiKeys: string[] | undefined;
+    const { data: profileData } = await supabaseAdmin
+      .from('user_business_profiles')
+      .select('gemini_keys_encrypted')
+      .eq('user_id', userId)
+      .single();
+
+    if (profileData?.gemini_keys_encrypted) {
+      try {
+        const { decryptValue } = await import('@/lib/crypto');
+        const parsed = JSON.parse(decryptValue(profileData.gemini_keys_encrypted));
+        userGeminiKeys = [parsed.key1, parsed.key2].filter(Boolean) as string[];
+        if (userGeminiKeys.length === 0) userGeminiKeys = undefined;
+      } catch {
+        userGeminiKeys = undefined;
+      }
+    }
+
+    if (!userGeminiKeys) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'GEMINI_KEY_NOT_CONFIGURED',
+          message: 'Configurá tus API keys de Gemini en Mi ADN para generar creativos.',
+          redirect: '/dashboard/mi-negocio#gemini-keys',
+        },
+        { status: 402 }
+      );
+    }
+
     const tokensNeeded = calculateTokensForOperation(operation, payload);
 
     // Single DB call: fetch user tokens and verify balance in one query
@@ -399,7 +435,7 @@ export async function POST(request: NextRequest) {
             { status: 400 }
           );
         }
-        const buffer = await generateBackground({ prompt, aspectRatio });
+        const buffer = await generateBackground({ prompt, aspectRatio, apiKeys: userGeminiKeys });
         if (cachedUserTokens) await consumeTokensWithData(cachedUserTokens, tokensNeeded, operation);
         return NextResponse.json({
           success: true,
@@ -442,6 +478,17 @@ export async function POST(request: NextRequest) {
             !IMAGE_BRIEF_FIELDS.includes(f as ImageField)
           );
 
+          // Always ensure sceneAction is generated — it synthesizes sceneLibrary + defaultProductPrompt.
+          // We use separate "with scene" variants so fullSchema stays pristine for the
+          // hasSceneAction (expandSceneBrief) check, which should only fire for templates
+          // that explicitly requested sceneAction (to avoid extra Gemini expansion calls).
+          const fullSchemaWithScene = fullSchema.includes("sceneAction")
+            ? fullSchema
+            : [...fullSchema, "sceneAction"];
+          const copyOnlySchemaWithScene = copyOnlySchema.includes("sceneAction")
+            ? copyOnlySchema
+            : [...copyOnlySchema, "sceneAction"];
+
           const briefType: ImageBriefType =
             imageBriefFields.includes("productPrompt") ? "person-product" :
             "product-only";
@@ -458,7 +505,15 @@ export async function POST(request: NextRequest) {
               }
             : null;
 
-          // Run OpenAI (copy) and Gemini Flash (image brief) in parallel when applicable
+          // Run Gemini (copy) and Gemini Flash (image brief) in parallel when applicable
+          // Resolve full template metadata for richer copy generation
+          const copyTemplateMeta = body.templateId ? getTemplateMeta(body.templateId) : undefined;
+
+          // Pre-fetch scene example from scenesLibrary so it can be passed explicitly to
+          // generateTemplateCopyOpenAI AND returned in the response for frontend logging.
+          const productCategory = (body.businessProfile as any)?.category ?? "";
+          const sceneExample = productCategory ? getSceneLibrarySection(productCategory) : "";
+
           const [copyResult, imagePrompt] = await Promise.all([
             generateTemplateCopyOpenAI({
               product: body.product ?? "",
@@ -466,13 +521,36 @@ export async function POST(request: NextRequest) {
               targetAudience: body.targetAudience ?? "",
               problem: body.problem ?? "",
               tone: body.tone ?? "",
-              templateSchema: imageBriefFields.length > 0 ? copyOnlySchema : fullSchema,
+              templateSchema: imageBriefFields.length > 0 ? copyOnlySchemaWithScene : fullSchemaWithScene,
               numberOfVariants: body.numberOfVariants ?? 1,
               templateHint: body.templateHint,
               businessProfile: body.businessProfile,
               referenceStyle: body.referenceStyle,
               backgroundStyleGuide: body.backgroundStyleGuide,
               sorteoData: body.sorteoData,
+              sceneExample: sceneExample || undefined,
+              template: copyTemplateMeta
+                ? {
+                    id: copyTemplateMeta.id,
+                    name: copyTemplateMeta.name,
+                    description: copyTemplateMeta.description,
+                    copyZone: copyTemplateMeta.copyZone,
+                    copySchema: copyTemplateMeta.copySchema,
+                    compositionMode: copyTemplateMeta.compositionMode,
+                    rawBackgroundPrompt: copyTemplateMeta.rawBackgroundPrompt,
+                    rawProductPrompt: copyTemplateMeta.rawProductPrompt,
+                    useTextureLibrary: copyTemplateMeta.useTextureLibrary,
+                    hyperRealisticPrompts: copyTemplateMeta.hyperRealisticPrompts,
+                    pipelineV2: copyTemplateMeta.pipelineV2,
+                    sceneFullBleed: copyTemplateMeta.sceneFullBleed,
+                    personScene: copyTemplateMeta.personScene,
+                    personOnly: copyTemplateMeta.personOnly,
+                    recommendedFor: copyTemplateMeta.recommendedFor,
+                    defaultBackgroundPrompt: copyTemplateMeta.defaultBackgroundPrompt,
+                    defaultProductPrompt: copyTemplateMeta.defaultProductPrompt,
+                    textSide: copyTemplateMeta.textSide,
+                  }
+                : undefined,
             }),
             imageBriefFields.length > 0
               ? generateImageBriefGemini({
@@ -502,15 +580,20 @@ export async function POST(request: NextRequest) {
 
           // Hybrid sceneAction: OpenAI generates diverse short scenes per variant,
           // then Gemini Flash expands each one into a full cinematic prompt in parallel.
+          // skipExpandSceneBrief: true → OpenAI already generated a full brief (80-100 words),
+          // no Kimi expansion needed. The sceneAction goes directly to buildScenePrompt → Gemini.
           const hasSceneAction = fullSchema.includes("sceneAction");
-          if (hasSceneAction) {
+          const skipExpand = copyTemplateMeta?.skipExpandSceneBrief === true;
+          if (hasSceneAction && !skipExpand) {
             const expandContext = {
               product: body.product ?? "",
               productCategory: (body.businessProfile as any)?.category ?? "",
               tone: body.tone ?? "",
               copyZone: body.copyZone,
               personOnly: body.personOnly === true ? true : undefined,
-              backgroundPrompt: body.personOnly === true ? (body.backgroundStyleGuide as string | undefined) : undefined,
+              backgroundPrompt: (body.personOnly === true || copyTemplateMeta?.sceneWithProduct === true)
+                ? ((result as any)?.backgroundPrompt as string | undefined) ?? (body.backgroundStyleGuide as string | undefined)
+                : undefined,
               businessProfile: {
                 nombre: (body.businessProfile as any)?.nombre,
                 clienteIdeal: (body.businessProfile as any)?.clienteIdeal,
@@ -546,7 +629,19 @@ export async function POST(request: NextRequest) {
             : null;
 
           if (cachedUserTokens) await consumeTokensWithData(cachedUserTokens, tokensNeeded, operation);
-          return NextResponse.json({ success: true, data: { copy: result, promptUsed: `Schema: ${fullSchema.join(", ")}`, imageBriefLog } });
+
+          // Extract prompt metadata from copy result (non-enumerable properties attached by openai.ts)
+          const _r = copyResult as any;
+          const copyPromptUsed    = _r._promptUsed   ?? `Schema: ${fullSchema.join(", ")}`;
+          const copySystemPrompt  = _r._systemPrompt ?? null;
+          const copyUserPrompt    = _r._userPrompt   ?? null;
+
+          // Extract sceneAction — always generated (synthesis of sceneLibrary + defaultProductPrompt)
+          const generatedSceneAction: string | null = Array.isArray(result)
+            ? ((result[0] as any)?.sceneAction as string ?? null)
+            : ((result as any)?.sceneAction as string ?? null);
+
+          return NextResponse.json({ success: true, data: { copy: result, sceneAction: generatedSceneAction, sceneExample: sceneExample || null, promptUsed: copyPromptUsed, systemPrompt: copySystemPrompt, userPrompt: copyUserPrompt, imageBriefLog } });
         } catch (err) {
           const message = err instanceof Error ? err.message : "Unknown error";
           return NextResponse.json({ success: false, error: message }, { status: 500 });
@@ -580,6 +675,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // TODO: ELIMINAR PIPELINE_V2 — bebas-urgencia-top ya no usa pipelineV2: true (migrado a V1)
     // PIPELINE_V2: early return — full creative pipeline (brief → bg → scene) in one call
     if (contentType.includes("application/json")) {
       const clone = request.clone();
@@ -589,13 +685,42 @@ export async function POST(request: NextRequest) {
           const productName = body.productName ?? body.product ?? "";
           const productDescription = body.productDescription ?? "";
 
-          // Derive strategic core from product info
-          const strategicCore = await deriveStrategicCore(productName, productDescription);
-
-          // Override category with business profile category if available
-          if (body.businessProfile?.category) {
-            strategicCore.category = body.businessProfile.category;
-          }
+          // Derive strategic core with full brand + template context
+          const templateMeta = getTemplateMeta(body.templateId);
+          const strategicCore = await deriveStrategicCore(
+            productName,
+            productDescription,
+            {
+              businessProfile: body.businessProfile
+                ? {
+                    nombre:         body.businessProfile.nombre,
+                    rubro:          body.businessProfile.rubro,
+                    propuestaValor: body.businessProfile.propuestaValor,
+                    diferenciacion: body.businessProfile.diferenciacion,
+                    clienteIdeal:   body.businessProfile.clienteIdeal,
+                    dolores:        Array.isArray(body.businessProfile.dolores)     ? body.businessProfile.dolores     : undefined,
+                    motivaciones:   Array.isArray(body.businessProfile.motivaciones) ? body.businessProfile.motivaciones : undefined,
+                    tono:           body.businessProfile.tono,
+                    category:       body.businessProfile.category,
+                  }
+                : undefined,
+              template: templateMeta
+                ? {
+                    id:          templateMeta.id,
+                    name:        templateMeta.name,
+                    description: templateMeta.description,
+                    copyZone:    templateMeta.copyZone,
+                    templateHint: templateMeta.templateHint,
+                    copySchema:  templateMeta.copySchema,
+                    sceneFullBleed: templateMeta.sceneFullBleed,
+                    personOnly:  templateMeta.personOnly,
+                    personScene: templateMeta.personScene,
+                    pipelineV2:  templateMeta.pipelineV2,
+                    categoryBackgroundPrompts: templateMeta.categoryBackgroundPrompts,
+                  }
+                : undefined,
+            },
+          );
 
           const result = await composePipelineV2({
             templateId: body.templateId,
@@ -609,10 +734,10 @@ export async function POST(request: NextRequest) {
                   propuestaValor: body.businessProfile.propuestaValor,
                   diferenciacion: body.businessProfile.diferenciacion,
                   clienteIdeal: body.businessProfile.clienteIdeal,
-                  dolores: body.businessProfile.dolores,
-                  motivaciones: body.businessProfile.motivaciones,
+                   dolores: Array.isArray(body.businessProfile.dolores) ? body.businessProfile.dolores : undefined,
+                  motivaciones: Array.isArray(body.businessProfile.motivaciones) ? body.businessProfile.motivaciones : undefined,
                   tono: body.businessProfile.tono,
-                  coloresMarca: body.businessProfile.coloresMarca,
+                    coloresMarca: Array.isArray(body.businessProfile.coloresMarca) ? body.businessProfile.coloresMarca : undefined,
                 }
               : undefined,
             offer: body.offer,
@@ -632,6 +757,8 @@ export async function POST(request: NextRequest) {
               prompts: result.prompts,
               timing: result.timing,
               debugDir: result.debugDir,
+              briefDebug: result.briefDebug,
+              strategicCore,
             },
           });
         } catch (err) {
@@ -657,6 +784,7 @@ export async function POST(request: NextRequest) {
             creativePng: creative,
             productPng: product,
             copy: (body.copy as Record<string, unknown>) ?? {},
+            apiKeys: userGeminiKeys,
           });
           if (cachedUserTokens) await consumeTokensWithData(cachedUserTokens, tokensNeeded, operation);
           return NextResponse.json({ success: true, data: result });
@@ -682,12 +810,12 @@ export async function POST(request: NextRequest) {
     }
 
     if (contentType.includes("multipart/form-data")) {
-      const parsed = await parseMultipartRequest(request);
+      const parsed = await parseMultipartRequest(request, userGeminiKeys);
       composeRequest = parsed.request;
       generatedBackground = parsed.generatedBackground || false;
       debugInfo = parsed.debugInfo;
     } else if (contentType.includes("application/json")) {
-      const parsed = await parseJsonRequest(request);
+      const parsed = await parseJsonRequest(request, userGeminiKeys);
       composeRequest = parsed.request;
       generatedBackground = parsed.generatedBackground || false;
       debugInfo = parsed.debugInfo;
@@ -729,9 +857,11 @@ export async function POST(request: NextRequest) {
       throw zodError;
     }
 
+    // Inject user API keys into validated request
+    validated.apiKeys = userGeminiKeys;
+
     // Execute composition based on mode
     let result;
-   // Líneas 312-322 — agregar el else if de TEMPLATE_BETA
 if (validated.mode === "SMART_USAGE_V1") {
   result = await composeWithSmartUsage(validated);
 } else if (validated.mode === "PRESET") {
@@ -740,12 +870,12 @@ if (validated.mode === "SMART_USAGE_V1") {
   result = await composeWithAutoLayout(validated);
 } else if (validated.mode === "PRODUCT_IA") {
   result = await composeWithProductIA(validated) as any;
-} else if (validated.mode === "TEMPLATE_BETA") {                          // ← AGREGAR
-  result = await composeWithTemplateBeta(validated, {                     // ← AGREGAR
-    templateId: (composeRequest as any).templateBetaOptions?.templateId,  // ← AGREGAR
-    canvas: (composeRequest as any).templateBetaOptions?.canvas,          // ← AGREGAR
-    includeLayoutSpec: (composeRequest as any).templateBetaOptions?.includeLayoutSpec, // ← AGREGAR
-  });                                                                      // ← AGREGAR
+} else if (validated.mode === "TEMPLATE_BETA") {
+  result = await composeWithTemplateBeta(validated, {
+    templateId: (composeRequest as any).templateBetaOptions?.templateId,
+    canvas: (composeRequest as any).templateBetaOptions?.canvas,
+    includeLayoutSpec: (composeRequest as any).templateBetaOptions?.includeLayoutSpec,
+  });
 } else {
   result = await compose(validated);
 }
@@ -865,6 +995,8 @@ if (validated.mode === "SMART_USAGE_V1") {
       status = 415;
     } else if (message.includes("Insufficient")) {
       status = 402;
+    } else if (message.includes("RESOURCE_EXHAUSTED") || message.includes("429")) {
+      status = 429;
     }
 
     return NextResponse.json(

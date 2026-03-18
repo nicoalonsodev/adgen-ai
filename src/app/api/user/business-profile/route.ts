@@ -1,5 +1,6 @@
 import { auth } from '@/auth'
 import { supabaseAdmin } from '@/lib/supabase/server'
+import { encryptValue, decryptValue, maskKey } from '@/lib/crypto'
 
 export async function GET() {
   const session = await auth()
@@ -15,7 +16,30 @@ export async function GET() {
     return Response.json({ error: error.message }, { status: 500 })
   }
 
-  return Response.json({ data: data ?? null })
+  if (!data) return Response.json({ data: null })
+
+  const { gemini_keys_encrypted, ...rest } = data
+
+  let geminiFields: {
+    has_gemini_keys: boolean
+    gemini_key1_masked?: string
+    gemini_key2_masked?: string
+  } = { has_gemini_keys: false }
+
+  if (gemini_keys_encrypted) {
+    try {
+      const parsed = JSON.parse(decryptValue(gemini_keys_encrypted)) as { key1?: string; key2?: string }
+      geminiFields = {
+        has_gemini_keys: true,
+        ...(parsed.key1 ? { gemini_key1_masked: maskKey(parsed.key1) } : {}),
+        ...(parsed.key2 ? { gemini_key2_masked: maskKey(parsed.key2) } : {}),
+      }
+    } catch {
+      geminiFields = { has_gemini_keys: false }
+    }
+  }
+
+  return Response.json({ data: { ...rest, ...geminiFields } })
 }
 
 export async function POST(request: Request) {
@@ -23,6 +47,47 @@ export async function POST(request: Request) {
   if (!session?.user?.id) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
+
+  const isRealKey = (v: unknown): v is string =>
+    typeof v === 'string' && v.length > 10 && !v.startsWith('...')
+
+  const newKey1 = isRealKey(body.geminiKey1) ? body.geminiKey1 : null
+  const newKey2 = isRealKey(body.geminiKey2) ? body.geminiKey2 : null
+  const savingKeys = newKey1 !== null || newKey2 !== null
+
+  let geminiKeyFields: { gemini_keys_encrypted?: string; gemini_key_index?: number } = {}
+
+  if (savingKeys) {
+    // Fetch existing encrypted keys to merge
+    const { data: existing } = await supabaseAdmin
+      .from('user_business_profiles')
+      .select('gemini_keys_encrypted')
+      .eq('user_id', session.user.id)
+      .single()
+
+    let existingKey1: string | undefined
+    let existingKey2: string | undefined
+
+    if (existing?.gemini_keys_encrypted) {
+      try {
+        const parsed = JSON.parse(decryptValue(existing.gemini_keys_encrypted)) as { key1?: string; key2?: string }
+        existingKey1 = parsed.key1
+        existingKey2 = parsed.key2
+      } catch {
+        // Ignore — treat as no existing keys
+      }
+    }
+
+    const merged: { key1?: string; key2?: string } = {
+      ...(newKey1 ?? existingKey1 ? { key1: newKey1 ?? existingKey1 } : {}),
+      ...(newKey2 ?? existingKey2 ? { key2: newKey2 ?? existingKey2 } : {}),
+    }
+
+    geminiKeyFields = {
+      gemini_keys_encrypted: encryptValue(JSON.stringify(merged)),
+      gemini_key_index: 0,
+    }
+  }
 
   const payload = {
     user_id: session.user.id,
@@ -53,6 +118,7 @@ export async function POST(request: Request) {
         : undefined,
     },
     updated_at: new Date().toISOString(),
+    ...geminiKeyFields,
   }
 
   const { data, error } = await supabaseAdmin

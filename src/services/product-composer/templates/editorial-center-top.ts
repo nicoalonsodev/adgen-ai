@@ -44,6 +44,10 @@ export function buildEditorialCenterTopLayout(
 ): LayoutSpec {
   const { width: CW, height: CH } = canvas;
 
+  // textSide drives layout: "top" (default) → text top / person bottom
+  //                         "bottom"        → text bottom / person top
+  const BOTTOM_MODE = (copy as Record<string, unknown>).textSide === "bottom";
+
   // ── Headline: always exactly 2 lines, text-balanced ─────────────────────
   const headlineWords = (copy.headline ?? "").trim().split(/\s+/).filter(Boolean).length;
   const HEADLINE_FONT = Math.round(
@@ -52,7 +56,7 @@ export function buildEditorialCenterTopLayout(
   const balancedHeadline = balanceBreak(copy.headline ?? "");
   const HEADLINE_W = Math.round(CW * 0.88);
   const HEADLINE_X = Math.round((CW - HEADLINE_W) / 2);
-  const HEADLINE_Y = Math.round(CH * 0.14);
+  const HEADLINE_Y = Math.round(CH * (BOTTOM_MODE ? 0.585 : 0.14));
   const HEADLINE_H = Math.ceil(HEADLINE_FONT * 1.1 * 2) + 12; // fixed 2 lines
 
   // ── Subheadline: centered, dynamically below headline ────────────────────
@@ -62,22 +66,25 @@ export function buildEditorialCenterTopLayout(
   const SUB_X    = Math.round((CW - SUB_W) / 2);
   const SUB_Y    = Math.min(
     Math.round(HEADLINE_Y + HEADLINE_H + CW * 0.018),
-    Math.round(CH * 0.40),
+    Math.round(CH * (BOTTOM_MODE ? 0.88 : 0.40)),
   );
   const SUB_H = Math.ceil(SUB_FONT * 1.4 * 2) + 8;
 
   // ── Badge: small overline / tagline above the headline ───────────────────
+  // In bottom mode it sits just above the headline inside the text zone.
   const BADGE_FONT = Math.round(CW * 0.016);
   const BADGE_W    = Math.round(CW * 0.50);
   const BADGE_X    = Math.round((CW - BADGE_W) / 2);
-  const BADGE_Y    = Math.round(CH * 0.035);
+  const BADGE_Y    = Math.round(CH * (BOTTOM_MODE ? 0.52 : 0.035));
   const BADGE_H    = Math.ceil(BADGE_FONT + 12) + 4;
 
-  // ── CTA: pill button at the very bottom, overlaid on the person ──────────
+  // ── CTA: pill button overlaid on the PERSON zone (always)
+  // top mode: person is bottom half → CTA at 87.5%
+  // bottom mode: person is top half → CTA at 12.5%
   const CTA_FONT     = Math.round(CW * 0.022);
   const CTA_W        = Math.round(CW * 0.55);
   const CTA_X        = Math.round((CW - CTA_W) / 2);
-  const CTA_Y        = Math.round(CH * 0.875);
+  const CTA_Y        = Math.round(CH * (BOTTOM_MODE ? 0.125 : 0.875));
   const CTA_H        = CTA_FONT + 40; // height includes pill padding
   const ctaContent   = (copy as Record<string, unknown>).cta as string | undefined;
   const ctaPillColor = (copy as Record<string, unknown>).primaryColor as string | undefined ?? "#1A1A1A";

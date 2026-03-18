@@ -35,41 +35,94 @@ You produce a JSON object with these fields:
 ## SCENE PATTERNS BY VERTICAL
 
 ### Belleza / Cosmética / Estética
-- **Settings:** dark vanity, bathroom mirror edge, soft-lit dressing table
-- **Person:** woman 25-40, natural skin, minimal makeup, vulnerable yet elegant
-- **Pose archetypes:** chin on clasped hands, touching face with concern, looking at reflection
-- **Light:** warm side light (amber/golden), single source, dramatic shadows
-- **Mood:** quiet frustration, unspoken insecurity, desire for change
+- **Settings:** dark vanity, bathroom mirror edge, soft-lit dressing table, dark marble counter with a single warm candle out of frame
+- **Person:** woman 25-40, natural skin, minimal makeup, vulnerable yet elegant; or woman early 30s sitting before a dark mirror, chin resting on one hand
+- **Pose archetypes:** chin on clasped hands, touching face with concern, looking at reflection, fingers gently tracing under-eye area, back of hand pressed to cheek with downcast eyes
+- **Light:** warm side light (amber/golden), single source, dramatic shadows; OR soft tungsten from upper-left, Rembrandt triangle on cheek
+- **Mood:** quiet frustration, unspoken insecurity, desire for change, resigned weariness
 - **Props:** NONE in frame (product not shown in urgency templates)
 
 ### Fitness / Deporte
-- **Settings:** dark gym corner, bench, mat area, concrete wall
-- **Person:** athletic man/woman 25-40, workout clothes, visible effort
-- **Pose archetypes:** seated on bench head bowed, hands on knees catching breath, staring at floor
-- **Light:** single overhead spotlight or side rim light, pools of light on dark floor
-- **Mood:** raw determination, hitting a wall, fatigue-driven frustration
+- **Settings:** dark gym corner, heavy bench, mat area, concrete or rubber flooring, brick wall with single spotlight; OR dark running path at dusk with moody ambient glow
+- **Person:** athletic man/woman 25-40, workout clothes (dark tones), visible effort and fatigue; OR runner in dark activewear, paused mid-stride
+- **Pose archetypes:** seated on bench head bowed, hands on knees catching breath, staring at floor, elbows on thighs hands clasped, standing against dark wall arms crossed
+- **Light:** single overhead spotlight creating pools of light on dark floor; OR split side rim light from behind; OR cold fluorescent strip barely visible
+- **Mood:** raw determination, hitting a wall, fatigue-driven frustration, plateauing effort
 - **Props:** NONE visible (no weights, no equipment — pure emotion)
 
-### Servicios Profesionales / Educación / Tecnología
-- **Settings:** dark minimal office, single desk lamp glow, near-black walls
-- **Person:** professional 28-45, business casual, relatable
-- **Pose archetypes:** hand on forehead, eyes closed at desk, staring at dark screen reflection
-- **Light:** single warm desk lamp from side, long shadows, matte textures
-- **Mood:** overwhelm, information fatigue, stagnation
+### Servicios Profesionales
+- **Settings:** dark minimal office, single desk lamp glow, near-black walls, glass conference room at night barely lit
+- **Person:** professional 28-45, business casual or smart attire, relatable middle-management figure
+- **Pose archetypes:** hand on forehead eyes closed at desk, staring at dark screen reflection, arms crossed leaning back in chair with resigned look, chin resting on clasped hands staring downward
+- **Light:** single warm desk lamp from side, long dramatic shadows, matte textures; OR cold blue monitor spill with warm lamp counterbalancing
+- **Mood:** overwhelm, information fatigue, stagnation, quiet desperation
+
+### Tecnología
+- **Settings:** dark home office with subtle monitor glow, minimalist desk with single lamp, co-working space at night with ambient LED undertones, dark room with laptop screen as only light source
+- **Person:** professional 25-42, casual-formal attire (dark hoodie or fitted shirt), focused or frustrated expression; OR developer-type, late-night energy
+- **Pose archetypes:** leaning forward elbows on desk hands on temples, hand on chin staring into mid-distance, pressing palms to eyes exhausted, slow exhale head slightly bowed
+- **Light:** cool blue-white monitor spill + warm desk lamp counterpoint, or single soft blue-tinted source from the side casting elegant shadows; split lighting giving technical-meets-human feel
+- **Mood:** digital overwhelm, late-night grind, focused frustration, feature fatigue
+
+### Educación
+- **Settings:** dark study corner, single desk lamp on open books, wood-grain surface barely lit, empty lecture hall at night with row lighting
+- **Person:** student or adult learner 22-38, casual clothes, authentic overwhelm — not glamorized
+- **Pose archetypes:** both hands covering face leaning over desk, head resting on folded arms face down, staring at open pages with blank expression, fingers rubbing temples
+- **Light:** single warm incandescent lamp from above-left, deep shadows, warm-cool contrast with ambient dark
+- **Mood:** cognitive overload, self-doubt, motivation gap, before-the-breakthrough exhaustion
 
 ### Salud / Bienestar
-- **Settings:** dark spa-like interior, deep charcoal stone, ambient warm glow
-- **Person:** woman/man 30-50, comfortable clothing, vulnerable posture
-- **Pose archetypes:** sitting with arms wrapped around self, looking down, gentle exhaustion
-- **Light:** warm amber candlelight edge, barely illuminating, soft and moody
-- **Mood:** quiet exhaustion, self-neglect awareness, seeking relief
+- **Settings:** dark spa-like interior, deep charcoal stone or concrete walls, ambient warm glow; OR dark bedroom corner with single warm lamp; OR empty bathroom with warm amber light
+- **Person:** woman/man 30-50, comfortable home clothes or soft loungewear, vulnerable posture and authentic tiredness
+- **Pose archetypes:** sitting with arms wrapped around self looking down, hands cradling face, seated on edge of bed head bowed, fingers slowly massaging temple
+- **Light:** warm amber candle-like edge light barely illuminating; OR soft window glow at dusk; deeper shadows than other verticals
+- **Mood:** quiet exhaustion, self-neglect awareness, seeking relief, body-mind disconnect
 
 ### Alimentación / Gastronomía
-- **Settings:** dark kitchen counter, matte black surfaces, single overhead pendant
-- **Person:** person 25-45, casual home clothes, relatable domestic moment
-- **Pose archetypes:** leaning on counter, staring into empty space, opening fridge with sigh
-- **Light:** single warm pendant from above, creating a pool of light, rest is shadow
-- **Mood:** daily routine exhaustion, uninspired eating, craving something better
+- **Settings:** dark kitchen counter, matte black or charcoal surfaces, single overhead pendant; OR dark dining table with single candle glow; OR empty kitchen at night refrigerator light barely lit
+- **Person:** person 25-45, casual home clothes (soft tones), relatable domestic moment — not a chef aesthetic
+- **Pose archetypes:** leaning on counter staring into empty space, elbows on counter chin in hands looking down, hand on open fridge door staring blankly, sitting at bare kitchen table hands flat
+- **Light:** single warm pendant from above creating a pool of light, rest is deep shadow; OR cold refrigerator light from off-frame
+- **Mood:** daily routine exhaustion, uninspired eating, craving something better, nutritional monotony
+
+### Hogar
+- **Settings:** dark living room with a single lamp on a side table, empty hallway at dusk, dim bedroom corner, dark entryway barely lit from street light through a window
+- **Person:** person 28-50, everyday home attire (comfortable, real — not styled), relatable domestic frustration
+- **Pose archetypes:** leaning against doorframe arms loosely crossed, sitting on couch with head tilted back eyes closed, hand on hip surveying a dim room, seated on floor back against wall
+- **Light:** single warm floor or table lamp, long shadows falling across walls; OR cool sunset light through blinds creating horizontal stripe patterns
+- **Mood:** domestic stagnation, invisible effort, quiet overwhelm at home, yearning for order
+
+### Moda / Indumentaria
+- **Settings:** dark fitting room with mirror, dark walk-in closet with single spotlight, minimalist dark room with garment rack behind
+- **Person:** woman or man 22-40, wearing plain dark base clothing (not the product), self-critical posture; authentic self-reflective moment
+- **Pose archetypes:** standing before mirror hands at sides with critical downward gaze, pulling at fabric with dissatisfied expression, arms loosely crossed front-on to camera, fingers brushing collar while looking away
+- **Light:** dramatic single overhead fitting-room spotlight; OR warm tungsten from above-left, heavy shadows on one side of body
+- **Mood:** self-dissatisfaction, not-feeling-it frustration, invisible in your own clothes
+
+### Mascotas
+- **Settings:** dark home floor with soft warm ambient, dark vet waiting room, dark living room carpet barely lit
+- **Person:** pet owner 25-45, casual dress, emotional frustration or helpless concern (pet NOT in frame — emotion only)
+- **Pose archetypes:** sitting cross-legged on floor head bowed, kneeling forward elbows on floor hands clasped, standing looking down with worried expression, chin resting on knees arms wrapped around legs
+- **Light:** single warm lamp from low angle, creating very soft bottom-lit atmosphere; intimate and quiet
+- **Mood:** helpless concern, guilt, exhausted care, wanting to do more
+
+---
+
+## VARIANT SEQUENCE PATTERNS
+
+When generating multiple variants for the same product, create coherent emotional progressions:
+
+| Variant | Emotional Stage | Visual Approach |
+|---------|----------------|----------------|
+| **0 (default)** | "The pain point" | Person experiencing the frustration or discomfort at its peak. Environment suggests daily life. Direct, unflinching. |
+| **1** | "The turning point" | Same emotional register, different visual angle. A moment of decision or realization — body language slightly more open, different lighting direction. Still honest, not hopeful yet. |
+| **2** | "The aspiration edge" | Person at the very beginning of hope — not transformed, but a subtle shift. Warmer color temperature, slight opening of posture. Still dark, still cinematic, but a quiet light. |
+
+**Additional rules for variants:**
+- Each variant should change at LEAST the person's pose, lighting angle, and one environmental detail.
+- Do NOT repeat the same face orientation (all facing left, all facing camera, etc.) across variants.
+- Lighting direction must shift by at least 30–45° between variants.
+- Variant 2+ may introduce a subtle environmental prop that reads as a symbol (empty glass, closed book, dim phone screen) — still minimal.
 
 ---
 

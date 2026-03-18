@@ -41,22 +41,28 @@ export interface GeminiPrompts {
 function buildBackgroundPrompt(brief: CreativeBrief, templateId: string): string {
   const meta = getTemplateMeta(templateId);
 
-  // If the template has a raw background prompt and it's very specific,
-  // use the brief's background_prompt which already incorporates the template's context
   const basePrompt = brief.background_prompt;
+
+  const negativeConstraints = [
+    "Absolutely no text, watermarks, logos, or UI elements.",
+    "No split-screen or collage compositions.",
+    "No people, no body parts, no products.",
+    "Single continuous environment, edge-to-edge.",
+  ].join(" ");
 
   return [
     `Generate an image: ${basePrompt}`,
     "",
     "REQUIREMENTS:",
-    "- Photorealistic, cinematic quality, editorial photography aesthetic.",
+    "- Photorealistic, cinematic quality. Editorial photography aesthetic, Hasselblad-like rendering.",
     `- Color palette: ${brief.color_palette}`,
     `- Lighting: ${brief.lighting}`,
-    "- No people, no products, no text, no logos, no watermarks.",
+    `- ${negativeConstraints}`,
     "- Dark tonal range — mean luminance 25-40%.",
+    "- 8K detail level, sharp environmental focus, professional color grading.",
     `- ${brief.safe_zone_note}`,
     meta?.sceneFullBleed
-      ? "- Full-bleed composition — the scene must cover the entire canvas edge to edge."
+      ? "- Full-bleed composition — the scene must cover the entire canvas edge to edge, no vignetting or borders."
       : "",
   ]
     .filter(Boolean)
@@ -80,16 +86,20 @@ function buildPersonPrompt(brief: CreativeBrief, templateId: string): string {
     personBase,
     "",
     `LIGHTING ON PERSON: ${brief.lighting}`,
+    "  Match the exact light color temperature and direction of the background.",
+    "  The person must look physically integrated into the existing scene — not composited.",
     `MOOD/EXPRESSION: ${brief.mood}`,
     `CAMERA: ${brief.camera}`,
     "",
     "CRITICAL RULES:",
     ABSOLUTE_RULES_ANATOMY,
+    "  No extra fingers. No merged or fused limbs. No floating hands.",
     ABSOLUTE_RULES_BACKGROUND,
     "",
     "COMPOSITION:",
     "- Person fills 60-80% of frame height.",
     "- Face must be visible and expressive — emotion readable at mobile scroll speed.",
+    "- No props, no text, no logos in the generated image.",
     `- ${brief.safe_zone_note}`,
   ];
 
@@ -109,7 +119,7 @@ function buildPersonPrompt(brief: CreativeBrief, templateId: string): string {
       "The background has ALREADY been generated. Do NOT add, describe, or modify any environment.",
       "Focus EXCLUSIVELY on the person: appearance, clothing, pose, expression, body language.",
       "The person must look like they BELONG in the existing dark cinematic background.",
-      "Match lighting direction and color temperature to the background.",
+      "Precisely match the background's lighting direction, color temperature, and shadow quality.",
     );
   }
 

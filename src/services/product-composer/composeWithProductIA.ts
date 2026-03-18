@@ -3,128 +3,7 @@ import { renderTextOnImage } from "./textRenderer";
 import type { ComposeRequest } from "./types";
 import type { LayoutSpec } from "./layoutSpec";
 import { nanoBananaInjectProduct, generateScene, generateGenericProduct, generateSceneWithAvatarAndProduct, detectProductBoundingBox } from "@/lib/ai/gemini";
-import { ABSOLUTE_RULES_SCENE, ABSOLUTE_RULES_PRODUCT_INJECT, ABSOLUTE_RULES_ANATOMY } from "@/lib/ai/promptRules";
-
-// ─── Zone placement helpers ──────────────────────────────────────────────────
-
-function buildZonePlacement(
-  copyZone: "left" | "right" | "top" | "bottom" | "center",
-  mode: "scene" | "product" | "avatar",
-  opts?: { fullBleed?: boolean },
-): string {
-  if (mode === "scene") {
-    // Full-bleed: person covers the entire canvas, but avoids blocking headline/logo areas with face/body center
-    if (opts?.fullBleed) {
-      const avoidZone = copyZone === "top"
-        ? `- The person FILLS THE ENTIRE CANVAS — full-bleed, edge-to-edge, cinematic framing.
-- IMPORTANT: the TOP 25% of the image will have a text headline overlay. The person's FACE and upper chest should NOT be centered in that top 25% — position the face in the center or lower-center of the canvas so the headline reads clearly over the person's shoulders, hair, or negative space.
-- The person's body, arms, and silhouette MAY extend into the top area — only the FACE should avoid being directly behind the headline text.
-- Logo will be rendered at the top-left corner — avoid placing the person's face directly behind that small area.`
-        : copyZone === "bottom"
-        ? `- The person FILLS THE ENTIRE CANVAS — full-bleed, edge-to-edge, cinematic framing.
-- IMPORTANT: the BOTTOM 25% of the image will have a text overlay. Position the person's FACE in the upper-center of the canvas so text reads clearly over legs, torso, or negative space.
-- The person's body MAY extend into the bottom area — only the FACE should avoid being directly behind the text.`
-        : copyZone === "left"
-        ? `- The person FILLS THE ENTIRE CANVAS — full-bleed, edge-to-edge, cinematic framing.
-- IMPORTANT: the LEFT 45% will have a text overlay. Position the person's FACE in the right-center of the canvas so text reads clearly.
-- The person's body MAY extend into the left area — only the FACE should avoid being directly behind the text.`
-        : copyZone === "right"
-        ? `- The person FILLS THE ENTIRE CANVAS — full-bleed, edge-to-edge, cinematic framing.
-- IMPORTANT: the RIGHT 45% will have a text overlay. Position the person's FACE in the left-center of the canvas so text reads clearly.
-- The person's body MAY extend into the right area — only the FACE should avoid being directly behind the text.`
-        : `- The person FILLS THE ENTIRE CANVAS — full-bleed, edge-to-edge, cinematic framing.
-- Keep the person large and prominent, centered. Avoid placing the face directly behind any existing text or graphic elements.`;
-      return avoidZone;
-    }
-
-    switch (copyZone) {
-      case "right":
-        return `PLACEMENT ZONE — hard constraint:
-- The person must be positioned ENTIRELY within the LEFT 42% of the image (left edge to 42% width).
-- A clear gap of at least 8% must exist between the right edge of the person and the center line.
-- The RIGHT 58% of the image must remain COMPLETELY UNCHANGED — no person, no arm, no hair, no shadow, no alteration of any kind.`;
-      case "top":
-        return `PLACEMENT ZONE — hard constraint:
-- The person must be positioned STRICTLY in the BOTTOM 45% of the image ONLY (below 55% vertical).
-- The person's head (top of hair) must NOT go above the 55% vertical line of the image.
-- The person MUST be CENTERED HORIZONTALLY.
-- The TOP 55% of the image MUST remain COMPLETELY UNTOUCHED — all existing text and decorations preserved pixel-perfect.`;
-      case "bottom":
-        return `PLACEMENT ZONE — hard constraint:
-- The person must be positioned ENTIRELY within the TOP 42% of the image.
-- The BOTTOM 58% must remain exactly as the background — no person, no shadow extending there.`;
-      case "center":
-        return `PLACEMENT ZONE — guidance:
-- The person can be placed centrally, but should be large and prominent.
-- Keep the overall composition balanced. Avoid covering any existing text or graphic elements.`;
-      case "left":
-      default:
-        return `PLACEMENT ZONE — hard constraint:
-- The person must be positioned ENTIRELY within the RIGHT 42% of the image (from 58% to 100% width).
-- A clear gap of at least 8% must exist between the left edge of the person and the center line.
-- The LEFT 58% of the image must remain COMPLETELY UNCHANGED — no person, no arm, no hair, no shadow, no alteration of any kind.`;
-    }
-  }
-
-  if (mode === "avatar") {
-    switch (copyZone) {
-      case "top":
-        return `PLACEMENT ZONE — hard constraint:
-- The person must be positioned ENTIRELY within the BOTTOM 42% of the canvas (below 58% vertical).
-- The person's head must NOT go above 58% from the top.
-- The person fills the full horizontal width of the bottom zone.
-- The TOP 58% must remain COMPLETELY UNCHANGED — no person, no arm, no shadow, no alteration.`;
-      case "bottom":
-        return `PLACEMENT ZONE — hard constraint:
-- The person must be positioned ENTIRELY within the TOP 42% of the canvas.
-- The BOTTOM 58% must remain exactly as the background — completely clean, no person, no shadows.`;
-      case "right":
-        return `PLACEMENT ZONE — hard constraint:
-- The person must be positioned ENTIRELY within the LEFT 42% of the canvas (left edge to 42% width).
-- The RIGHT 58% must remain exactly as the background — completely clean, no person, no arm, no shadow.`;
-      case "left":
-      default:
-        return `PLACEMENT ZONE — hard constraint:
-- The person must be positioned ENTIRELY within the RIGHT 42% of the canvas (from 58% to 100% width).
-- The LEFT 58% must remain exactly as the background — completely clean, no person, no arm, no shadow.`;
-    }
-  }
-
-  // mode === "product"
-  const zonePercent =
-    copyZone === "right"  ? "LEFT 42%"   :
-    copyZone === "top"    ? "BOTTOM 45%" :
-    copyZone === "bottom" ? "TOP 42%"    :
-                            "RIGHT 42%";
-
-  const zoneCleanSide =
-    copyZone === "right"
-      ? "RIGHT 58% must be COMPLETELY CLEAN — no person, no arm, no hair, no shadow"
-      : copyZone === "top"
-      ? "TOP 55% must be COMPLETELY CLEAN — no person, no arm, no shadow entering from above"
-      : copyZone === "bottom"
-      ? "BOTTOM 58% must be COMPLETELY CLEAN — no person, no arm, no shadow"
-      : "LEFT 58% must be COMPLETELY CLEAN — no person, no arm, no hair, no shadow";
-
-  const zoneBodyPosition =
-    copyZone === "right"
-      ? "centered horizontally within the left 30–40% of the canvas"
-      : copyZone === "top"
-      ? "centered horizontally in the lower canvas, body starting at or below 58% from top"
-      : copyZone === "bottom"
-      ? "centered horizontally in the upper canvas, entire body within top 40%"
-      : "centered horizontally within the right 60–95% of the canvas";
-
-  return `================================================================================
-PRIMARY RULE — ZONE CONSTRAINT — ENFORCED ABOVE ALL ELSE
-================================================================================
-The person and product must occupy ONLY the ${zonePercent} of the canvas.
-The ${zoneCleanSide} — absolutely no body part, arm, hair, clothing, or shadow may cross this boundary.
-Body center: ${zoneBodyPosition}.
-Leave a minimum 6% safety gap between any body part and the zone boundary.
-THIS OVERRIDES the creative brief if there is any conflict.
-================================================================================`;
-}
+import { ABSOLUTE_RULES_SCENE, ABSOLUTE_RULES_PRODUCT_INJECT, ABSOLUTE_RULES_ANATOMY, buildZonePlacement } from "@/lib/ai/promptRules";
 
 function buildScenePrompt(sceneAction: string, copyZone: string, hasRealProduct = false, opts?: { fullBleed?: boolean }): string {
   const zone = copyZone as "left" | "right" | "top" | "bottom" | "center";
@@ -133,10 +12,10 @@ function buildScenePrompt(sceneAction: string, copyZone: string, hasRealProduct 
     ? `- You are also provided the product image as Image 2. IF the scene description implies a product, use ONLY the EXACT product shown in Image 2 — never invent, substitute, or hallucinate a different product. If the scene does not require a product, the person's hands must be empty.`
     : `- DO NOT add any product, bottle, jar, tube, dropper, or package UNLESS the prompt explicitly asks for it.`;
 
-  const holdingRule = zone === "top"
-    ? `- The person CAN hold a small beauty/wellness product naturally in their hands — this is intentional and expected.`
-    : hasRealProduct
-      ? `- If the scene implies a product in use, the person may hold or interact with it naturally — but ONLY the product from Image 2.`
+  const holdingRule = hasRealProduct
+    ? `- If the scene implies a product in use, the person may hold or interact with it naturally — but ONLY the product from Image 2.`
+    : zone === "top" || zone === "bottom"
+      ? `- The person CAN hold a small beauty/wellness product naturally in their hands — this is intentional and expected.`
       : `- DO NOT show anything being held. The person's hands must be empty or in a natural resting pose.`;
 
   const fullBleedContext = opts?.fullBleed
@@ -303,7 +182,7 @@ const bgMeta = await sharp(req.backgroundBuffer).metadata();
 const targetW = req.productIAOptions?.forceSize?.width ?? bgMeta.width ?? 1080;
 const targetH = req.productIAOptions?.forceSize?.height ?? bgMeta.height ?? 1080;
 
-let bg = req.backgroundBuffer;  // ← esta línea falta
+let bg = req.backgroundBuffer;
 
 if (bgMeta.width !== targetW || bgMeta.height !== targetH) {
   bg = await sharp(req.backgroundBuffer)
@@ -327,7 +206,7 @@ const aspectRatio = `${targetW / divisor}:${targetH / divisor}`;
     // looks more natural / photo-realistic when held by the person.
     let productForScene = req.productBuffer;
     if (req.productIAOptions?.useGenericProductClone) {
-      productForScene = await generateGenericProduct({ productPng: req.productBuffer });
+      productForScene = await generateGenericProduct({ productPng: req.productBuffer, apiKeys: req.apiKeys });
     }
 
     const avatarWithProductPrompt = buildAvatarWithProductPrompt(
@@ -342,9 +221,13 @@ const aspectRatio = `${targetW / divisor}:${targetH / divisor}`;
       avatarPng,
       prompt: avatarWithProductPrompt,
       aspectRatio,
+      apiKeys: req.apiKeys,
     });
 
     const sceneMeta = await sharp(scene).metadata();
+    if (sceneMeta.width !== targetW || sceneMeta.height !== targetH) {
+      console.log(`[normalizedScene] ${sceneMeta.width}×${sceneMeta.height} → ${targetW}×${targetH} (fit:cover)`);
+    }
     const normalizedScene = (sceneMeta.width !== targetW || sceneMeta.height !== targetH)
       ? await sharp(scene).resize(targetW, targetH, { fit: "cover" }).png().toBuffer()
       : scene;
@@ -356,7 +239,7 @@ const aspectRatio = `${targetW / divisor}:${targetH / divisor}`;
     let finalScene = normalizedScene;
     if (req.productIAOptions?.useGenericProductClone) {
       try {
-        const bbox = await detectProductBoundingBox({ scenePng: normalizedScene, productPng: req.productBuffer });
+        const bbox = await detectProductBoundingBox({ scenePng: normalizedScene, productPng: req.productBuffer, apiKeys: req.apiKeys });
         if (bbox) {
           const left = Math.round(bbox.x * targetW);
           const top = Math.round(bbox.y * targetH);
@@ -404,9 +287,13 @@ const aspectRatio = `${targetW / divisor}:${targetH / divisor}`;
       productPng: avatarPng,
       prompt: avatarPrompt,
       aspectRatio,
+      apiKeys: req.apiKeys,
     });
 
     const sceneMeta = await sharp(scene).metadata();
+    if (sceneMeta.width !== targetW || sceneMeta.height !== targetH) {
+      console.log(`[normalizedScene] ${sceneMeta.width}×${sceneMeta.height} → ${targetW}×${targetH} (fit:cover)`);
+    }
     const normalizedScene = (sceneMeta.width !== targetW || sceneMeta.height !== targetH)
       ? await sharp(scene).resize(targetW, targetH, { fit: "cover" }).png().toBuffer()
       : scene;
@@ -421,7 +308,7 @@ const aspectRatio = `${targetW / divisor}:${targetH / divisor}`;
 
   // 2a-split) Pure Sharp compositing — no Gemini, no hands ever
   if (req.productIAOptions?.splitComparison === true) {
-    const composed = await composeSplitComparison(bg, req.productBuffer, targetW, targetH);
+    const composed = await composeSplitComparison(bg, req.productBuffer, targetW, targetH, req.apiKeys);
     return {
       success: true,
       buffer: composed,
@@ -452,6 +339,7 @@ const aspectRatio = `${targetW / divisor}:${targetH / divisor}`;
         productPng: req.productBuffer,
         prompt: fullPromptUsed,
         aspectRatio,
+        apiKeys: req.apiKeys,
       });
     } else {
       // Sin producto: solo se envía el fondo y Gemini genera la escena con persona
@@ -460,10 +348,14 @@ const aspectRatio = `${targetW / divisor}:${targetH / divisor}`;
         backgroundPng: bg,
         prompt: fullPromptUsed,
         aspectRatio,
+        apiKeys: req.apiKeys,
       });
     }
 
     const sceneMeta = await sharp(scene).metadata();
+    if (sceneMeta.width !== targetW || sceneMeta.height !== targetH) {
+      console.log(`[normalizedScene] ${sceneMeta.width}×${sceneMeta.height} → ${targetW}×${targetH} (fit:cover)`);
+    }
     const normalizedScene = (sceneMeta.width !== targetW || sceneMeta.height !== targetH)
       ? await sharp(scene).resize(targetW, targetH, { fit: "cover" }).png().toBuffer()
       : scene;
@@ -491,11 +383,15 @@ const aspectRatio = `${targetW / divisor}:${targetH / divisor}`;
     backgroundPng: bg,
     productPng: req.productBuffer,
     prompt,
-     aspectRatio,
+    aspectRatio,
+    apiKeys: req.apiKeys,
   });
 
   // Forzar dimensiones al canvas original
 const sceneMeta = await sharp(scene).metadata();
+if (sceneMeta.width !== targetW || sceneMeta.height !== targetH) {
+  console.log(`[normalizedScene] ${sceneMeta.width}×${sceneMeta.height} → ${targetW}×${targetH} (fit:cover)`);
+}
 const normalizedScene = (sceneMeta.width !== targetW || sceneMeta.height !== targetH)
   ? await sharp(scene).resize(targetW, targetH, { fit: "cover" }).png().toBuffer()
   : scene;
@@ -820,6 +716,7 @@ async function composeSplitComparison(
   productBuffer: Buffer,
   targetW: number,
   targetH: number,
+  apiKeys?: string[],
 ): Promise<Buffer> {
   // ── Left product (original — YOUR product) ─────────────────────────────
   // Slightly larger bounding box so DermaLisse reads bigger than the generic
@@ -842,7 +739,7 @@ async function composeSplitComparison(
   // ── Right product (Gemini-generated generic version) ────────────────────
   // Ask Gemini to generate a similar product with NO text/logos, neutral gray.
   // It returns the product on a white background; we remove the white.
-  const genericRaw = await generateGenericProduct({ productPng: productBuffer });
+  const genericRaw = await generateGenericProduct({ productPng: productBuffer, apiKeys });
 
   // Generic is 75% of the branded size → DermaLisse reads ~33% bigger
   const rightMaxW = Math.round(leftMaxW * 0.75);
@@ -975,14 +872,12 @@ ${ABSOLUTE_RULES_PRODUCT_INJECT}`.trim();
   }
 
   // ── GENERIC FALLBACK: no user prompt — use zone-based rules ─────────────
-  const zoneRules =
-    args.copyZone === "right"
-      ? "- copyZone is RIGHT: product MUST stay within LEFT 42% of canvas, centered in that zone.\n  The right 58% must be COMPLETELY CLEAR — no product, no shadow, no alteration."
-      : args.copyZone === "left"
-      ? "- copyZone is LEFT: product MUST stay within RIGHT 42% of canvas, centered in that zone.\n  The left 58% must be COMPLETELY CLEAR — no product, no shadow, no alteration."
-      : args.copyZone === "bottom"
-      ? "- copyZone is BOTTOM: product MUST stay within TOP 42% of canvas.\n  The bottom 58% must be COMPLETELY CLEAR — no product, no shadow."
-      : "- copyZone is CENTER: product MUST stay within the center zone between 22% and 68% from top.\n  The top 22% and bottom 32% must be COMPLETELY CLEAR.";
+  // buildZonePlacement handles all 5 copyZone values correctly (including "top",
+  // which previously fell through to the "center" default — now fixed).
+  const zoneConstraint = buildZonePlacement(
+    args.copyZone as "left" | "right" | "top" | "bottom" | "center",
+    "product",
+  );
 
   return `You are an expert product photographer and digital compositor specializing in high-end commercial advertising. You will receive two images: a background scene and a product photo.
 
@@ -995,8 +890,7 @@ Before placing the product, carefully examine the background image and identify:
 STEP 2 — PLACE THE PRODUCT INTELLIGENTLY:
 Place the product naturally into the open space of the background, matching its lighting and perspective.
 
-ZONE CONSTRAINT:
-${zoneRules}
+${zoneConstraint}
 
 COMPOSITION GUIDELINES:
 - Place the product WELL INSIDE the available zone — leave at least 10% breathing room from any zone boundary.

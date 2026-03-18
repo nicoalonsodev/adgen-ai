@@ -9,6 +9,23 @@
  *   2. Agregar el buildLayout en index.ts (solo si es una plantilla nueva)
  */
 
+/**
+ * Declares how PRODUCT_IA should composite the product/scene for this template.
+ * Single source of truth — page.tsx reads this instead of re-deriving from flags.
+ *
+ * "product-inject"    → Flujo D: product/hand inserted via Gemini (rawProductPrompt usually set).
+ * "scene-only"        → Person without product. Uses sceneMode or useAvatarAsScene.
+ * "scene-with-product"→ Person holding product. Uses avatarSceneWithProduct flow (IA → BETA order).
+ * "split-comparison"  → Pure Sharp compositing. No Gemini needed.
+ * "none"              → No PRODUCT_IA step (noProductLayer templates — bg IS the scene).
+ */
+export type CompositionMode =
+  | "product-inject"
+  | "scene-only"
+  | "scene-with-product"
+  | "split-comparison"
+  | "none";
+
 export interface TemplateMetadata {
   id: string;
   name: string;
@@ -97,6 +114,21 @@ export interface TemplateMetadata {
    * no role wrapper or rules. Use when the template has a precise, self-contained prompt.
    */
   rawBackgroundPrompt?: boolean;
+  /**
+   * true = injects a random texture example from texture-library.md into copy generation
+   * as few-shot reference for the backgroundPrompt field. Only meaningful when
+   * "backgroundPrompt" is in copySchema and rawBackgroundPrompt is NOT set.
+   */
+  useTextureLibrary?: boolean;
+
+/**
+ * true = injects HYPER_REALISTIC_RULES block into the OpenAI prompt,
+ * adding photographic precision constraints for backgroundPrompt and sceneAction.
+ * Designed for templates where Gemini must output photo-real results.
+ * Only meaningful when backgroundPrompt or sceneAction are in copySchema.
+ */
+hyperRealisticPrompts?: boolean;
+
   /** Product/scene prompt sent to Gemini (fallback if OpenAI doesn't generate one) */
   defaultProductPrompt?: string;
   /**
@@ -131,6 +163,25 @@ export interface TemplateMetadata {
    * When false/undefined, the template uses the legacy V1 pipeline.
    */
   pipelineV2?: boolean;
+  /**
+   * true = OpenAI generates sceneAction as a full cinematic brief (80–100 words),
+   * ready to send directly to Gemini. expandSceneBrief() is skipped for this template.
+   * Set after validating that OpenAI output quality matches or exceeds the Kimi-expanded version.
+   * Templates still on false/undefined use expandSceneBrief() via OpenRouter/Kimi as before.
+   */
+  skipExpandSceneBrief?: boolean;
+  /**
+   * Declares the PRODUCT_IA compositing mode for this template.
+   * page.tsx reads this directly — no re-derivation needed from requiresSceneGeneration,
+   * sceneWithProduct, splitComparison, or noProductLayer.
+   */
+  compositionMode: CompositionMode;
+  /**
+   * Fixed layout side for templates where the text zone is determined by design.
+   * Used by buildProductIAOptions (to set copyZone) and buildLayout (BOTTOM_MODE, etc).
+   * Never in copySchema — OpenAI does not generate this field.
+   */
+  textSide?: "left" | "right" | "top" | "bottom";
 }
 
 export const TEMPLATE_META_LIST: TemplateMetadata[] = [
@@ -150,8 +201,8 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
       "subheadline",
       "badge",
       "bullets",
-      "backgroundColorHint",
     ],
+    compositionMode: "product-inject",
     requiresSceneGeneration: false,
     rawProductPrompt: true,
     personScene: false,
@@ -167,23 +218,21 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
     darkBackgroundPrompt:
       "Fondo minimalista con pared lisa de textura suave, tipo estudio fotográfico premium. Iluminación dramática lateral tenue desde ventana fuera de cuadro, sombras profundas y envolventes. Sin objetos, sin texto, sin personas, sin productos. Fondo muy oscuro — tonos carbón, negro cálido o azul medianoche — con profundidad sutil y sensación de lujo y sofisticación.",
     rawBackgroundPrompt: true,
-    defaultProductPrompt: `Edit the image adding a photorealistic human hand emerging from the LEFT or BOTTOM-LEFT edge, staying within the LEFT 45% of the canvas. The hand holds the product with a natural grip — fingers curled with realistic compression against the product surface. Render anatomically accurate skin with visible pores, knuckles, tendons and subtle veins. Apply subsurface scattering on fingertips. Lighting must match the scene exactly: same light direction, color temperature and intensity. Add natural contact shadows between hand and product. No compositing artifacts, halos or color fringing. The product must be fully visible, upright and legible.`,
+    defaultProductPrompt: `Edit the image adding a photorealistic human hand emerging from the LEFT or BOTTOM-LEFT edge, staying within the LEFT 39% of the canvas. The RIGHT 55% of the image MUST remain COMPLETELY UNTOUCHED. The hand holds the product with a natural grip — fingers curled with realistic compression against the product surface. Render anatomically accurate skin with visible pores, knuckles, tendons and subtle veins. Apply subsurface scattering on fingertips. Lighting must match the scene exactly: same light direction, color temperature and intensity. Add natural contact shadows between hand and product. No compositing artifacts, halos or color fringing. The product must be fully visible, upright and legible.`,
     templateHint: `TEMPLATE HINT for classic-editorial-right:
   This template has the product on the LEFT and copy on the RIGHT.
   - title: 3-5 keywords separated by " · ", max 50 chars.
     Use ingredients, attributes or brand values.
     Example: "Colágeno · Ácido Hialurónico · Vitamina C"
-  - headline: short emotional phrase, max 6 words, ends with period.
-    Must connect emotionally. Example: "La piel habla cuando la cuidás."
+  - headline: short emotional phrase, max 6 words, ends with period. Max 32 chars.
   - subheadline: 1-2 benefit sentences, max 120 chars, specific and direct.
   - badge: short offer in pill format, max 35 chars.
     Example: "60% OFF en la segunda unidad"
-  - bullets: array of 3 concrete benefits with relevant emoji, max 40 chars each.
-  - productPrompt: product held by a hand emerging from the LEFT or bottom-left,
-    leaving the right half completely clean for text.`,
+  - bullets: array of 3 concrete benefits with relevant emoji, max 40 chars each.`,
   },
   {
     id: "promo-urgencia-bottom",
+    compositionMode: "product-inject",
     name: "Promo Urgencia",
     icon: "⚡",
     tag: null,
@@ -220,6 +269,7 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
   },
   {
     id: "hero-center-bottom",
+    compositionMode: "product-inject",
     name: "Hero Center",
     icon: "🎯",
     tag: "Combo / Lanzamiento",
@@ -262,6 +312,7 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
   },
   {
     id: "headline-top-left",
+    compositionMode: "product-inject",
     name: "Headline Top",
     icon: "📰",
     tag: "Premium",
@@ -303,6 +354,7 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
   },
   {
     id: "pain-point-left",
+    compositionMode: "scene-only",
     name: "Punto de Dolor",
     icon: "😟",
     tag: "Awareness",
@@ -318,6 +370,7 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
       "backgroundColorHint",
       "sceneAction",
     ],
+    skipExpandSceneBrief: true,
     requiresSceneGeneration: true,
     supportsSequence: true,
     recommendedFor: [
@@ -366,6 +419,7 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
   },
   {
     id: "comparacion-split",
+    compositionMode: "split-comparison",
     name: "Comparación",
     icon: "⚖️",
     tag: "Vs Competencia",
@@ -431,6 +485,7 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
   },
   {
     id: "comparacion-split-ia",
+    compositionMode: "product-inject",
     name: "Comparación con Escena",
     icon: "⚖️",
     tag: "Vs Competencia + IA",
@@ -463,6 +518,7 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
   },
   {
     id: "sorteo-giveaway-center",
+    compositionMode: "none",
     name: "Sorteo / Giveaway",
     icon: "🎁",
     tag: "Giveaway",
@@ -536,6 +592,7 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
   },
   {
     id: "antes-despues",
+    compositionMode: "product-inject",
     name: "Antes vs Después",
     icon: "📅",
     tag: "Transformación",
@@ -603,6 +660,7 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
   },
   {
     id: "beneficios-producto",
+    compositionMode: "product-inject",
     name: "Beneficios Producto",
     icon: "✨",
     tag: "Beneficios",
@@ -666,6 +724,7 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
   },
   {
     id: "razones-producto",
+    compositionMode: "product-inject",
     name: "Razones Producto",
     icon: "🎯",
     tag: "Razones",
@@ -737,6 +796,7 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
   },
   {
     id: "editorial-lifestyle-left",
+    compositionMode: "scene-only",
     name: "Editorial Izquierda",
     icon: "📸",
     tag: "Editorial",
@@ -745,14 +805,14 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
       "Headline enorme a la izquierda, persona/escena lifestyle a la derecha generada por IA. Estilo editorial beauty premium. Sin producto.",
     supportedRatios: ["1:1"],
     copyZone: "left",
+    textSide: "left",
     copySchema: [
       "headline",
       "subheadline",
       "badge",
-      "backgroundColorHint",
       "sceneAction",
-      "textSide",
     ],
+    skipExpandSceneBrief: true,
     requiresSceneGeneration: true,
     supportsSequence: true,
     recommendedFor: [
@@ -767,7 +827,7 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
     defaultBackgroundPrompt:
       "Fondo completamente liso y muy claro. Iluminación natural suave y envolvente, tipo estudio editorial. Sin sombras duras, sin texturas llamativas. Sin objetos, sin texto, sin personas. Estilo fotografía editorial de revista de belleza, fondo claro y limpio.",
     defaultProductPrompt:
-      "Do NOT show any product. Generate a real person — close-up or medium shot — in a beauty/lifestyle moment on the RIGHT side of the image. Editorial beauty photography: glowing skin, natural makeup, confident expression. The LEFT 48% must remain completely clean for text. Soft natural lighting, cinematic quality. No logos, no text.",
+      "Do NOT show any product. Generate a real person — close-up or medium shot — in a beauty/lifestyle editorial moment. Glowing skin, natural makeup, confident expression. Soft natural lighting, cinematic quality. No logos, no text.",
     templateHint: `TEMPLATE HINT for editorial-lifestyle-left:
   This template is a PURE EDITORIAL layout — NO product. Inspired by "Every Skin Tells a Story" beauty ads.
   A person/scene fills one half; the text (headline + subheadline) fills the other half.
@@ -799,15 +859,13 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
   - badge: optional URL or brand tagline. Max 30 chars.
     Example: "www.mybrand.com"
 
-  - backgroundColorHint: light cream, white, soft neutral. Max 5 words.
-    Example: "crema claro casi blanco"
-
   - sceneAction: describe the person/scene. Be specific about pose, expression, lighting.
     The person fills the side OPPOSITE to textSide.
     Example: "Close-up of woman's face in profile, eyes closed, glowing skin, serene smile, soft warm light"`,
   },
   {
     id: "editorial-lifestyle-right",
+    compositionMode: "scene-only",
     name: "Editorial Derecha",
     icon: "📸",
     tag: "Editorial",
@@ -863,6 +921,7 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
   },
   {
     id: "editorial-lifestyle-bottom",
+    compositionMode: "scene-only",
     name: "Editorial Abajo",
     icon: "📸",
     tag: "Editorial",
@@ -920,6 +979,7 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
   },
   {
     id: "editorial-lifestyle-top",
+    compositionMode: "scene-only",
     name: "Editorial Arriba",
     icon: "📸",
     tag: "Editorial",
@@ -978,6 +1038,7 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
   },
   {
     id: "editorial-center-top",
+    compositionMode: "scene-with-product",
     name: "Editorial Centrado",
     icon: "📸",
     tag: "Editorial",
@@ -986,15 +1047,18 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
       "Headline y subheadline centrados en la parte superior, persona con producto ocupa el ancho completo inferior. Estilo editorial beauty premium.",
     supportedRatios: ["1:1"],
     copyZone: "top",
+    textSide: "top",
     copySchema: [
       "title",
       "headline",
       "subheadline",
       "badge",
+      "cta",
       "bullets",
-      "productPrompt",
+      "sceneAction",
       "backgroundColorHint",
     ],
+    skipExpandSceneBrief: true,
     requiresSceneGeneration: true,
     sceneWithProduct: true,
     personScene: true,
@@ -1011,7 +1075,7 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
     defaultBackgroundPrompt:
       "Fondo completamente liso y muy claro. Iluminación natural suave y envolvente, tipo estudio editorial. Sin sombras duras, sin texturas llamativas. Sin objetos, sin texto, sin personas. Estilo fotografía editorial de revista de belleza, fondo claro y limpio.",
     defaultProductPrompt:
-      "BOTTOM 40% OF CANVAS ONLY — no person or object may appear in the top 60%. Generate a real person in a warm lifestyle setting naturally holding or using this product. The person must span the FULL WIDTH of the canvas from the left edge to the right edge. Head at approximately 55–65% from the top of the canvas. Warm natural lighting, editorial quality, candid and genuine feel. Do not erase or modify any existing text or graphic elements already present in the image.",
+      "Generate a real person in a warm lifestyle setting naturally holding or using this product. The person must span the FULL WIDTH of the canvas. Warm natural lighting, editorial quality, candid and genuine feel. Do not erase or modify any existing text or graphic elements.",
     templateHint: `TEMPLATE HINT for editorial-center-top:
   This is an editorial lifestyle ad. The TOP 40% is a CLEAN LIGHT PANEL with centered headline + subheadline (dark text).
   The BOTTOM 60% shows a real person naturally using or holding THIS SPECIFIC PRODUCT, spanning the FULL canvas width.
@@ -1019,7 +1083,7 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
   - headline: bold centered claim about this product. Max 7 words, emotional.
     Examples: "La piel que siempre quisiste tener." / "Más energía. Menos esfuerzo."
 
-  - subheadline: 1 sentence with specific product benefit. Max 90 chars.
+  - subheadline: 1 sentence with specific product benefit. Max 51-53 chars.
     Example: "Fórmula con colágeno marino y ácido hialurónico para resultados reales."
 
   - badge: optional brand tagline or short offer. Max 30 chars.
@@ -1029,18 +1093,23 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
 
   - bullets: 3 short benefits with emoji, max 35 chars each.
 
-  - productPrompt: REQUIRED. English. Self-contained image generation prompt.
-    MANDATORY STRUCTURE:
-    1. "BOTTOM 40% OF CANVAS ONLY — no person or object may appear in the top 60%."
-    2. 1-2 real people naturally using or holding this product. Authentic lifestyle moment.
-    3. "Person spans the FULL WIDTH of the canvas, left to right edge. Head at 55–65% from top."
-    4. Environment matching the product category (bathroom → skincare, kitchen → food, gym → fitness).
-    5. "Warm natural lighting, editorial quality, candid feel."
-    6. "Do not erase or modify any existing text or graphic elements already present in the image."
-    Example (skincare): "BOTTOM 40% OF CANVAS ONLY — no person or object in the top 60%. A woman in her 30s in a bright bathroom smiling while applying face cream, the product tube visible in her hands. Person spans full canvas width. Head at 58% from top. Warm morning light, editorial quality, candid. Do not erase or modify any existing text or graphic elements already present in the image."`,
+  - cta: action button text overlaid on the person zone. Short and direct. Max 20 chars.
+    Renders as a pill button using the brand's primary color.
+    Examples: "Quiero el mío" / "Ver producto" / "Empezá ahora" / "Shop Now" / "Probalo gratis"
+
+  - textSide: REQUIRED. Must be exactly "top" or "bottom". You decide based on what feels best.
+    "top" → text on top, person on bottom.
+    "bottom" → text on bottom, person on top.
+    Vary between creatives — don't always pick the same side.
+    Example: "top" or "bottom"
+
+  - sceneAction: describe the person/scene. Be specific about pose, expression, lighting.
+    The person fills the side OPPOSITE to textSide.
+    Example: "Close-up of woman's face in profile, eyes closed, glowing skin, serene smile, soft warm light"`,
   },
   {
     id: "producto-beneficios-vertical",
+    compositionMode: "product-inject",
     name: "Beneficios Vertical",
     icon: "⚡",
     tag: "Vertical",
@@ -1126,6 +1195,7 @@ or any existing graphic element. No people, no hands, no new elements.`,
   },
   {
     id: "producto-hero-top",
+    compositionMode: "product-inject",
     name: "Hero Editorial",
     icon: "🌊",
     tag: "Hero",
@@ -1146,121 +1216,10 @@ or any existing graphic element. No people, no hands, no new elements.`,
       "hogar-deco",
       "alimentos-bebidas",
     ],
-    rawBackgroundPrompt: true,
     rawProductPrompt: true,
+    useTextureLibrary: true,
     defaultBackgroundPrompt:
-      "Minimalist premium studio background. Very clean neutral surface with ultra-soft, barely visible texture. Soft diffused studio lighting, elegant and photographic. No text, no people, no products, no logos.",
-    categoryBackgroundPrompts: {
-      "belleza-cosmetica": `You are a background image generation expert for premium skincare advertising.
-
-TASK: Generate a full-bleed macro photography background. Before generating, 
-analyze the product being advertised and AUTO-SELECT the most fitting color 
-palette, texture ingredient, and mood from the system below.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-SELECTION SYSTEM — match by product type:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-IF product contains → Vitamin C / Niacinamide / Brightening / Glow:
-  COLOR_BASE: warm ivory + golden amber
-  COLOR_ACCENT: soft turmeric glow
-  TEXTURE: luminous vitamin serum and lightweight oil strokes
-  MICRO_DETAIL: tiny suspended vitamin micro-spheres beneath surface
-  SHIMMER: warm gold iridescent edge on one stroke
-  MOOD: warm clinical luxury
-
-IF product contains → Hyaluronic Acid / Hydration / Cooling / Gel:
-  COLOR_BASE: pale sky blue + icy mint
-  COLOR_ACCENT: pearl white
-  TEXTURE: cooling hyaluronic gel strokes, flat and fluid like chilled glass
-  MICRO_DETAIL: micro-bubble texture like chilled water on skin + ultra-subtle 
-  linen grain on matte background
-  SHIMMER: faint lavender-mint iridescent edge on one stroke
-  MOOD: icy Korean skincare editorial
-
-IF product contains → Collagen / Rose / Lifting / Firming:
-  COLOR_BASE: blush rose + warm peach
-  COLOR_ACCENT: soft champagne
-  TEXTURE: rich collagen cream and rose extract strokes, thick yet smooth 
-  like whipped cream, semi-opaque with satin sheen
-  MICRO_DETAIL: fine rose petal veining beneath surface
-  SHIMMER: warm pink iridescent edge on one stroke
-  MOOD: Parisian luxury skincare
-
-IF product contains → Retinol / Peptides / Anti-age / Repair:
-  COLOR_BASE: cool pearl white + soft champagne
-  COLOR_ACCENT: whisper gold
-  TEXTURE: ultra-smooth peptide serum strokes, thin and fluid
-  MICRO_DETAIL: fine silk-like protein threads barely visible beneath
-  SHIMMER: faint silver iridescent edge on one stroke
-  MOOD: ice-cold clinical luxury
-
-IF product contains → SPF / Sunscreen / Solar / UV:
-  COLOR_BASE: clean white + soft warm yellow
-  COLOR_ACCENT: light sand beige
-  TEXTURE: lightweight fluid sunscreen strokes, very thin and watery
-  MICRO_DETAIL: ultra-fine sand micro-grain on matte background
-  SHIMMER: golden-white light flare edge on one stroke
-  MOOD: clean outdoor clinical
-
-IF product contains → Retinol / AHA / BHA / Exfoliant / Acids:
-  COLOR_BASE: deep ivory + warm ecru
-  COLOR_ACCENT: translucent gold
-  TEXTURE: fine exfoliating serum strokes with crystalline clarity
-  MICRO_DETAIL: fine suspended crystal micro-particles beneath surface
-  SHIMMER: gold-to-white iridescent edge on one stroke
-  MOOD: clinical premium apothecary
-
-IF product contains → CBD / Botanical / Natural / Organic / Herbal:
-  COLOR_BASE: sage green + warm linen
-  COLOR_ACCENT: soft moss white
-  TEXTURE: botanical extract and plant oil strokes, organic and fluid
-  MICRO_DETAIL: ultra-fine dried botanical fiber texture beneath surface
-  SHIMMER: muted olive-gold iridescent edge on one stroke
-  MOOD: clean clinical organic
-
-IF product contains → Caffeine / Eye / Depuff / Dark circles:
-  COLOR_BASE: cool lavender + soft grey-blue
-  COLOR_ACCENT: icy lilac white
-  TEXTURE: ultra-light eye serum strokes, extremely thin and watery
-  MICRO_DETAIL: fine silk micro-weave texture on matte background
-  SHIMMER: soft violet-silver iridescent edge on one stroke
-  MOOD: spa clinical minimal
-
-IF no match → DEFAULT:
-  COLOR_BASE: neutral pearl white + soft warm grey
-  COLOR_ACCENT: whisper ivory
-  TEXTURE: ultra-smooth serum strokes, thin and fluid
-  MICRO_DETAIL: barely visible fine linen grain
-  SHIMMER: faint silver-white iridescent edge on one stroke
-  MOOD: premium minimalist studio
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-IMAGE GENERATION INSTRUCTIONS:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Using the auto-selected values above, generate the following scene:
-
-Extreme close-up macro photography of [TEXTURE] on a soft matte surface in 
-[COLOR_BASE] and [COLOR_ACCENT]. Exactly 2–3 broad sweeping diagonal strokes 
-across the frame — thin, flat and fluid, semi-transparent with a high-gloss 
-wet sheen. [MICRO_DETAIL] texture subtly visible beneath the strokes. Wide open 
-breathing space between strokes — large areas of matte background visible. 
-One stroke catches [SHIMMER]. 
-
-Lighting: strong beauty soft-box from upper-left, casting long elegant specular 
-highlights across the gel surface. Secondary very soft fill light from lower-right 
-at 15% intensity. Overall feeling: bright, airy, spacious.
-
-[MOOD] aesthetic. Full-bleed composition, no cropping. 
-
-Ultra high resolution photorealistic macro photography, 4K, premium skincare 
-brand editorial. No text, no people, no products, no logos, no hands.`,
-      "salud-bienestar":
-        "Extreme close-up macro photography of SMOOTH COSMETIC CREAM AND GEL TEXTURES on a soft surface tinted with the BRAND'S PRIMARY COLOR (use a pastel/muted version of it). Only 2-3 broad, THIN cream strokes flowing diagonally across the frame — NOT many small strokes, just a FEW large elegant ones with lots of breathing space between them. The cream textures are tinted with a lighter shade of the brand's primary color and white, semi-transparent, with a glossy wet surface. The strokes must be FLAT and SMOOTH — like thin layers of gel spread evenly with a spatula, NOT thick chunky impasto or heavy 3D relief. Very minimal surface variation, gentle soft edges. Subtle specular highlights but the overall surface should feel SLEEK and FLUID. Large areas of the brand-colored background are visible between the few cream strokes, giving the composition an airy, open feel. Lighting is bright, soft, and diffused — studio beauty lighting. Ultra high resolution, photorealistic macro photography, 4K, premium skincare brand aesthetic. No text, no people, no products, no logos.",
-      "salud-estetica-clinica":
-        "Extreme close-up macro photography of SMOOTH COSMETIC CREAM AND GEL TEXTURES on a soft surface tinted with the BRAND'S PRIMARY COLOR (use a pastel/muted version of it). Only 2-3 broad, THIN cream strokes flowing diagonally across the frame — NOT many small strokes, just a FEW large elegant ones with lots of breathing space between them. The cream textures are tinted with a lighter shade of the brand's primary color and white, semi-transparent, with a glossy wet surface. The strokes must be FLAT and SMOOTH — like thin layers of gel spread evenly with a spatula, NOT thick chunky impasto or heavy 3D relief. Very minimal surface variation, gentle soft edges. Subtle specular highlights but the overall surface should feel SLEEK and FLUID. Large areas of the brand-colored background are visible between the few cream strokes, giving the composition an airy, open feel. Lighting is bright, soft, and diffused — studio beauty lighting. Ultra high resolution, photorealistic macro photography, 4K, premium skincare brand aesthetic. No text, no people, no products, no logos.",
-    },
+      "Minimalist premium studio background. Very clean neutral surface with ultra-soft, barely visible texture. Soft diffused studio lighting, elegant and photographic. No text, no people, no products, no logos. CRITICAL: This background must be LIGHT-TONED — very pale, soft, and bright. No dark surfaces, no strong saturated colors, no dramatic shadows. Dark typography renders on top of this background and requires maximum contrast with a light base.",
     defaultProductPrompt: `Integrate the product into the scene with PHOTOREALISTIC studio photography quality.
 
 CRITICAL — LABEL PRESERVATION:
@@ -1302,42 +1261,26 @@ No hands, no people. Photorealistic. 4K.`,
   - BOTTOM 87–95%: disclaimer (small optional line)
 
   - headline: the brand or product name, displayed LARGE at the top-center.
-    Max 10 chars. This is the primary visual anchor above the product.
+    Max 20 chars. This is the primary visual anchor above the product.
     Examples: "BLUME", "DERMA PRO", "GLOW LAB", "SÉRUM VITAL"
 
   - subheadline: a concise benefit or product line descriptor, thin and spaced.
-    Max 30 chars, wide letter-spacing. Sits just below the headline.
+    Max 40 chars, wide letter-spacing. Sits just below the headline.
     Examples: "SOOTHE & HYDRATE", "ANTI-EDAD INTENSIVO", "BRILLO NATURAL"
 
   - disclaimer: optional short punchy line at the very bottom, small text.
     Max 50 chars.
     Examples: "CALM YOUR SKIN. BOOST YOUR BARRIER.", "RESULTADOS DESDE LA PRIMERA SEMANA.", "TU PIEL LO MERECE."
 
-  - backgroundPrompt: A self-contained English image generation prompt for an aesthetic
-    minimalist macro/close-up background RELATED TO THE PRODUCT AND BUSINESS CATEGORY.
-    ALWAYS: full-bleed, no text, no people, no products, no logos. Ultra high resolution
-    photorealistic photography, 4K, premium brand aesthetic. ~250-350 characters.
-
-    Match the style to the product category:
-    - Skincare / Cosmetics / Beauty: extreme close-up macro of SMOOTH cream, gel or serum
-      textures on a soft pastel surface. Only 2-3 broad thin flat strokes, semi-transparent
-      with glossy wet surface. Soft diffused studio lighting.
-    - Food & Beverages / Nutrition: macro photography of natural ingredients related to the
-      product (herbs, spices, fruits, powders, grains) arranged beautifully on a clean
-      neutral surface. Warm editorial lighting.
-    - Fitness / Sports: close-up premium texture of sports fabric, rubber, or equipment
-      surface relevant to the product. Clean studio lighting, minimal and bold.
-    - Fashion / Accessories / Jewelry: extreme close-up of premium material or fabric
-      texture related to the product. Elegant, editorial, soft lighting.
-    - Health / Wellness / Supplements: soft organic textures — stone, cotton, dried
-      botanicals, powder — neutral calming palette, spa-like minimal aesthetic.
-    - Tech / Electronics: clean brushed metal, glass or matte surface texture. Modern,
-      minimal, premium studio lighting.
-    - Home / Deco: soft interior material — linen, marble, polished wood — warm clean
-      editorial style. Natural diffused lighting.`,
+  - backgroundPrompt: A self-contained English image generation prompt for a minimalist
+    macro/close-up background RELATED TO THE PRODUCT AND ITS CATEGORY.
+    Use the TEXTURE REFERENCE EXAMPLE (provided separately) as style inspiration — adapt
+    texture, color palette, and mood to the specific product. Do NOT copy it verbatim.
+    ALWAYS: full-bleed, no text, no people, no products, no logos. 4K photorealistic. ~300 chars.`,
   },
   {
     id: "testimonio-review",
+    compositionMode: "scene-only",
     name: "Testimonio Review",
     icon: "⭐",
     tag: "Social Proof",
@@ -1396,6 +1339,7 @@ No hands, no people. Photorealistic. 4K.`,
   },
   {
     id: "persona-producto-left",
+    compositionMode: "scene-with-product",
     name: "Persona con Producto",
     icon: "🧍",
     tag: "Lifestyle Ad",
@@ -1409,8 +1353,7 @@ No hands, no people. Photorealistic. 4K.`,
       "headline",
       "subheadline",
       "title",
-      "backgroundPrompt",
-      "productPrompt",
+      "sceneAction",
     ],
     requiresSceneGeneration: true,
     sceneWithProduct: true,
@@ -1427,16 +1370,10 @@ No hands, no people. Photorealistic. 4K.`,
     defaultBackgroundPrompt:
       "Soft blurred modern office or studio interior. Natural light streaming from a window on the right side. Warm neutral tones — light beige walls, soft shadows, clean environment. Shallow depth of field bokeh effect. No people, no text, no logos, no products. Background only, suitable for person compositing on the right half.",
     defaultProductPrompt:
-      "Editorial beauty photograph of a woman, late 20s to early 40s, standing on the RIGHT side of the canvas only, visible from head to knee. Varied facial features, not conventionally perfect, natural facial asymmetry, subtle ethnic or regional character — not a generic stock photo face. Casual everyday clothing in neutral or warm tones, naturally fitted, with realistic fabric folds — any top that feels authentic and unpretentious. Relaxed pose, weight shifted to one hip, slight lean forward, one shoulder subtly lower than the other. Head turned 10-15 degrees toward camera, NOT full frontal. She holds the product with one hand at chest height, product occupies at least 15% of her body height, label fully visible and facing camera directly, thumb visible on side of product, natural finger curl, not a staged grip. Other hand resting at side or lightly touching collarbone. Half smile with slightly raised corners, relaxed jaw, direct eye contact. Shot on 85mm f/1.8 lens, soft natural window light from the upper left, warm bokeh background with light falloff toward edges. Visible skin texture with subtle pores, slight undereye variation. Realistic hair with 2-3 flyaways near temples, natural volume variation, not perfectly styled. You can't edit the Left half of canvas",
-    rawProductPrompt: true,
+      "Editorial beauty photograph of a woman, late 20s to early 40s, standing on the RIGHT side of the canvas only, visible from head to knee. Varied facial features, not conventionally perfect, natural facial asymmetry, subtle ethnic or regional character — not a generic stock photo face. Casual everyday clothing in neutral or warm tones, naturally fitted, with realistic fabric folds — any top that feels authentic and unpretentious. Relaxed pose, weight shifted to one hip, slight lean forward, one shoulder subtly lower than the other. Head turned 10-15 degrees toward camera, NOT full frontal. She holds the product with one hand at chest height, product occupies at least 15% of her body height, label fully visible and facing camera directly, thumb visible on side of product, natural finger curl, not a staged grip. Other arm hangs naturally at her side, hand relaxed and NOT visible. Half smile with slightly raised corners, relaxed jaw, direct eye contact. Shot on 85mm f/1.8 lens, soft natural window light from the upper left, warm bokeh background with light falloff toward edges. Visible skin texture with subtle pores, slight undereye variation. Realistic hair with 2-3 flyaways near temples, natural volume variation, not perfectly styled. You can't edit the Left half of canvas",
     templateHint: `TEMPLATE HINT for persona-producto-left:
   This is a Huel/Nike-style lifestyle brand ad. Person with product on the RIGHT, large claim + CTA on the LEFT.
   Dark gradient covers the left half for white text readability.
-
-  ⚡ COHERENCE IS MANDATORY: backgroundPrompt and productPrompt MUST describe the SAME location,
-  lighting, and atmosphere. First decide the scene setting based on the product and angle (outdoor trail,
-  gym, bathroom, kitchen, etc.), then write backgroundPrompt as the empty environment and productPrompt
-  as the person+product IN THAT EXACT SAME environment. They must feel like the same photo shoot.
 
   - badge: brand name or short tagline at TOP-LEFT. Max 30 chars.
     Example: "Huel®" or "DermaLisse™" or "NutriBoost"
@@ -1453,30 +1390,71 @@ No hands, no people. Photorealistic. 4K.`,
   - title: CTA BUTTON TEXT ONLY — this renders as a clickable pill button. Max 15 chars.
     OVERRIDE: Do NOT generate keywords separated by "·" — that format is for other templates, NOT here.
     Must be a complete action phrase (verb + complement). No dots, no separators.
+    Examples: "Quiero el mío" / "Shop Now" / "Probalo gratis" / "Comprá ahora" / "Ver la oferta"`,
+  },
+  {
+    id: "persona-producto-top",
+    compositionMode: "scene-with-product",
+    name: "Persona con Producto Top",
+    icon: "🧍",
+    tag: "Lifestyle Ad",
+    active: true,
+    description:
+      "Panel superior limpio con headline y CTA centrados, persona sosteniendo el producto ocupa el ancho completo inferior. Estilo lifestyle brand ad (Huel, Nike).",
+    supportedRatios: ["1:1", "4:5"],
+    copyZone: "top",
+    copySchema: [
+      "badge",
+      "headline",
+      "subheadline",
+      "title",
+      "sceneAction",
+      "backgroundPrompt",
+    ],
+    requiresSceneGeneration: true,
+    sceneWithProduct: true,
+    personScene: true,
+    supportsSequence: true,
+    recommendedFor: [
+      "belleza-cosmetica",
+      "alimentos-bebidas",
+      "fitness-deporte",
+      "salud-bienestar",
+      "moda-indumentaria",
+      "tecnologia",
+    ],
+    defaultBackgroundPrompt:
+      "CRITICAL: This background must be LIGHT-TONED — very pale, soft, and bright. No dark surfaces, no strong saturated colors, no dramatic shadows. Dark typography renders on top of this background and requires maximum contrast with a light base. Even if the scene describes a warm or moody environment, the background must stay light and airy.\n\nSoft blurred modern studio or home interior. Natural light from a large window. Warm neutral tones — light beige walls, soft shadows, clean environment. Shallow depth of field bokeh effect. No people, no text, no logos, no products. Background only, suitable for full-width person compositing in the bottom half.",
+    defaultProductPrompt:
+      "Editorial lifestyle photograph of a woman, late 20s to early 40s, positioned in the BOTTOM 60% of the canvas spanning the FULL WIDTH. Visible from chest to knee, centered or slightly offset. Varied facial features, not conventionally perfect, natural facial asymmetry, subtle ethnic or regional character — not a generic stock photo face. Casual everyday clothing in neutral or warm tones, naturally fitted, realistic fabric folds. Relaxed pose, one shoulder subtly lower, slight lean toward camera. She holds the product with one hand at chest height, label fully visible and facing camera directly, natural finger grip. Other arm at side, hand relaxed. Half smile, direct eye contact. Shot on 85mm f/1.8, soft natural light from the upper left, warm bokeh. Visible skin texture, 2-3 hair flyaways near temples. CRITICAL: The TOP 40% of the canvas MUST remain completely untouched — no body part, no hair, no shoulder above the 40% line from top.",
+    templateHint: `TEMPLATE HINT for persona-producto-top:
+  This is a Huel/Nike-style lifestyle brand ad. TOP 40% is a CLEAN LIGHT PANEL with centered text (dark color).
+  BOTTOM 60% shows the person holding THIS SPECIFIC PRODUCT, spanning the FULL canvas width.
+
+  - badge: brand name or short tagline, centered. Max 30 chars.
+    Example: "Huel®" or "DermaLisse™" or "NutriBoost"
+
+  - headline: the BIG claim — bold statement about the product benefit. Max 8 words. No period needed.
+    Renders large and centered. Examples:
+    "Fast, complete, plant-based nutrition."
+    "La piel que siempre quisiste tener."
+    "Firmeza visible desde la primera semana."
+
+  - subheadline: 1-2 supporting sentences. Max 51-53 chars.
+    Example: "Fórmula con colágeno marino y ácido hialurónico para resultados reales."
+
+  - title: CTA BUTTON TEXT ONLY — renders as a centered pill button. Max 15 chars.
+    Must be a complete action phrase (verb + complement). No dots, no separators.
     Examples: "Quiero el mío" / "Shop Now" / "Probalo gratis" / "Comprá ahora" / "Ver la oferta"
 
-  - backgroundPrompt: ENGLISH REQUIRED. The background scene environment WITHOUT any person or product.
-    Shallow depth of field, no people, no products, no text, no logos.
-    The setting must match the product category and the angle's emotional tone.
-    Examples:
-    Hiking boots → "A sunlit mountain trail at golden hour, pine trees blurred in soft bokeh, earthy soil and rocks, warm natural light, no people, no products"
-    Protein shake → "Modern gym interior, metal weights rack, rubber flooring, large windows with warm light, shallow depth of field, no people, no products"
-    Skincare cream → "Bright minimalist bathroom, white marble surface, soft morning window light, warm steam ambiance, no people, no products"
-    Running shoes → "Empty urban street at sunrise, blurred city lights bokeh, warm golden fog, wet asphalt, no people, no products"
-
-  - productPrompt: ENGLISH REQUIRED. Full-body or head-to-waist person WITH the product on the RIGHT side.
-    OVERRIDE: Do NOT generate a disembodied hand — always show a COMPLETE PERSON, visible from head to at least mid-torso.
-    MUST place the person in THE SAME SETTING described in backgroundPrompt — same location, lighting, atmosphere.
-    Person on RIGHT 52% only. LEFT 48% MUST remain COMPLETELY CLEAN — no arm, no shadow crossing the center.
-    Specify: person's age range, style, expression, clothing, and how they hold or use the product.
-    The person must be ACTIVELY HOLDING or WEARING/USING the product — clearly visible in their hands or on their body.
-    Examples:
-    Hiking boots → "A confident woman in her 30s in hiking gear, full body visible, standing on a mountain trail holding hiking boots at chest height with both hands, warm golden light, right side of canvas only, left half completely clean"
-    Protein shake → "Athletic man in his 20s in workout clothes, head to torso visible, in a gym holding a protein shake bottle at chest height, genuine smile, right side of canvas only, left half completely clean"
-    Running shoes → "Young woman in athletic wear, full body visible, running on an urban street at sunrise, wearing the running shoes, right side of canvas only, left half completely clean"`,
+  - sceneAction: describe the person holding the product. Be specific about pose, expression, clothing, lighting.
+    The person fills the FULL WIDTH of the bottom 60% of the canvas.
+    CRITICAL: always end with "The TOP 40% of the canvas must remain completely clear — no body part above that line."
+    Example: "Woman in white linen shirt, relaxed smile, holding product at chest level, looking toward camera, soft window light from upper left, warm bokeh background"`,
   },
   {
     id: "persona-hero-bottom",
+    compositionMode: "scene-with-product",
     name: "Lifestyle Hero",
     icon: "👥",
     tag: "Lifestyle Group",
@@ -1536,19 +1514,20 @@ No hands, no people. Photorealistic. 4K.`,
   },
   {
     id: "bebas-urgencia-top",
+    compositionMode: "scene-only",
     name: "Urgencia Bebas Neue",
     icon: "🔥",
     tag: "Urgencia",
     active: true,
-    pipelineV2: true,
     description:
       "Escena de urgencia full-bleed, headline enorme en Bebas Neue, overlay oscuro. Un solo titular potente, sin producto. Logo arriba a la izquierda.",
     supportedRatios: ["1:1", "4:5"],
     copyZone: "top",
     copySchema: ["headline", "backgroundColorHint", "sceneAction"],
+    skipExpandSceneBrief: true,
     requiresSceneGeneration: true,
     personScene: true,
-    sceneFullBleed: true,
+    sceneFullBleed: false,
     personOnly: true,
     supportsSequence: false,
     recommendedFor: [
@@ -1563,15 +1542,47 @@ No hands, no people. Photorealistic. 4K.`,
     rawBackgroundPrompt: true,
     categoryBackgroundPrompts: {
       "belleza-cosmetica":
-        `"Minimalist dark studio interior. Cinematic, editorial, sophisticated darkness. Film photography aesthetic."`,
+        "Minimalist dark vanity room, polished marble countertop, warm amber side light casting soft shadows, " +
+        "blurred mirror reflection deep in background, matte charcoal walls with subtle texture, " +
+        "single warm tusngsten spotlight from upper left. No people, no products, no text. Cinematic editorial beauty.",
       "fitness-deporte":
-        "Dark premium gym interior, charcoal and black rubber flooring, dim dramatic spotlights from above creating pools of light, heavy shadows, no equipment in frame, atmospheric and cinematic. No people, no products, no text.",
+        "Dark premium gym interior, charcoal and black rubber flooring, dim dramatic spotlights from above " +
+        "creating precise pools of light on the floor, heavy shadows between equipment shapes barely visible, " +
+        "concrete or brick wall in deep background, atmospheric and cinematic. No people, no products, no text.",
       "servicios-profesionales":
-        "Minimalist dark office interior, near-black walls, a single warm desk lamp glow barely visible off-frame, long dramatic shadows, matte textures. Sophisticated and cinematic. No people, no products, no text.",
-      tecnologia:
-        "Dark minimal studio, charcoal walls with subtle cool undertone, a single soft blue-tinted light from the side casting elegant shadows, clean and cinematic. No people, no products, no text.",
+        "Minimalist dark office interior, near-black walls, a single warm desk lamp glow barely visible off-frame, " +
+        "long dramatic shadows falling across flat surfaces, matte dark textures, " +
+        "sophisticated and cinematic business aesthetic. No people, no products, no text.",
+      "tecnologia":
+        "Dark minimal studio, charcoal walls with subtle cool blue undertone, " +
+        "a single soft blue-tinted LED panel from camera-left casting elegant directional shadows, " +
+        "clean desk surface barely visible in lower third, cinematic tech aesthetic. No people, no products, no text.",
       "salud-bienestar":
-        "Serene dark spa-like interior, deep charcoal stone or concrete walls, warm amber candle-like ambient light barely illuminating the edges, soft and moody. No people, no products, no text. Cinematic wellness aesthetic.",
+        "Serene dark spa-like interior, deep charcoal stone and concrete walls, " +
+        "warm amber candle-like ambient light barely illuminating the edges, " +
+        "natural textures — stone, linen, raw wood — visible in deep shadow, " +
+        "soft and moody wellness aesthetic. No people, no products, no text. Cinematic.",
+      "alimentacion":
+        "Dark modern kitchen interior, polished dark granite counter, " +
+        "single warm pendant light casting a precise pool of light on the surface, " +
+        "steam wisps faintly visible mid-air, dark wood cabinets blurred in background, " +
+        "moody food-magazine atmosphere. No people, no products, no text.",
+      "educacion":
+        "Dark minimalist study corner, single incandescent desk lamp casting warm circle of light on a wood surface, " +
+        "dark bookshelves barely visible in background shadow, matte dark walls, " +
+        "cinematic academic quiet. No people, no products, no text.",
+      "hogar":
+        "Dark intimate living room interior, single warm table or floor lamp creating a soft glow, " +
+        "long shadows across minimal furniture, warm undertones against near-black walls, " +
+        "cozy but melancholic domestic atmosphere. No people, no products, no text. Cinematic.",
+      "moda":
+        "Dark fitting room or walk-in wardrobe, single dramatic overhead spotlight from directly above, " +
+        "dark matte walls, dark garment rack shapes barely visible in background shadow, " +
+        "editorial fashion photography aesthetic. No people, no products, no text.",
+      "mascotas":
+        "Dark home interior, warm living room floor barely lit by a low table lamp, " +
+        "soft shadows on carpet or wood, intimate and quiet domestic atmosphere, " +
+        "cinematic and emotionally warm but visually dark. No people, no products, no text.",
     },
     defaultProductPrompt:
       "Do NOT show any product. Generate a REAL PERSON in a quiet, elegant PAIN-POINT moment — editorial, cinematic, sophisticated. A professional person, late 20s to early 40s, experiencing a moment of genuine frustration or exhaustion: eyes closed with one hand resting gently on their forehead, or chin resting on clasped hands with a distant troubled gaze, or sitting upright with arms loosely crossed and eyes looking downward. The expression conveys quiet overwhelm — composed but emotionally honest, not theatrical. The person is well-dressed in smart-casual or business attire — clean, fitted clothing with subtle fabric texture. They fill most of the frame from upper chest to just above the head. Centered horizontally in the canvas. LIGHTING: single soft key light from above-left or side window, creating sculpted shadows and depth on the face and clothing. Deep dark background, no clutter, no screens, no props. Photorealistic editorial photography, shallow depth of field, cinematic film quality. No logos, no text, no products.",
@@ -1590,7 +1601,7 @@ No hands, no people. Photorealistic. 4K.`,
   - Speak directly to the reader's most felt frustration in this niche.
   - End with "?" for questions or "." for statements. No ellipsis.
 
-  - headline: single powerful pain-point claim, max 8 words, max 55 chars, min 5 words and min 40 chars.
+  - headline: single powerful pain-point claim, max 8 words, max 70 chars, min 5 words and min 40 chars.
     Adapt the pain point to the business niche:
 
     Servicios profesionales / Educación / Tecnología:
@@ -1615,15 +1626,221 @@ No hands, no people. Photorealistic. 4K.`,
   - backgroundColorHint: ignored — template uses a fixed dark cinematic background.
 
   - sceneAction: optional override describing the person and environment.
+    The person MUST be CENTERED HORIZONTALLY in the canvas.
     Keep it elegant — no chaos, no clutter, no screens. Focused emotional portrait.
     Adapt the setting to the niche: bathroom for beauty, gym for fitness, office for services.
     Example (servicios): "Professional woman in her 30s, eyes closed with hand on forehead, dark minimal office background, single side light, cinematic"
     Example (belleza): "Woman in her late 20s seated at a dark vanity, chin resting on clasped hands, troubled gaze, warm soft side light, editorial beauty"
     Example (fitness): "Athletic man in his 30s, seated on a dark gym bench, elbows on knees, head bowed, single overhead spotlight, cinematic"`,
   },
+  {
+    id: "bebas-dynamicBg-cta",
+    compositionMode: "scene-only",
+    name: "Bebas Dynamic CTA",
+    icon: "🎯",
+    tag: "Urgencia",
+    active: true,
+    description:
+      "Escena full-bleed con fondo opaco/apagado elegido por IA, headline enorme en Bebas Neue arriba, overlay oscuro superior para legibilidad y botón CTA al pie. Sin producto.",
+    supportedRatios: ["1:1", "4:5"],
+    copyZone: "top",
+    copySchema: ["headline", "cta", "sceneAction", "backgroundPrompt"],
+    skipExpandSceneBrief: true,
+    requiresSceneGeneration: true,
+    personScene: true,
+    sceneFullBleed: false,
+    hyperRealisticPrompts: true, 
+    personOnly: true,
+    supportsSequence: false,
+    recommendedFor: [
+      "belleza-cosmetica",
+      "salud-bienestar",
+      "fitness-deporte",
+      "servicios-profesionales",
+      "moda-indumentaria",
+      "tecnologia",
+    ],
+    defaultBackgroundPrompt:
+      "CRITICAL: This background must use MUTED, OPAQUE, DESATURATED tones — no bright neon colors, no clean white studio backdrops, no oversaturated palettes. Aim for rich but restrained atmospheres: warm earth tones, dusty pastels, deep moody interiors, soft natural light. White text overlays this scene, so mid-tone to moderately dark backgrounds work best. The scene must feel emotional, atmospheric, and real.\n\nSoft blurred modern interior or lifestyle setting appropriate to the product category. Shallow depth of field bokeh. No people, no text, no logos, no products visible. Full-bleed composition.",
+    defaultProductPrompt:
+      "Do NOT show any product. Generate a REAL PERSON in a quiet, authentic lifestyle moment — editorial, emotional, genuine. A person, late 20s to early 40s, in a natural candid moment that evokes the brand's emotional territory. Expression conveys quiet confidence, longing, or aspiration — not theatrical. Well-dressed in smart-casual attire, clean and fitted. The person fills most of the frame from upper chest to just above the head, centered horizontally. LIGHTING: single soft key light from above-left or side, creating sculpted shadows and depth. Background matches the generated backdrop — muted, real, atmospheric. Photorealistic editorial photography, shallow depth of field. No logos, no text, no products.",
+    rawProductPrompt: false,
+    templateHint: `TEMPLATE HINT for bebas-dynamicBg-cta:
+  Full-bleed lifestyle scene with muted/opaque background chosen by AI. A HUGE Bebas Neue headline
+  dominates the top. A CTA pill button sits at the very bottom. Dark gradient overlay at the top
+  ensures the white headline is always readable regardless of background color.
+
+  ONE HEADLINE + ONE CTA — those are the only text fields rendered.
+
+  CRITICAL RULES:
+  - headline is the main text. Write a single punchy claim or question. Max 8 words.
+  - cta is the action button at the bottom. Short and direct. Max 20 chars.
+  - Adapt tone to the business niche — can be aspirational, not just pain-point.
+
+  - headline: single powerful claim, max 8 words, min 5 words.
+    Examples:
+    "Tu piel merece más que lo de siempre."
+    "¿List@ para el cambio que querés ver?"
+    "Más energía, más foco, más vos."
+    "El estilo que siempre quisiste tener."
+
+  - cta: short action phrase. Renders as a pill button using the brand's primary color.
+    Max 20 chars. Must be a complete action.
+    Examples: "Quiero el mío" / "Empezá ahora" / "Ver la oferta" / "Shop Now" / "Descubrilo"
+
+  - backgroundPrompt: a self-contained English image generation prompt for the background.
+    CRITICAL: MUTED, OPAQUE, DESATURATED tones only — no bright, neon, or pure-white backgrounds.
+    Rich but restrained: warm earth tones, dusty pastels, moody interiors, soft natural light.
+    Always: full-bleed, no text, no people, no products, no logos. Photorealistic, 4K. ~150-250 chars.
+    Examples:
+    "Soft blurred warm-toned kitchen interior, muted terracotta and cream walls, diffused morning light, shallow depth of field. No people, no text."
+    "Dark moody spa-like interior, deep sage green walls, warm amber candle light barely visible, stone and linen textures. No people, no text."
+
+  - sceneAction: describe the person and emotional moment. Centered horizontally.
+    Adapt to the niche. Keep it editorial and real — no stock-photo clichés.
+    Example (belleza): "Woman in her 30s, eyes gently closed, hand resting near collarbone, serene expression, warm side light, muted blurred background"
+    Example (fitness): "Athletic person in their 30s, looking forward with quiet determination, casual sportswear, soft overhead light, moody gym background"
+    Example (servicios): "Professional woman, late 30s, slight confident smile, looking slightly off-camera, clean neutral clothing, soft directional light"`,
+  },
 ];
 
 /** Helper: get metadata for a single template ID */
 export function getTemplateMeta(id: string): TemplateMetadata | undefined {
   return TEMPLATE_META_LIST.find((t) => t.id === id);
+}
+
+// ─── productIAOptions builder ─────────────────────────────────────────────────
+
+export interface ProductIAOptionsResult {
+  /** The productIAOptions object to send to /api/compose. null = skip PRODUCT_IA. */
+  productIAOptions: Record<string, unknown> | null;
+  /** "scene-first" → run PRODUCT_IA on clean bg, then TEMPLATE_BETA on top.
+   *  "template-first" → run TEMPLATE_BETA first, then PRODUCT_IA on the composed image. */
+  compositionOrder: "scene-first" | "template-first";
+  /** Whether the PRODUCT_IA API call should be made at all. */
+  needsProductIA: boolean;
+}
+
+/**
+ * Derives productIAOptions from template metadata + runtime context.
+ * Single source of truth — replaces all the if/else logic in page.tsx.
+ */
+export function buildProductIAOptions(
+  meta: TemplateMetadata,
+  ctx: {
+    copy: Record<string, unknown>;
+    hasProductFile: boolean;
+    hasAvatarFile: boolean;
+  },
+): ProductIAOptionsResult {
+  const { copy, hasProductFile, hasAvatarFile } = ctx;
+  const mode = meta.compositionMode;
+
+  // Resolve the zone to keep clean for Gemini.
+  // productIAZone overrides copyZone when intentionally different.
+  // If the template declares a fixed textSide, it overrides the default copyZone.
+  let copyZone = (meta.productIAZone ?? meta.copyZone) as
+    | "left" | "right" | "top" | "bottom" | "center";
+  if (meta.textSide) {
+    copyZone = meta.textSide;
+  }
+
+  // Resolve the effective prompt: productPrompt (if in schema) →
+  // sceneAction (if in schema) → defaultProductPrompt → ""
+  const effectivePrompt: string =
+    (meta.copySchema.includes("productPrompt") ? (copy.productPrompt as string | undefined) : undefined) ||
+    (meta.copySchema.includes("sceneAction") ? (copy.sceneAction as string | undefined) : undefined) ||
+    meta.defaultProductPrompt ||
+    "";
+
+  const commonOptions = {
+    copyZone,
+    includeLayoutSpec: false,
+    skipTextRender: true,
+    sharpProductOverlay: (meta as any).sharpProductOverlay ?? undefined,
+  };
+
+  const NO_IA: ProductIAOptionsResult = {
+    productIAOptions: null,
+    compositionOrder: "template-first",
+    needsProductIA: false,
+  };
+
+  // ── none: sorteo-giveaway and other noProductLayer templates ──────────────
+  if (mode === "none") return NO_IA;
+
+  // ── split-comparison: Sharp-only, no Gemini ───────────────────────────────
+  if (mode === "split-comparison") {
+    if (!hasProductFile) return NO_IA;
+    return {
+      productIAOptions: { ...commonOptions, prompt: effectivePrompt, splitComparison: true },
+      compositionOrder: "template-first",
+      needsProductIA: true,
+    };
+  }
+
+  // ── scene-with-product: persona sosteniendo producto (IA → BETA order) ────
+  if (mode === "scene-with-product") {
+    if (!hasAvatarFile) {
+      // Fallback: no avatar → degrade to scene-only behaviour
+      return {
+        productIAOptions: {
+          ...commonOptions,
+          prompt: effectivePrompt,
+          sceneMode: true,
+          personScene: meta.personScene === true ? true : undefined,
+          sceneFullBleed: meta.sceneFullBleed === true ? true : undefined,
+          hasRealProduct: hasProductFile,
+        },
+        compositionOrder: "template-first",
+        needsProductIA: true,
+      };
+    }
+    return {
+      productIAOptions: {
+        ...commonOptions,
+        prompt: effectivePrompt,
+        avatarSceneWithProduct: true,
+        rawProductPrompt: meta.rawProductPrompt === true ? true : undefined,
+        useGenericProductClone: meta.useGenericProductClone === true ? true : undefined,
+      },
+      compositionOrder: "scene-first",
+      needsProductIA: true,
+    };
+  }
+
+  // ── scene-only: persona sin producto (pain-point, editorial lifestyle, etc) ─
+  if (mode === "scene-only") {
+    return {
+      productIAOptions: {
+        ...commonOptions,
+        prompt: effectivePrompt,
+        sceneMode: !hasAvatarFile,
+        useAvatarAsScene: hasAvatarFile,
+        personScene: meta.personScene === true ? true : undefined,
+        sceneFullBleed: meta.sceneFullBleed === true ? true : undefined,
+        hasRealProduct: hasProductFile,
+        rawProductPrompt: meta.rawProductPrompt === true ? true : undefined,
+      },
+      // sceneFullBleed templates (e.g. bebas-urgencia-top) generate a scene that covers the
+      // entire canvas — running TEMPLATE_BETA first and then Gemini would erase the text.
+      // For these, Gemini runs first on the clean bg, then TEMPLATE_BETA applies overlay + text on top.
+      compositionOrder: meta.sceneFullBleed === true ? "scene-first" : "template-first",
+      needsProductIA: true,
+    };
+  }
+
+  // ── product-inject: Flujo D — mano/producto sobre fondo ──────────────────
+  // Only runs when the user actually uploaded a product image.
+  if (!hasProductFile) return NO_IA;
+  return {
+    productIAOptions: {
+      ...commonOptions,
+      prompt: effectivePrompt,
+      rawProductPrompt: meta.rawProductPrompt === true ? true : undefined,
+      personScene: meta.personScene === true ? true : undefined,
+    },
+    compositionOrder: "template-first",
+    needsProductIA: true,
+  };
 }

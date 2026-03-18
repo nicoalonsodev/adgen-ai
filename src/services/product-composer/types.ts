@@ -124,6 +124,8 @@ export type ComposeMode = z.infer<typeof ComposeModeSchema>;
 export const CopyContentSchema = z.object({
   headline: z.string().optional(),
   subheadline: z.string().optional(),
+  /** Top bar / tagline text (used by classic-editorial and similar templates) */
+  title: z.string().optional(),
   cta: z.string().optional(),
   badge: z.string().optional(),
   disclaimer: z.string().optional(),
@@ -384,6 +386,9 @@ export const ComposeRequestSchema = z
 
     /** Request ID for logging */
     requestId: z.string().optional(),
+
+    /** Decrypted user Gemini API keys injected by the API route — never stored or logged */
+    apiKeys: z.array(z.string()).optional(),
   })
  .refine((data) => data.backgroundUrl || data.backgroundBuffer, {
   message: "Either backgroundUrl or backgroundBuffer is required",

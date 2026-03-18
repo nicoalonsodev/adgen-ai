@@ -391,8 +391,8 @@ const FONT_FAMILY_FACTORS: Record<string, number> = {
   "roboto":           1.00,
   "georgia":          1.05,
   // Bebas Neue: condensed display font — factor calibrated against resvg rendering
-  "bebas neue":       0.80,
-  "bebas":            0.80,
+  "bebas neue":       0.68,
+  "bebas":            0.68,
   // Jost (Futura substitute): geometric sans, similar proportions to Inter
   "jost":             1.00,
   "futura":           1.00,  // Futura → Jost at render time

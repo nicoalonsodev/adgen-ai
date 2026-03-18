@@ -48,6 +48,8 @@ interface NegocioPerfil {
   logoLightBase64?: string;
   logoLightMimeType?: string;
   coloresMarca?: string[];
+  gemini_key1_masked?: string;
+  gemini_key2_masked?: string;
 }
 
 const STORAGE_KEY = "negocio_perfil";
@@ -131,6 +133,8 @@ async function fetchPerfilFromDB(): Promise<NegocioPerfil | null> {
       logoDarkMimeType: data.metadata?.logoDark?.split(';')[0]?.split(':')[1] ?? undefined,
       logoLightBase64: data.metadata?.logoLight?.split(',')[1] ?? undefined,
       logoLightMimeType: data.metadata?.logoLight?.split(';')[0]?.split(':')[1] ?? undefined,
+      gemini_key1_masked: data.gemini_key1_masked ?? undefined,
+      gemini_key2_masked: data.gemini_key2_masked ?? undefined,
     }
   } catch {
     return null
@@ -384,6 +388,16 @@ export default function MiNegocioPage() {
   const [logoDarkPreview, setLogoDarkPreview] = useState<string>("");
   const [logoLightPreview, setLogoLightPreview] = useState<string>("");
 
+  // Gemini API keys
+  const [geminiKey1, setGeminiKey1] = useState('');
+  const [geminiKey2, setGeminiKey2] = useState('');
+  const [geminiKey1Masked, setGeminiKey1Masked] = useState<string | null>(null);
+  const [geminiKey2Masked, setGeminiKey2Masked] = useState<string | null>(null);
+  const [showKey1, setShowKey1] = useState(false);
+  const [showKey2, setShowKey2] = useState(false);
+  const [editingKey1, setEditingKey1] = useState(false);
+  const [editingKey2, setEditingKey2] = useState(false);
+
   // Load: primero Supabase, fallback a localStorage
   useEffect(() => {
     async function loadPerfil() {
@@ -436,6 +450,8 @@ export default function MiNegocioPage() {
       if (data.logoLightBase64) {
         setLogoLightPreview(`data:${data.logoLightMimeType ?? 'image/png'};base64,${data.logoLightBase64}`)
       }
+      if (data.gemini_key1_masked) setGeminiKey1Masked(data.gemini_key1_masked)
+      if (data.gemini_key2_masked) setGeminiKey2Masked(data.gemini_key2_masked)
     }
     loadPerfil()
   }, []);
@@ -563,11 +579,17 @@ export default function MiNegocioPage() {
       ...(logoBase64 ? { logoBase64, logoMimeType: logoMimeType ?? 'image/png' } : {}),
       ...(logoDarkBase64 ? { logoDarkBase64, logoDarkMimeType: logoDarkMimeType ?? 'image/png' } : {}),
       ...(logoLightBase64 ? { logoLightBase64, logoLightMimeType: logoLightMimeType ?? 'image/png' } : {}),
+      ...(geminiKey1.trim() ? { geminiKey1: geminiKey1.trim() } : {}),
+      ...(geminiKey2.trim() ? { geminiKey2: geminiKey2.trim() } : {}),
     }
 
     // Guardar en Supabase (principal) y localStorage (backup)
     saveStoredPerfil(perfil)
     await savePerfilToDB(perfil)
+    setGeminiKey1('')
+    setGeminiKey2('')
+    setEditingKey1(false)
+    setEditingKey2(false)
 
     setLastUpdated(now)
     setToastVisible(true)
@@ -1129,6 +1151,272 @@ export default function MiNegocioPage() {
               </div>
             </div>
           </Card>
+
+          {/* Section 5: API Keys de Gemini */}
+          <div
+            id="gemini-keys"
+            style={{
+              background: S.card,
+              border: `1px solid ${S.border}`,
+              borderRadius: 16,
+            }}
+            className="p-6 space-y-5"
+          >
+            <SectionTitle>API Keys de Gemini</SectionTitle>
+
+            {/* Info box */}
+            <div
+              style={{
+                background: "linear-gradient(135deg, #0D1F1F 0%, #141414 100%)",
+                border: `1px solid ${S.accent}33`,
+                borderRadius: 10,
+                padding: "14px 16px",
+                fontSize: 12,
+                color: S.muted,
+                lineHeight: 1.6,
+              }}
+            >
+              Requerido para generar creativos. Las keys se encriptan antes de guardarse y nunca se muestran completas.
+              {" "}Obtené tus keys en{" "}
+              <a
+                href="https://aistudio.google.com/app/apikey"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: S.accent, textDecoration: "underline" }}
+              >
+                Google AI Studio
+              </a>
+              {" "}→ aistudio.google.com/app/apikey
+            </div>
+
+            {/* Key 1 */}
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                <span style={{ color: S.muted, fontSize: 12, fontWeight: 500 }}>Key 1</span>
+                <span
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 600,
+                    background: S.accent,
+                    color: "#fff",
+                    borderRadius: 6,
+                    padding: "2px 7px",
+                  }}
+                >
+                  Principal
+                </span>
+                {geminiKey1Masked && !editingKey1 && (
+                  <span
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 600,
+                      background: "#30D15820",
+                      color: "#30D158",
+                      borderRadius: 6,
+                      padding: "2px 7px",
+                      border: "1px solid #30D15840",
+                    }}
+                  >
+                    Configurada ✓
+                  </span>
+                )}
+              </div>
+
+              {geminiKey1Masked && !editingKey1 ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div
+                    style={{
+                      flex: 1,
+                      background: S.inputBg,
+                      border: `1px solid ${S.border}`,
+                      borderRadius: 10,
+                      padding: "10px 14px",
+                      fontSize: 13,
+                      color: S.muted,
+                      fontFamily: "monospace",
+                      letterSpacing: "0.08em",
+                    }}
+                  >
+                    {geminiKey1Masked}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setEditingKey1(true)}
+                    style={{
+                      background: S.inputBg,
+                      border: `1px solid ${S.border}`,
+                      color: S.accent,
+                      borderRadius: 10,
+                      padding: "10px 16px",
+                      fontSize: 13,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    Cambiar
+                  </button>
+                </div>
+              ) : (
+                <div style={{ position: "relative" }}>
+                  <input
+                    type={showKey1 ? "text" : "password"}
+                    value={geminiKey1}
+                    onChange={(e) => setGeminiKey1(e.target.value)}
+                    placeholder="AIza..."
+                    autoComplete="off"
+                    style={{
+                      background: S.inputBg,
+                      border: `1px solid ${S.border}`,
+                      color: S.text,
+                      borderRadius: 10,
+                      padding: "10px 44px 10px 14px",
+                      fontSize: 13,
+                      width: "100%",
+                      outline: "none",
+                      fontFamily: geminiKey1 ? "monospace" : "inherit",
+                    }}
+                    onFocus={(e) => (e.currentTarget.style.borderColor = S.accent)}
+                    onBlur={(e) => (e.currentTarget.style.borderColor = S.border)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowKey1((v) => !v)}
+                    style={{
+                      position: "absolute",
+                      right: 10,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      background: "transparent",
+                      border: "none",
+                      cursor: "pointer",
+                      color: S.muted,
+                      fontSize: 14,
+                      padding: 4,
+                    }}
+                  >
+                    {showKey1 ? "●○○" : "●●●"}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Key 2 */}
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                <span style={{ color: S.muted, fontSize: 12, fontWeight: 500 }}>Key 2</span>
+                <span
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 600,
+                    background: "#3A3A3A",
+                    color: S.muted,
+                    borderRadius: 6,
+                    padding: "2px 7px",
+                  }}
+                >
+                  Rotación
+                </span>
+                {geminiKey2Masked && !editingKey2 && (
+                  <span
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 600,
+                      background: "#30D15820",
+                      color: "#30D158",
+                      borderRadius: 6,
+                      padding: "2px 7px",
+                      border: "1px solid #30D15840",
+                    }}
+                  >
+                    Configurada ✓
+                  </span>
+                )}
+              </div>
+
+              {geminiKey2Masked && !editingKey2 ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div
+                    style={{
+                      flex: 1,
+                      background: S.inputBg,
+                      border: `1px solid ${S.border}`,
+                      borderRadius: 10,
+                      padding: "10px 14px",
+                      fontSize: 13,
+                      color: S.muted,
+                      fontFamily: "monospace",
+                      letterSpacing: "0.08em",
+                    }}
+                  >
+                    {geminiKey2Masked}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setEditingKey2(true)}
+                    style={{
+                      background: S.inputBg,
+                      border: `1px solid ${S.border}`,
+                      color: S.accent,
+                      borderRadius: 10,
+                      padding: "10px 16px",
+                      fontSize: 13,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    Cambiar
+                  </button>
+                </div>
+              ) : (
+                <div style={{ position: "relative" }}>
+                  <input
+                    type={showKey2 ? "text" : "password"}
+                    value={geminiKey2}
+                    onChange={(e) => setGeminiKey2(e.target.value)}
+                    placeholder="AIza..."
+                    autoComplete="off"
+                    style={{
+                      background: S.inputBg,
+                      border: `1px solid ${S.border}`,
+                      color: S.text,
+                      borderRadius: 10,
+                      padding: "10px 44px 10px 14px",
+                      fontSize: 13,
+                      width: "100%",
+                      outline: "none",
+                      fontFamily: geminiKey2 ? "monospace" : "inherit",
+                    }}
+                    onFocus={(e) => (e.currentTarget.style.borderColor = S.accent)}
+                    onBlur={(e) => (e.currentTarget.style.borderColor = S.border)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowKey2((v) => !v)}
+                    style={{
+                      position: "absolute",
+                      right: 10,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      background: "transparent",
+                      border: "none",
+                      cursor: "pointer",
+                      color: S.muted,
+                      fontSize: 14,
+                      padding: 4,
+                    }}
+                  >
+                    {showKey2 ? "●○○" : "●●●"}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <p style={{ color: "#555", fontSize: 11, marginTop: -8 }}>
+              Dejá un campo vacío para conservar la key guardada.
+            </p>
+          </div>
 
           {/* Save button */}
           <div>

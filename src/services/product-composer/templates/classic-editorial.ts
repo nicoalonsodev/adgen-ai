@@ -252,7 +252,7 @@ export function buildClassicEditorialLayout(
   // sub:        justo debajo del headline + gap 20px
   // badge:      91% del alto
   const TITLE_Y = Math.round(CH * 0.1);
-  const HL_Y = Math.round(CH * 0.18);
+  const HL_Y = Math.round(CH * 0.28);
   const SUB_Y = HL_Y + hlHeightPx + 20;
   const BADGE_Y = Math.round(CH * 0.91);
 
@@ -347,7 +347,7 @@ export function buildClassicEditorialLayout(
       fontFamily: "Montserrat",
       fontWeight: "400",
       fontSize: Math.round(CW * 0.025),
-      color: COL_MUTED,
+      color: mode === "dark" ? "#D0D0D0" : COL_BODY,
       maxLines: 1,
       lineHeight: 1.3,
       letterSpacing: 0,

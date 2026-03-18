@@ -43,9 +43,10 @@ export async function composeWithTemplateBeta(
 
   // 2) Construir layout desde el template
   const template = getTemplate(templateId);
+  const meta = getTemplateMeta(templateId);
   const layout = template.buildLayout(
     {
-      title: req.copy?.cta, // línea superior (ingredientes/tagline) para classic-editorial
+      title: req.copy?.title, // línea superior (ingredientes/tagline) para classic-editorial
       headline: req.copy?.headline,
       subheadline: req.copy?.subheadline,
       badge: req.copy?.badge,
@@ -57,6 +58,7 @@ export async function composeWithTemplateBeta(
       primaryColor: req.copy?.primaryColor,
       brandColors: req.copy?.brandColors,
       colorMode: req.copy?.colorMode,
+      textSide: meta?.textSide, // fixed layout side from template design — drives BOTTOM_MODE etc.
     } as Parameters<typeof template.buildLayout>[0],
     canvas,
   );
@@ -67,9 +69,6 @@ export async function composeWithTemplateBeta(
     layout,
     debug: false,
   });
-
-  // Templates que no usan logo (layout propio sin espacio para él)
-  const meta = getTemplateMeta(templateId);
 
   // 4) Logo overlay (si el perfil de negocio tiene logo guardado)
   // Seleccionar variante según colorMode del template:
