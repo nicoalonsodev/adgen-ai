@@ -1,13 +1,10 @@
 import { GoogleGenAI } from "@google/genai";
-import OpenAI from "openai";
 import sharp from "sharp";
 import { ABSOLUTE_RULES_SCENE, ABSOLUTE_RULES_PRODUCT_INJECT, ABSOLUTE_RULES_TEXT_PRESERVATION, ABSOLUTE_RULES_PRODUCT, ABSOLUTE_RULES_BACKGROUND, resolvePlacementZone } from "./promptRules";
 import { getLibrarySection, getSceneLibrarySection, type ImageBriefType } from "./promptLibrary";
 
-// OpenRouter — text generation (replaces Vercel Gateway for text)
-const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY ?? "";
-const OPENROUTER_TEXT_MODEL = process.env.OPENROUTER_MODEL ?? "moonshotai/kimi-k2.5";
+// Gemini — text generation (official Google API, same key rotation as image calls)
+const GEMINI_TEXT_MODEL = process.env.GEMINI_TEXT_MODEL ?? "gemini-2.5-flash";
 
 const MODEL_NANO_BANANA = "gemini-2.5-flash-image";
 
@@ -265,50 +262,6 @@ interface GeminiErrorLog {
   prompt: { text: string; imageCount: number; imageKB: number };
 }
 
-/* ── OpenRouter Structured Logging Types ── */
-
-interface OpenRouterRequestLog {
-  tag: "[OPENROUTER:REQUEST]";
-  requestId: string;
-  timestamp: string;
-  caller: string;
-  model: string;
-  attempt: number;
-  promptChars: number;
-  estimatedInputTokens: number;
-  messagesCount: number;
-}
-
-interface OpenRouterResponseLog {
-  tag: "[OPENROUTER:RESPONSE]";
-  requestId: string;
-  timestamp: string;
-  durationMs: number;
-  caller: string;
-  model: string;
-  attempt: number;
-  responseChars: number;
-  usage: {
-    promptTokens: number | null;
-    completionTokens: number | null;
-    totalTokens: number | null;
-  };
-  finishReason: string | null;
-}
-
-interface OpenRouterErrorLog {
-  tag: "[OPENROUTER:ERROR]";
-  requestId: string;
-  timestamp: string;
-  durationMs: number;
-  caller: string;
-  model: string;
-  attempt: number;
-  status: number | string | null;
-  message: string;
-  retryable: boolean;
-  promptChars: number;
-}
 
 let _reqCounter = 0;
 function generateRequestId(): string {
@@ -583,7 +536,7 @@ async function generateContentWithRetry(
 }
 
 
-async function generateTextWithOpenRouter(
+async function generateTextWithGemini(
   messages: Array<{ role: "user" | "assistant" | "system"; content: string }>,
   options: {
     callerName?: string;
@@ -593,43 +546,48 @@ async function generateTextWithOpenRouter(
   } = {}
 ): Promise<string> {
   const caller = options.callerName ?? "unknown";
-  const model = options.model ?? OPENROUTER_TEXT_MODEL;
+  const model = options.model ?? GEMINI_TEXT_MODEL;
   const maxTokens = options.maxTokens ?? 1000;
   const maxAttempts = options.maxAttempts ?? 3;
 
-  const client = new OpenAI({
-    apiKey: OPENROUTER_API_KEY,
-    baseURL: OPENROUTER_BASE_URL,
-  });
+  // Convert OpenAI-style messages to Gemini format.
+  // System messages are prepended to the first user message.
+  const systemParts = messages.filter(m => m.role === "system").map(m => m.content);
+  const nonSystem = messages.filter(m => m.role !== "system");
+  const contents = nonSystem.map((m, i) => ({
+    role: m.role === "assistant" ? "model" : "user",
+    parts: [{ text: i === 0 && systemParts.length > 0 ? systemParts.join("\n") + "\n\n" + m.content : m.content }],
+  }));
 
   const promptChars = messages.reduce((acc, m) => acc + m.content.length, 0);
   let lastError: unknown;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    console.log(`[openrouter:text] caller=${caller} attempt=${attempt}/${maxAttempts} model=${model} promptChars=${promptChars}`);
+    const { ai, keyIdx } = await getClientSmart();
+    console.log(`[gemini:text] caller=${caller} attempt=${attempt}/${maxAttempts} model=${model} promptChars=${promptChars} key=${keyIdx + 1}`);
     const t0 = Date.now();
     try {
-      const response = await client.chat.completions.create({
-        model,
-        messages,
-        max_tokens: maxTokens,
-      });
+      const result = await withTimeout(
+        ai.models.generateContent({ model, contents, config: { maxOutputTokens: maxTokens } }),
+        GEMINI_CALL_TIMEOUT_MS,
+        `${caller} intento ${attempt}/${maxAttempts}`,
+      );
 
       const durationMs = Date.now() - t0;
-      const msg = response.choices[0]?.message as any;
-      const content = msg?.content || msg?.reasoning_content || "";
+      const content = collectTextParts(result);
+      console.log(`[gemini:text] caller=${caller} attempt=${attempt} durationMs=${durationMs} responseChars=${content.length} key=${keyIdx + 1}`);
 
-      console.log(`[openrouter:text] caller=${caller} attempt=${attempt} durationMs=${durationMs} responseChars=${content.length} finishReason=${response.choices[0]?.finish_reason ?? null}`);
-
-      if (!content) throw new Error("OpenRouter returned empty content");
+      if (!content) throw new Error("Gemini returned empty content");
+      recordKeySuccess(keyIdx, Math.ceil(promptChars / 4));
       return content;
 
     } catch (error) {
       const durationMs = Date.now() - t0;
       lastError = error;
       const status = extractErrorStatus(error);
-      const retryable = [429, 500, 503].includes(Number(status));
-      console.error(`[openrouter:text] caller=${caller} attempt=${attempt} durationMs=${durationMs} status=${status} retryable=${retryable} error=${error instanceof Error ? error.message : String(error)}`);
+      const retryable = isTransientGeminiError(error);
+      console.error(`[gemini:text] caller=${caller} attempt=${attempt} durationMs=${durationMs} status=${status} retryable=${retryable} error=${error instanceof Error ? error.message : String(error)}`);
+      if (isRateLimitError(error)) recordKey429(keyIdx, parseRetryDelay(error) ?? undefined);
       if (!retryable || attempt >= maxAttempts) break;
       await sleep(2000 * attempt);
     }
@@ -1660,8 +1618,8 @@ ${templateHintBlock}${templateContextBlock}${templateVisualDirectionBlock}${back
 
 ${variantInstructions}`;
 
-  console.log(`[openrouter:generateTemplateCopyGemini] model=${OPENROUTER_TEXT_MODEL} schema=[${args.templateSchema.join(", ")}] prompt_chars=${prompt.length}`);
-  const raw = await generateTextWithOpenRouter(
+  console.log(`[gemini:generateTemplateCopyGemini] model=${GEMINI_TEXT_MODEL} schema=[${args.templateSchema.join(", ")}] prompt_chars=${prompt.length}`);
+  const raw = await generateTextWithGemini(
     [{ role: "user", content: prompt }],
     { callerName: "generateTemplateCopyGemini", maxTokens: 1000 }
   );
@@ -1673,13 +1631,13 @@ ${variantInstructions}`;
       .replace(/```\s*$/i, "")
       .trim();
     const parsed = JSON.parse(cleaned);
-    console.log(`[openrouter:generateTemplateCopyGemini] response keys=[${Object.keys(n > 1 ? (parsed.variants?.[0] ?? parsed) : parsed).join(", ")}]`);
+    console.log(`[gemini:generateTemplateCopyGemini] response keys=[${Object.keys(n > 1 ? (parsed.variants?.[0] ?? parsed) : parsed).join(", ")}]`);
 
     console.log(JSON.stringify({
       tag: "[PIPELINE:TOKEN_SUMMARY]",
       caller: "generateTemplateCopyGemini",
       timestamp: new Date().toISOString(),
-      model: OPENROUTER_TEXT_MODEL,
+      model: GEMINI_TEXT_MODEL,
       estimatedInputTokens: Math.ceil(prompt.length / 4),
       responseChars: raw.length,
       estimatedOutputTokens: Math.ceil(raw.length / 4),
@@ -1761,13 +1719,13 @@ Instructions:
    ${ABSOLUTE_RULES_BACKGROUND}"
 5. Output ONLY the prompt text — no labels, no explanation, no markdown`;
 
-  console.log(`[openrouter:generateImageBriefGemini] model=${OPENROUTER_TEXT_MODEL} briefType=${args.briefType} category=${args.productCategory}`);
+  console.log(`[gemini:generateImageBriefGemini] model=${GEMINI_TEXT_MODEL} briefType=${args.briefType} category=${args.productCategory}`);
 
-  const text = await generateTextWithOpenRouter(
+  const text = await generateTextWithGemini(
     [{ role: "user", content: prompt }],
     { callerName: "generateImageBriefGemini", maxTokens: 400 }
   );
-  if (!text) throw new Error("generateImageBriefGemini: empty response from OpenRouter");
+  if (!text) throw new Error("generateImageBriefGemini: empty response from Gemini");
   return text;
 }
 
@@ -1866,12 +1824,12 @@ ${environmentInstruction}
 8. Output ONLY the prompt text — no labels, no explanation, no markdown
 9. Max 80 words — be dense and specific, not verbose`;
 
-  console.log(`[openrouter:expandSceneBrief] model=${OPENROUTER_TEXT_MODEL} category=${args.productCategory} scene="${args.sceneAction.slice(0, 60)}..."`);
+  console.log(`[gemini:expandSceneBrief] model=${GEMINI_TEXT_MODEL} category=${args.productCategory} scene="${args.sceneAction.slice(0, 60)}..."`);
 
-  const text = await generateTextWithOpenRouter(
+  const text = await generateTextWithGemini(
     [{ role: "user", content: prompt }],
     { callerName: "expandSceneBrief", maxTokens: 300 }
   );
-  if (!text) throw new Error("expandSceneBrief: empty response from OpenRouter");
+  if (!text) throw new Error("expandSceneBrief: empty response from Gemini");
   return text;
 }
