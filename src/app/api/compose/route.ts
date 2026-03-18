@@ -757,7 +757,6 @@ export async function POST(request: NextRequest) {
               prompts: result.prompts,
               timing: result.timing,
               debugDir: result.debugDir,
-              briefDebug: result.briefDebug,
               strategicCore,
             },
           });
