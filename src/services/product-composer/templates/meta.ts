@@ -419,7 +419,6 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
     ],
     skipExpandSceneBrief: true,
     requiresSceneGeneration: true,
-     hyperRealisticPrompts: true,
     supportsSequence: true,
     recommendedFor: [
       "belleza-cosmetica",

@@ -300,6 +300,19 @@ export async function generateTemplateCopyOpenAI(args: {
   Example: 'beige rosado cálido muy claro'
   Example: 'blanco puro con toque crema'`,
     sceneAction: `- sceneAction: CRITICAL: Write this entire field in ENGLISH only. Gemini image generation performs significantly better with English prompts. Never write sceneAction in Spanish, regardless of the brand language.
+  REGLA DE ESCALA Y PESO DEL PRODUCTO: Antes de describir cualquier interacción física,
+  inferí el tamaño y peso real del producto a partir de su nombre y categoría.
+  - Si el producto es pequeño y liviano (serum, suplemento, vela, funda):
+    la persona puede sostenerlo en una mano, elevarlo, presentarlo a altura de rostro.
+  - Si el producto es de peso medio (frasco, libro, electrodoméstico pequeño <2kg):
+    la persona lo sostiene con una o ambas manos a altura de cintura o pecho. Sin levantarlo sobre la cabeza.
+  - Si el producto es pesado o grande (máquina, robot, mueble, equipo >5kg):
+    la persona NUNCA lo levanta. En cambio: está parada al lado, apoya una mano sobre él,
+    se agacha junto a él, o señala hacia él. El producto descansa sobre una superficie.
+  - Si el producto es un servicio o intangible: enfocate en el estado emocional de la persona
+    y su entorno. Sin producto en manos — mostrá la transformación o el resultado.
+  Siempre ajustá la interacción física a la física real del producto.
+  Una interacción irreal (levantar un robot, cargar una heladera) destruye la credibilidad del aviso.
   A COMPLETE, ready-to-use cinematic photography brief for an AI image generation model. DO NOT write a short description — write the FULL, detailed prompt.
   CRITICAL: Each variant MUST use a COMPLETELY DIFFERENT scenario, setting, and visual concept. NEVER repeat the same location, prop, or lighting setup across variants. Think like a creative director building a diverse campaign.
   Required structure — include ALL six elements:
