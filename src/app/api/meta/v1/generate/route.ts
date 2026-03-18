@@ -237,12 +237,22 @@ export async function POST(req: Request) {
     const coreStart = Date.now();
     console.log("[meta/v1/generate] Stage 1: Deriving strategic core…");
 
+    const bp = input.businessProfile;
     const core = await deriveStrategicCore(
       input.product_name,
       input.product_description,
-      {
-        businessProfile: input.businessProfile ?? undefined,
-      },
+      bp ? {
+        businessProfile: {
+          ...bp,
+          dolores: Array.isArray(bp.dolores)
+            ? bp.dolores
+            : bp.dolores ? [bp.dolores] : undefined,
+          motivaciones: Array.isArray(bp.motivaciones)
+            ? bp.motivaciones
+            : bp.motivaciones ? [bp.motivaciones] : undefined,
+          tono: Array.isArray(bp.tono) ? bp.tono[0] : bp.tono,
+        },
+      } : undefined,
     );
 
     const coreTimeMs = Date.now() - coreStart;
