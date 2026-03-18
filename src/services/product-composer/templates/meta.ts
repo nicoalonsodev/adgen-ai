@@ -260,6 +260,66 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
     Example (fitness): "Athletic person in their 30s, looking forward with quiet determination, casual sportswear, soft overhead light, moody gym background"
     Example (servicios): "Professional woman, late 30s, slight confident smile, looking slightly off-camera, clean neutral clothing, soft directional light"`,
   },
+   {
+    id: "persona-producto-top",
+    compositionMode: "scene-with-product",
+    name: "Persona con Producto Top",
+    icon: "🧍",
+    tag: "Lifestyle Ad",
+    active: true,
+    description:
+      "Panel superior limpio con headline y CTA centrados, persona sosteniendo el producto ocupa el ancho completo inferior. Estilo lifestyle brand ad (Huel, Nike).",
+    supportedRatios: ["1:1", "4:5"],
+    copyZone: "top",
+    copySchema: [
+      "badge",
+      "headline",
+      "subheadline",
+      "title",
+      "sceneAction",
+      "backgroundPrompt",
+    ],
+    requiresSceneGeneration: true,
+    sceneWithProduct: true,
+    personScene: true,
+    supportsSequence: true,
+    recommendedFor: [
+      "belleza-cosmetica",
+      "alimentos-bebidas",
+      "fitness-deporte",
+      "salud-bienestar",
+      "moda-indumentaria",
+      "tecnologia",
+    ],
+    defaultBackgroundPrompt:
+      "CRITICAL: This background must be LIGHT-TONED — very pale, soft, and bright. No dark surfaces, no strong saturated colors, no dramatic shadows. Dark typography renders on top of this background and requires maximum contrast with a light base. Even if the scene describes a warm or moody environment, the background must stay light and airy.\n\nSoft blurred modern studio or home interior. Natural light from a large window. Warm neutral tones — light beige walls, soft shadows, clean environment. Shallow depth of field bokeh effect. No people, no text, no logos, no products. Background only, suitable for full-width person compositing in the bottom half.",
+    defaultProductPrompt:
+      "Editorial lifestyle photograph of a woman, late 20s to early 40s, positioned in the BOTTOM 60% of the canvas spanning the FULL WIDTH. Visible from chest to knee, centered or slightly offset. Varied facial features, not conventionally perfect, natural facial asymmetry, subtle ethnic or regional character — not a generic stock photo face. Casual everyday clothing in neutral or warm tones, naturally fitted, realistic fabric folds. Relaxed pose, one shoulder subtly lower, slight lean toward camera. She holds the product with one hand at chest height, label fully visible and facing camera directly, natural finger grip. Other arm at side, hand relaxed. Half smile, direct eye contact. Shot on 85mm f/1.8, soft natural light from the upper left, warm bokeh. Visible skin texture, 2-3 hair flyaways near temples. CRITICAL: The TOP 40% of the canvas MUST remain completely untouched — no body part, no hair, no shoulder above the 40% line from top.",
+    templateHint: `TEMPLATE HINT for persona-producto-top:
+  This is a Huel/Nike-style lifestyle brand ad. TOP 40% is a CLEAN LIGHT PANEL with centered text (dark color).
+  BOTTOM 60% shows the person holding THIS SPECIFIC PRODUCT, spanning the FULL canvas width.
+
+  - badge: brand name or short tagline, centered. Max 30 chars.
+    Example: "Huel®" or "DermaLisse™" or "NutriBoost"
+
+  - headline: the BIG claim — bold statement about the product benefit. Max 8 words. No period needed.
+    Renders large and centered. Examples:
+    "Fast, complete, plant-based nutrition."
+    "La piel que siempre quisiste tener."
+    "Firmeza visible desde la primera semana."
+
+  - subheadline: 1-2 supporting sentences. Max 51-53 chars.
+    Example: "Fórmula con colágeno marino y ácido hialurónico para resultados reales."
+
+  - title: CTA BUTTON TEXT ONLY — renders as a centered pill button. Max 15 chars.
+    Must be a complete action phrase (verb + complement). No dots, no separators.
+    Examples: "Quiero el mío" / "Shop Now" / "Probalo gratis" / "Comprá ahora" / "Ver la oferta"
+
+  - sceneAction: describe the person holding the product. Be specific about pose, expression, clothing, lighting.
+    The person fills the FULL WIDTH of the bottom 60% of the canvas.
+    CRITICAL: always end with "The TOP 40% of the canvas must remain completely clear — no body part above that line."
+    Example: "Woman in white linen shirt, relaxed smile, holding product at chest level, looking toward camera, soft window light from upper left, warm bokeh background"`,
+  },
   {
     id: "promo-urgencia-bottom",
     compositionMode: "product-inject",
@@ -296,49 +356,6 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
     Example: "¡Compra Ahora!" or "Quiero el mío"
   - productPrompt: product held by a hand in the TOP CENTER of the image,
     fully visible, leaving the bottom 40% completely clear for text.`,
-  },
-  {
-    id: "hero-center-bottom",
-    compositionMode: "product-inject",
-    name: "Hero Center",
-    icon: "🎯",
-    tag: "Combo / Lanzamiento",
-    active: true,
-    description:
-      "Título arriba, producto centrado con IA, oferta grande abajo. Ideal para combos, lanzamientos y promociones especiales.",
-    supportedRatios: ["1:1", "4:5"],
-    copyZone: "center",
-    personScene: false,
-    copySchema: [
-      "title",
-      "headline",
-      "subheadline",
-      "badge",
-      "backgroundColorHint",
-    ],
-    requiresSceneGeneration: false,
-    rawProductPrompt: true,
-    recommendedFor: [
-      "belleza-cosmetica",
-      "moda-indumentaria",
-      "turismo-viajes",
-      "gastronomia",
-      "mascotas",
-    ],
-    defaultBackgroundPrompt:
-      "Fondo satinado suave con textura sedosa muy sutil. Iluminación difusa y envolvente, reflejos suaves. Sin objetos, sin texto, sin personas. Estilo fotografía de estudio de lujo, fondo claro con sensación de suavidad.",
-    defaultProductPrompt:
-      "Integrate the product being held by an elegant hand from below-center, placed in the CENTER zone between 22% and 68% from top. IMPORTANT: the product must be SMALL — scale it down so it occupies at most 30% of the canvas width. Leave generous negative space around it. Premium product photography style, soft lighting matching the background.",
-    templateHint: `TEMPLATE HINT for hero-center-bottom:
-- title: short product or combo name, max 40 chars, can use · separator. Example: "DERMA Lisse · Reafirmante"
-  Do NOT repeat the full product description. Keep it elegant and brief.
-- headline: the BIG offer in large bold text, max 35 chars.
-  Example: "50% OFF + ENVÍO GRATIS"
-  Keep it SHORT — this renders very large on screen.
-- subheadline: one sentence describing the product benefit, max 100 chars
-- badge: a DIFFERENT secondary offer or payment info, max 30 chars.
-  Must be different from headline.
-  Example: "3 cuotas sin interés" or "Envío gratis hoy"`,
   },
   {
     id: "headline-top-left",
@@ -695,7 +712,7 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
     name: "Beneficios Producto",
     icon: "✨",
     tag: "Beneficios",
-    active: true,
+    active: false,
     description:
       "Producto hero grande a la izquierda, 4 beneficios con pills a la derecha. Fondo gris oscuro, estilo profesional y limpio.",
     supportedRatios: ["1:1"],
@@ -1426,66 +1443,6 @@ No hands, no people. Photorealistic. 4K.`,
     Examples: "Quiero el mío" / "Shop Now" / "Probalo gratis" / "Comprá ahora" / "Ver la oferta"`,
   },
   {
-    id: "persona-producto-top",
-    compositionMode: "scene-with-product",
-    name: "Persona con Producto Top",
-    icon: "🧍",
-    tag: "Lifestyle Ad",
-    active: true,
-    description:
-      "Panel superior limpio con headline y CTA centrados, persona sosteniendo el producto ocupa el ancho completo inferior. Estilo lifestyle brand ad (Huel, Nike).",
-    supportedRatios: ["1:1", "4:5"],
-    copyZone: "top",
-    copySchema: [
-      "badge",
-      "headline",
-      "subheadline",
-      "title",
-      "sceneAction",
-      "backgroundPrompt",
-    ],
-    requiresSceneGeneration: true,
-    sceneWithProduct: true,
-    personScene: true,
-    supportsSequence: true,
-    recommendedFor: [
-      "belleza-cosmetica",
-      "alimentos-bebidas",
-      "fitness-deporte",
-      "salud-bienestar",
-      "moda-indumentaria",
-      "tecnologia",
-    ],
-    defaultBackgroundPrompt:
-      "CRITICAL: This background must be LIGHT-TONED — very pale, soft, and bright. No dark surfaces, no strong saturated colors, no dramatic shadows. Dark typography renders on top of this background and requires maximum contrast with a light base. Even if the scene describes a warm or moody environment, the background must stay light and airy.\n\nSoft blurred modern studio or home interior. Natural light from a large window. Warm neutral tones — light beige walls, soft shadows, clean environment. Shallow depth of field bokeh effect. No people, no text, no logos, no products. Background only, suitable for full-width person compositing in the bottom half.",
-    defaultProductPrompt:
-      "Editorial lifestyle photograph of a woman, late 20s to early 40s, positioned in the BOTTOM 60% of the canvas spanning the FULL WIDTH. Visible from chest to knee, centered or slightly offset. Varied facial features, not conventionally perfect, natural facial asymmetry, subtle ethnic or regional character — not a generic stock photo face. Casual everyday clothing in neutral or warm tones, naturally fitted, realistic fabric folds. Relaxed pose, one shoulder subtly lower, slight lean toward camera. She holds the product with one hand at chest height, label fully visible and facing camera directly, natural finger grip. Other arm at side, hand relaxed. Half smile, direct eye contact. Shot on 85mm f/1.8, soft natural light from the upper left, warm bokeh. Visible skin texture, 2-3 hair flyaways near temples. CRITICAL: The TOP 40% of the canvas MUST remain completely untouched — no body part, no hair, no shoulder above the 40% line from top.",
-    templateHint: `TEMPLATE HINT for persona-producto-top:
-  This is a Huel/Nike-style lifestyle brand ad. TOP 40% is a CLEAN LIGHT PANEL with centered text (dark color).
-  BOTTOM 60% shows the person holding THIS SPECIFIC PRODUCT, spanning the FULL canvas width.
-
-  - badge: brand name or short tagline, centered. Max 30 chars.
-    Example: "Huel®" or "DermaLisse™" or "NutriBoost"
-
-  - headline: the BIG claim — bold statement about the product benefit. Max 8 words. No period needed.
-    Renders large and centered. Examples:
-    "Fast, complete, plant-based nutrition."
-    "La piel que siempre quisiste tener."
-    "Firmeza visible desde la primera semana."
-
-  - subheadline: 1-2 supporting sentences. Max 51-53 chars.
-    Example: "Fórmula con colágeno marino y ácido hialurónico para resultados reales."
-
-  - title: CTA BUTTON TEXT ONLY — renders as a centered pill button. Max 15 chars.
-    Must be a complete action phrase (verb + complement). No dots, no separators.
-    Examples: "Quiero el mío" / "Shop Now" / "Probalo gratis" / "Comprá ahora" / "Ver la oferta"
-
-  - sceneAction: describe the person holding the product. Be specific about pose, expression, clothing, lighting.
-    The person fills the FULL WIDTH of the bottom 60% of the canvas.
-    CRITICAL: always end with "The TOP 40% of the canvas must remain completely clear — no body part above that line."
-    Example: "Woman in white linen shirt, relaxed smile, holding product at chest level, looking toward camera, soft window light from upper left, warm bokeh background"`,
-  },
-  {
     id: "persona-hero-bottom",
     compositionMode: "scene-with-product",
     name: "Lifestyle Hero",
@@ -1666,6 +1623,49 @@ No hands, no people. Photorealistic. 4K.`,
     Example (servicios): "Professional woman in her 30s, eyes closed with hand on forehead, dark minimal office background, single side light, cinematic"
     Example (belleza): "Woman in her late 20s seated at a dark vanity, chin resting on clasped hands, troubled gaze, warm soft side light, editorial beauty"
     Example (fitness): "Athletic man in his 30s, seated on a dark gym bench, elbows on knees, head bowed, single overhead spotlight, cinematic"`,
+  },
+   {
+    id: "hero-center-bottom",
+    compositionMode: "product-inject",
+    name: "Hero Center",
+    icon: "🎯",
+    tag: "Combo / Lanzamiento",
+    active: true,
+    description:
+      "Título arriba, producto centrado con IA, oferta grande abajo. Ideal para combos, lanzamientos y promociones especiales.",
+    supportedRatios: ["1:1", "4:5"],
+    copyZone: "center",
+    personScene: false,
+    copySchema: [
+      "title",
+      "headline",
+      "subheadline",
+      "badge",
+      "backgroundColorHint",
+    ],
+    requiresSceneGeneration: false,
+    rawProductPrompt: true,
+    recommendedFor: [
+      "belleza-cosmetica",
+      "moda-indumentaria",
+      "turismo-viajes",
+      "gastronomia",
+      "mascotas",
+    ],
+    defaultBackgroundPrompt:
+      "Fondo satinado suave con textura sedosa muy sutil. Iluminación difusa y envolvente, reflejos suaves. Sin objetos, sin texto, sin personas. Estilo fotografía de estudio de lujo, fondo claro con sensación de suavidad.",
+    defaultProductPrompt:
+      "Integrate the product being held by an elegant hand from below-center, placed in the CENTER zone between 22% and 68% from top. IMPORTANT: the product must be SMALL — scale it down so it occupies at most 30% of the canvas width. Leave generous negative space around it. Premium product photography style, soft lighting matching the background.",
+    templateHint: `TEMPLATE HINT for hero-center-bottom:
+- title: short product or combo name, max 40 chars, can use · separator. Example: "DERMA Lisse · Reafirmante"
+  Do NOT repeat the full product description. Keep it elegant and brief.
+- headline: the BIG offer in large bold text, max 35 chars.
+  Example: "50% OFF + ENVÍO GRATIS"
+  Keep it SHORT — this renders very large on screen.
+- subheadline: one sentence describing the product benefit, max 100 chars
+- badge: a DIFFERENT secondary offer or payment info, max 30 chars.
+  Must be different from headline.
+  Example: "3 cuotas sin interés" or "Envío gratis hoy"`,
   },
   {
     id: "classic-editorial-right",

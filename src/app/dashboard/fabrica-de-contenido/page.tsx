@@ -2586,6 +2586,38 @@ function StepPlantilla({
         );
       })()}
 
+      {/* Select all / deselect all */}
+      {(() => {
+        const allVisibleIds = visibleTemplates.map((t) => t.id);
+        const allSelected = allVisibleIds.every((id) => selectedTemplates.includes(id));
+        return (
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs" style={{ color: "#86868B" }}>
+              {visibleTemplates.length} plantillas visibles
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                if (allSelected) {
+                  // Keep only the first visible template selected
+                  setSelectedTemplates([allVisibleIds[0]]);
+                } else {
+                  setSelectedTemplates(allVisibleIds);
+                }
+              }}
+              className="text-xs font-semibold px-3 py-1.5 rounded-full transition-all"
+              style={{
+                background: allSelected ? "rgba(0,181,173,0.15)" : "#1C1C1E",
+                color: allSelected ? "#00B5AD" : "#86868B",
+                border: `1.5px solid ${allSelected ? "rgba(0,181,173,0.4)" : "#2A2A2A"}`,
+              }}
+            >
+              {allSelected ? "Deseleccionar todos" : "Seleccionar todos"}
+            </button>
+          </div>
+        );
+      })()}
+
       {/* Template cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
         {visibleTemplates.map((t) => {
