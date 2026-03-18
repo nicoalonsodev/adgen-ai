@@ -187,7 +187,7 @@ export default function FabricaDeContenido() {
   const [bizTone, setBizTone] = useState<Tone>("emocional");
 
   // Step 2: Templates (multi-select) + angle count
-  const [selectedTemplates, setSelectedTemplates] = useState<string[]>(["classic-editorial-right"]);
+  const [selectedTemplates, setSelectedTemplates] = useState<string[]>(["bebas-dynamicBg-cta"]);
   const [numAngles, setNumAngles] = useState(3);
   const [templateCategoryFilter, setTemplateCategoryFilter] = useState<string>("");
 

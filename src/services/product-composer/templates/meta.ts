@@ -132,6 +132,12 @@ hyperRealisticPrompts?: boolean;
   /** Product/scene prompt sent to Gemini (fallback if OpenAI doesn't generate one) */
   defaultProductPrompt?: string;
   /**
+   * When set, one prompt is picked at random on each generation instead of always using
+   * defaultProductPrompt. Enables visual variety without extra AI calls.
+   * Falls back to defaultProductPrompt (or "") if the array is empty.
+   */
+  defaultProductPromptVariants?: string[];
+  /**
    * true = sends defaultProductPrompt to Gemini as-is, no role wrapper or rules.
    * Use when the template has a precise, self-contained prompt.
    */
@@ -186,49 +192,73 @@ hyperRealisticPrompts?: boolean;
 
 export const TEMPLATE_META_LIST: TemplateMetadata[] = [
   {
-    id: "classic-editorial-right",
-    name: "Classic Editorial",
-    icon: "🖼️",
-    tag: null,
+    id: "bebas-dynamicBg-cta",
+    compositionMode: "scene-only",
+    name: "Bebas Dynamic CTA",
+    icon: "🎯",
+    tag: "Urgencia",
     active: true,
     description:
-      "Fondo full-bleed, copy en columna derecha, badge pill al fondo.",
+      "Escena full-bleed con fondo opaco/apagado elegido por IA, headline enorme en Bebas Neue arriba, overlay oscuro superior para legibilidad y botón CTA al pie. Sin producto.",
     supportedRatios: ["1:1", "4:5"],
-    copyZone: "right",
-    copySchema: [
-      "title",
-      "headline",
-      "subheadline",
-      "badge",
-      "bullets",
-    ],
-    compositionMode: "product-inject",
-    requiresSceneGeneration: false,
-    rawProductPrompt: true,
-    personScene: false,
+    copyZone: "top",
+    copySchema: ["headline", "cta", "sceneAction", "backgroundPrompt"],
+    skipExpandSceneBrief: true,
+    requiresSceneGeneration: true,
+    personScene: true,
+    sceneFullBleed: false,
+    hyperRealisticPrompts: true,
+    personOnly: true,
+    supportsSequence: false,
     recommendedFor: [
       "belleza-cosmetica",
-      "moda-indumentaria",
-      "joyeria-accesorios",
-      "hogar-deco",
       "salud-bienestar",
+      "fitness-deporte",
+      "servicios-profesionales",
+      "moda-indumentaria",
+      "tecnologia",
     ],
     defaultBackgroundPrompt:
-      "Fondo minimalista con pared lisa de textura suave, tipo estudio fotográfico premium. Iluminación natural lateral desde ventana fuera de cuadro, sombras diagonales orgánicas y difusas sobre la pared. Sin objetos, sin texto, sin personas, sin productos. Fondo claro con profundidad sutil, sensación de calma y cuidado personal.",
-    darkBackgroundPrompt:
-      "Fondo minimalista con pared lisa de textura suave, tipo estudio fotográfico premium. Iluminación dramática lateral tenue desde ventana fuera de cuadro, sombras profundas y envolventes. Sin objetos, sin texto, sin personas, sin productos. Fondo muy oscuro — tonos carbón, negro cálido o azul medianoche — con profundidad sutil y sensación de lujo y sofisticación.",
-    rawBackgroundPrompt: true,
-    defaultProductPrompt: `Edit the image adding a photorealistic human hand emerging from the LEFT or BOTTOM-LEFT edge, staying within the LEFT 39% of the canvas. The RIGHT 55% of the image MUST remain COMPLETELY UNTOUCHED. The hand holds the product with a natural grip — fingers curled with realistic compression against the product surface. Render anatomically accurate skin with visible pores, knuckles, tendons and subtle veins. Apply subsurface scattering on fingertips. Lighting must match the scene exactly: same light direction, color temperature and intensity. Add natural contact shadows between hand and product. No compositing artifacts, halos or color fringing. The product must be fully visible, upright and legible.`,
-    templateHint: `TEMPLATE HINT for classic-editorial-right:
-  This template has the product on the LEFT and copy on the RIGHT.
-  - title: 3-5 keywords separated by " · ", max 50 chars.
-    Use ingredients, attributes or brand values.
-    Example: "Colágeno · Ácido Hialurónico · Vitamina C"
-  - headline: short emotional phrase, max 6 words, ends with period. Max 32 chars.
-  - subheadline: 1-2 benefit sentences, max 120 chars, specific and direct.
-  - badge: short offer in pill format, max 35 chars.
-    Example: "60% OFF en la segunda unidad"
-  - bullets: array of 3 concrete benefits with relevant emoji, max 40 chars each.`,
+      "CRITICAL: This background must use MUTED, OPAQUE, DESATURATED tones — no bright neon colors, no clean white studio backdrops, no oversaturated palettes. Aim for rich but restrained atmospheres: warm earth tones, dusty pastels, deep moody interiors, soft natural light. White text overlays this scene, so mid-tone to moderately dark backgrounds work best. The scene must feel emotional, atmospheric, and real.\n\nSoft blurred modern interior or lifestyle setting appropriate to the product category. Shallow depth of field bokeh. No people, no text, no logos, no products visible. Full-bleed composition.",
+    defaultProductPrompt:
+      "Do NOT show any product. Generate a REAL PERSON in a quiet, authentic lifestyle moment — editorial, emotional, genuine. A person, late 20s to early 40s, in a natural candid moment that evokes the brand's emotional territory. Expression conveys quiet confidence, longing, or aspiration — not theatrical. Well-dressed in smart-casual attire, clean and fitted. The person fills most of the frame from upper chest to just above the head, centered horizontally. LIGHTING: single soft key light from above-left or side, creating sculpted shadows and depth. Background matches the generated backdrop — muted, real, atmospheric. Photorealistic editorial photography, shallow depth of field. No logos, no text, no products.",
+    rawProductPrompt: false,
+    templateHint: `TEMPLATE HINT for bebas-dynamicBg-cta:
+  Full-bleed lifestyle scene with muted/opaque background chosen by AI. A HUGE Bebas Neue headline
+  dominates the top. A CTA pill button sits at the very bottom. Dark gradient overlay at the top
+  ensures the white headline is always readable regardless of background color.
+
+  ONE HEADLINE + ONE CTA — those are the only text fields rendered.
+
+  CRITICAL RULES:
+  - headline is the main text. Write a single punchy claim or question. max 54 chars, min 43 chars.
+  - cta is the action button at the bottom. Short and direct. Max 20 chars.
+  - Adapt tone to the business niche — can be aspirational, not just pain-point.
+
+  - headline: single powerful claim, max 54 chars, min 43 chars.
+    Examples:
+    "Tu piel merece más que lo de siempre."
+    "¿List@ para el cambio que querés ver?"
+    "Más energía, más foco, más vos."
+    "El estilo que siempre quisiste tener."
+
+  - cta: short action phrase. Renders as a pill button using the brand's primary color.
+    Max 20 chars. Must be a complete action.
+    Examples: "Quiero el mío" / "Empezá ahora" / "Ver la oferta" / "Shop Now" / "Descubrilo"
+
+  - backgroundPrompt: a self-contained English image generation prompt for the background.
+    CRITICAL: MUTED, OPAQUE, DESATURATED tones only — no bright, neon, or pure-white backgrounds.
+    Rich but restrained: warm earth tones, dusty pastels, moody interiors, soft natural light.
+    Always: full-bleed, no text, no people, no products, no logos. Photorealistic, 4K. ~150-250 chars.
+    Examples:
+    "Soft blurred warm-toned kitchen interior, muted terracotta and cream walls, diffused morning light, shallow depth of field. No people, no text."
+    "Dark moody spa-like interior, deep sage green walls, warm amber candle light barely visible, stone and linen textures. No people, no text."
+
+  - sceneAction: describe the person and emotional moment. Centered horizontally.
+    Adapt to the niche. Keep it editorial and real — no stock-photo clichés.
+    Example (belleza): "Woman in her 30s, eyes gently closed, hand resting near collarbone, serene expression, warm side light, muted blurred background"
+    Example (fitness): "Athletic person in their 30s, looking forward with quiet determination, casual sportswear, soft overhead light, moody gym background"
+    Example (servicios): "Professional woman, late 30s, slight confident smile, looking slightly off-camera, clean neutral clothing, soft directional light"`,
   },
   {
     id: "promo-urgencia-bottom",
@@ -372,6 +402,7 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
     ],
     skipExpandSceneBrief: true,
     requiresSceneGeneration: true,
+     hyperRealisticPrompts: true,
     supportsSequence: true,
     recommendedFor: [
       "belleza-cosmetica",
@@ -423,7 +454,7 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
     name: "Comparación",
     icon: "⚖️",
     tag: "Vs Competencia",
-    active: true,
+    active: false,
     description:
       "Izquierda: tu producto real. Derecha: versión genérica/inferior. Estilo 'US VS THEM' con fondo bicolor y puntos de comparación numerados.",
     supportedRatios: ["1:1"],
@@ -522,7 +553,7 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
     name: "Sorteo / Giveaway",
     icon: "🎁",
     tag: "Giveaway",
-    active: true,
+    active: false,
     description:
       "Foto con personas full-bleed generada en el background, copy centrado en capas encima. Headline enorme uppercase, línea script italic debajo, badge de premios y CTA de colaboración al pie. Ideal para sorteos, giveaways y activaciones con influencers.",
     supportedRatios: ["1:1", "4:5"],
@@ -596,7 +627,7 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
     name: "Antes vs Después",
     icon: "📅",
     tag: "Transformación",
-    active: true,
+    active: false,
     description:
       "Split Day 1 vs Day X: izquierda problemas (fondo blanco), derecha resultados (fondo amarillo/color), producto grande centrado abajo cruzando ambas columnas.",
     supportedRatios: ["1:1"],
@@ -814,6 +845,7 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
     ],
     skipExpandSceneBrief: true,
     requiresSceneGeneration: true,
+     hyperRealisticPrompts: true,
     supportsSequence: true,
     recommendedFor: [
       "belleza-cosmetica",
@@ -1046,6 +1078,7 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
     description:
       "Headline y subheadline centrados en la parte superior, persona con producto ocupa el ancho completo inferior. Estilo editorial beauty premium.",
     supportedRatios: ["1:1"],
+     hyperRealisticPrompts: true,
     copyZone: "top",
     textSide: "top",
     copySchema: [
@@ -1465,6 +1498,7 @@ No hands, no people. Photorealistic. 4K.`,
     copyZone: "top",
     copySchema: ["headline", "subheadline", "title", "productPrompt"],
     requiresSceneGeneration: true,
+     hyperRealisticPrompts: true,
     sceneWithProduct: true,
     personScene: true,
     logoPosition: "center",
@@ -1634,73 +1668,56 @@ No hands, no people. Photorealistic. 4K.`,
     Example (fitness): "Athletic man in his 30s, seated on a dark gym bench, elbows on knees, head bowed, single overhead spotlight, cinematic"`,
   },
   {
-    id: "bebas-dynamicBg-cta",
-    compositionMode: "scene-only",
-    name: "Bebas Dynamic CTA",
-    icon: "🎯",
-    tag: "Urgencia",
+    id: "classic-editorial-right",
+    name: "Classic Editorial",
+    icon: "🖼️",
+    tag: null,
     active: true,
     description:
-      "Escena full-bleed con fondo opaco/apagado elegido por IA, headline enorme en Bebas Neue arriba, overlay oscuro superior para legibilidad y botón CTA al pie. Sin producto.",
+      "Fondo full-bleed, copy en columna derecha, badge pill al fondo.",
     supportedRatios: ["1:1", "4:5"],
-    copyZone: "top",
-    copySchema: ["headline", "cta", "sceneAction", "backgroundPrompt"],
-    skipExpandSceneBrief: true,
-    requiresSceneGeneration: true,
-    personScene: true,
-    sceneFullBleed: false,
-    hyperRealisticPrompts: true, 
-    personOnly: true,
-    supportsSequence: false,
+    copyZone: "right",
+    copySchema: [
+      "title",
+      "headline",
+      "subheadline",
+      "badge",
+      "bullets",
+    ],
+    compositionMode: "product-inject",
+    requiresSceneGeneration: false,
+    rawProductPrompt: true,
+    personScene: false,
     recommendedFor: [
       "belleza-cosmetica",
-      "salud-bienestar",
-      "fitness-deporte",
-      "servicios-profesionales",
       "moda-indumentaria",
-      "tecnologia",
+      "joyeria-accesorios",
+      "hogar-deco",
+      "salud-bienestar",
     ],
     defaultBackgroundPrompt:
-      "CRITICAL: This background must use MUTED, OPAQUE, DESATURATED tones — no bright neon colors, no clean white studio backdrops, no oversaturated palettes. Aim for rich but restrained atmospheres: warm earth tones, dusty pastels, deep moody interiors, soft natural light. White text overlays this scene, so mid-tone to moderately dark backgrounds work best. The scene must feel emotional, atmospheric, and real.\n\nSoft blurred modern interior or lifestyle setting appropriate to the product category. Shallow depth of field bokeh. No people, no text, no logos, no products visible. Full-bleed composition.",
-    defaultProductPrompt:
-      "Do NOT show any product. Generate a REAL PERSON in a quiet, authentic lifestyle moment — editorial, emotional, genuine. A person, late 20s to early 40s, in a natural candid moment that evokes the brand's emotional territory. Expression conveys quiet confidence, longing, or aspiration — not theatrical. Well-dressed in smart-casual attire, clean and fitted. The person fills most of the frame from upper chest to just above the head, centered horizontally. LIGHTING: single soft key light from above-left or side, creating sculpted shadows and depth. Background matches the generated backdrop — muted, real, atmospheric. Photorealistic editorial photography, shallow depth of field. No logos, no text, no products.",
-    rawProductPrompt: false,
-    templateHint: `TEMPLATE HINT for bebas-dynamicBg-cta:
-  Full-bleed lifestyle scene with muted/opaque background chosen by AI. A HUGE Bebas Neue headline
-  dominates the top. A CTA pill button sits at the very bottom. Dark gradient overlay at the top
-  ensures the white headline is always readable regardless of background color.
-
-  ONE HEADLINE + ONE CTA — those are the only text fields rendered.
-
-  CRITICAL RULES:
-  - headline is the main text. Write a single punchy claim or question. Max 8 words.
-  - cta is the action button at the bottom. Short and direct. Max 20 chars.
-  - Adapt tone to the business niche — can be aspirational, not just pain-point.
-
-  - headline: single powerful claim, max 8 words, min 5 words.
-    Examples:
-    "Tu piel merece más que lo de siempre."
-    "¿List@ para el cambio que querés ver?"
-    "Más energía, más foco, más vos."
-    "El estilo que siempre quisiste tener."
-
-  - cta: short action phrase. Renders as a pill button using the brand's primary color.
-    Max 20 chars. Must be a complete action.
-    Examples: "Quiero el mío" / "Empezá ahora" / "Ver la oferta" / "Shop Now" / "Descubrilo"
-
-  - backgroundPrompt: a self-contained English image generation prompt for the background.
-    CRITICAL: MUTED, OPAQUE, DESATURATED tones only — no bright, neon, or pure-white backgrounds.
-    Rich but restrained: warm earth tones, dusty pastels, moody interiors, soft natural light.
-    Always: full-bleed, no text, no people, no products, no logos. Photorealistic, 4K. ~150-250 chars.
-    Examples:
-    "Soft blurred warm-toned kitchen interior, muted terracotta and cream walls, diffused morning light, shallow depth of field. No people, no text."
-    "Dark moody spa-like interior, deep sage green walls, warm amber candle light barely visible, stone and linen textures. No people, no text."
-
-  - sceneAction: describe the person and emotional moment. Centered horizontally.
-    Adapt to the niche. Keep it editorial and real — no stock-photo clichés.
-    Example (belleza): "Woman in her 30s, eyes gently closed, hand resting near collarbone, serene expression, warm side light, muted blurred background"
-    Example (fitness): "Athletic person in their 30s, looking forward with quiet determination, casual sportswear, soft overhead light, moody gym background"
-    Example (servicios): "Professional woman, late 30s, slight confident smile, looking slightly off-camera, clean neutral clothing, soft directional light"`,
+      "Fondo minimalista con pared lisa de textura suave, tipo estudio fotográfico premium. Iluminación natural lateral desde ventana fuera de cuadro, sombras diagonales orgánicas y difusas sobre la pared. Sin objetos, sin texto, sin personas, sin productos. Fondo claro con profundidad sutil, sensación de calma y cuidado personal.",
+    darkBackgroundPrompt:
+      "Fondo minimalista con pared lisa de textura suave, tipo estudio fotográfico premium. Iluminación dramática lateral tenue desde ventana fuera de cuadro, sombras profundas y envolventes. Sin objetos, sin texto, sin personas, sin productos. Fondo muy oscuro — tonos carbón, negro cálido o azul medianoche — con profundidad sutil y sensación de lujo y sofisticación.",
+    rawBackgroundPrompt: true,
+    defaultProductPromptVariants: [
+      // Variant A — Hand holding product
+      `Edit the image adding a photorealistic human hand emerging from the LEFT or BOTTOM-LEFT edge, staying within the LEFT 39% of the canvas. The RIGHT 55% of the image MUST remain COMPLETELY UNTOUCHED. The hand holds the product with a natural grip — fingers curled with realistic compression against the product surface. Render anatomically accurate skin with visible pores, knuckles, tendons and subtle veins. Apply subsurface scattering on fingertips. Lighting must match the scene exactly: same light direction, color temperature and intensity. Add natural contact shadows between hand and product. No compositing artifacts, halos or color fringing. The product must be fully visible, upright and legible.`,
+      // Variant B — Product alone, studio float
+      `Edit the image placing the product alone — no hands, no person — within the LEFT 39% of the canvas. The RIGHT 55% of the image MUST remain COMPLETELY UNTOUCHED. Position the product upright and very slightly angled (5–10°) for a three-dimensional editorial feel. Studio product photography: soft key light from the upper-left matching the existing background's light direction and color temperature, with a clean cast shadow directly beneath the product. The product must be fully visible, label perfectly legible, and feel premium. No compositing artifacts, no halos, no color fringing.`,
+      // Variant C — Product in lifestyle scene
+      `Edit the image integrating the product within a minimal lifestyle surface — resting naturally on a marble countertop, wooden shelf, folded linen, or similar surface that matches the background aesthetic — within the LEFT 39% of the canvas. The RIGHT 55% of the image MUST remain COMPLETELY UNTOUCHED. The product is the clear hero: front-and-center in its zone, fully visible and label legible. Any surrounding surface elements are subtle and secondary, softly blurred. Lighting matches the scene exactly: same color temperature, soft natural directional shadow beneath the product. No hands, no people. Premium editorial product photography feel. No compositing artifacts.`,
+    ],
+    templateHint: `TEMPLATE HINT for classic-editorial-right:
+  This template has the product on the LEFT and copy on the RIGHT.
+  - title: 3-5 keywords separated by " · ", max 50 chars.
+    Use ingredients, attributes or brand values.
+    Example: "Colágeno · Ácido Hialurónico · Vitamina C"
+  - headline: short emotional phrase, max 6 words, ends with period. Max 32 chars.
+  - subheadline: 1-2 benefit sentences, max 120 chars, specific and direct.
+  - badge: short offer in pill format, max 35 chars.
+    Example: "60% OFF en la segunda unidad"
+  - bullets: array of 3 concrete benefits with relevant emoji, max 40 chars each.`,
   },
 ];
 
@@ -1746,11 +1763,16 @@ export function buildProductIAOptions(
   }
 
   // Resolve the effective prompt: productPrompt (if in schema) →
-  // sceneAction (if in schema) → defaultProductPrompt → ""
+  // sceneAction (if in schema) → random variant (if defined) → defaultProductPrompt → ""
+  const variantPool = meta.defaultProductPromptVariants;
+  const resolvedDefault =
+    variantPool && variantPool.length > 0
+      ? variantPool[Math.floor(Math.random() * variantPool.length)]
+      : meta.defaultProductPrompt;
   const effectivePrompt: string =
     (meta.copySchema.includes("productPrompt") ? (copy.productPrompt as string | undefined) : undefined) ||
     (meta.copySchema.includes("sceneAction") ? (copy.sceneAction as string | undefined) : undefined) ||
-    meta.defaultProductPrompt ||
+    resolvedDefault ||
     "";
 
   const commonOptions = {
