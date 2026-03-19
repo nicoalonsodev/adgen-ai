@@ -219,6 +219,7 @@ export default function FabricaDeContenido() {
   const [businessLogo, setBusinessLogo] = useState<{ base64: string; mimeType: string } | null>(null);
   const [businessLogoDark, setBusinessLogoDark] = useState<{ base64: string; mimeType: string } | null>(null);
   const [businessLogoLight, setBusinessLogoLight] = useState<{ base64: string; mimeType: string } | null>(null);
+  const [adFormat, setAdFormat] = useState<"1:1" | "9:16">("1:1");
 
   useEffect(() => {
     async function loadBusinessProfile() {
@@ -577,7 +578,7 @@ export default function FabricaDeContenido() {
           },
           templateBetaOptions: {
             templateId: primaryTemplate,
-            canvas: { width: 1080, height: 1080 },
+            canvas: adFormat === "9:16" ? { width: 1080, height: 1920 } : { width: 1080, height: 1080 },
             includeLayoutSpec: true,
           },
         }));
@@ -663,7 +664,7 @@ export default function FabricaDeContenido() {
         body: JSON.stringify({
           mode: "GENERATE_BACKGROUND",
           prompt: bgPrompt,
-          aspectRatio: "1:1",
+          aspectRatio: adFormat,
         }),
       });
       const bgData = await bgRes.json();
@@ -719,7 +720,7 @@ export default function FabricaDeContenido() {
           },
           templateBetaOptions: {
             templateId: primaryTemplate,
-            canvas: { width: 1080, height: 1080 },
+            canvas: adFormat === "9:16" ? { width: 1080, height: 1920 } : { width: 1080, height: 1080 },
             includeLayoutSpec: true,
           },
         }));
@@ -739,6 +740,7 @@ export default function FabricaDeContenido() {
           outputFormat: "png",
           quality: 95,
           copy: {},
+          aspectRatio: adFormat,
           productIAOptions: builtProductIAOptions,
         }));
         const _t2 = Date.now();
@@ -817,6 +819,7 @@ export default function FabricaDeContenido() {
             outputFormat: "png",
             quality: 95,
             copy: {},
+            aspectRatio: adFormat,
             productIAOptions: builtProductIAOptions,
           }));
           const _t3 = Date.now();
@@ -1029,7 +1032,7 @@ export default function FabricaDeContenido() {
                   : undefined,
                 colorMode: colorMode ?? undefined,
               },
-              templateBetaOptions: { templateId, canvas: { width: 1080, height: 1080 }, includeLayoutSpec: false },
+              templateBetaOptions: { templateId, canvas: adFormat === "9:16" ? { width: 1080, height: 1920 } : { width: 1080, height: 1080 }, includeLayoutSpec: false },
             }));
             const _tTpl = Date.now();
             const templateRes = await fetch("/api/compose", { method: "POST", headers: { Accept: "application/json" }, body: fd });
@@ -1093,7 +1096,7 @@ export default function FabricaDeContenido() {
             body: JSON.stringify({
               mode: "GENERATE_BACKGROUND",
               prompt: bgPrompt,
-              aspectRatio: "1:1",
+              aspectRatio: adFormat,
             }),
           });
           const _bgData = await _bgRes.json();
@@ -1151,7 +1154,7 @@ export default function FabricaDeContenido() {
               },
               templateBetaOptions: {
                 templateId,
-                canvas: { width: 1080, height: 1080 },
+                canvas: adFormat === "9:16" ? { width: 1080, height: 1920 } : { width: 1080, height: 1080 },
                 includeLayoutSpec: false,
               },
             }));
@@ -1169,6 +1172,7 @@ export default function FabricaDeContenido() {
               outputFormat: "png",
               quality: 95,
               copy: {},
+              aspectRatio: adFormat,
               productIAOptions: angleProductIAOptions,
             }));
             const _tTask = Date.now();
@@ -1254,6 +1258,7 @@ export default function FabricaDeContenido() {
               outputFormat: "png",
               quality: 95,
               copy: {},
+              aspectRatio: adFormat,
               productIAOptions: angleProductIAOptions,
             }));
             const _tProd = Date.now();
@@ -1371,7 +1376,7 @@ export default function FabricaDeContenido() {
           const bgRes = await fetch("/api/compose", {
             method: "POST",
             headers: { "Content-Type": "application/json", Accept: "application/json" },
-            body: JSON.stringify({ mode: "GENERATE_BACKGROUND", prompt: bgPrompt, aspectRatio: "1:1" }),
+            body: JSON.stringify({ mode: "GENERATE_BACKGROUND", prompt: bgPrompt, aspectRatio: adFormat }),
           });
           const bgData = await bgRes.json();
           if (!bgRes.ok) throw new Error(bgData.error || `Error ${bgRes.status}`);
@@ -1402,6 +1407,7 @@ export default function FabricaDeContenido() {
                 outputFormat: "png",
                 quality: 95,
                 copy: {},
+                aspectRatio: adFormat,
                 productIAOptions: {
                   prompt: productPromptForSlide,
                   copyZone: tplDef?.copyZone ?? "left",
@@ -1455,7 +1461,7 @@ export default function FabricaDeContenido() {
                 },
                 templateBetaOptions: {
                   templateId,
-                  canvas: { width: 1080, height: 1080 },
+                  canvas: adFormat === "9:16" ? { width: 1080, height: 1920 } : { width: 1080, height: 1080 },
                   includeLayoutSpec: false,
                 },
               })
@@ -1508,7 +1514,7 @@ export default function FabricaDeContenido() {
                 },
                 templateBetaOptions: {
                   templateId,
-                  canvas: { width: 1080, height: 1080 },
+                  canvas: adFormat === "9:16" ? { width: 1080, height: 1920 } : { width: 1080, height: 1080 },
                   includeLayoutSpec: false,
                 },
               })
@@ -1553,6 +1559,7 @@ Full body or 3/4 shot. Natural lighting. Hyper-realistic. No text, no objects, n
                 outputFormat: "png",
                 quality: 95,
                 copy: {},
+                aspectRatio: adFormat,
                 productIAOptions: {
                   prompt: scenePrompt,
                   copyZone: "left",
@@ -1745,6 +1752,8 @@ Full body or 3/4 shot. Natural lighting. Hyper-realistic. No text, no objects, n
             setSorteoColaboradores={setSorteoColaboradores}
             sorteoCondiciones={sorteoCondiciones}
             setSorteoCondiciones={setSorteoCondiciones}
+            adFormat={adFormat}
+            setAdFormat={setAdFormat}
           />
         )}
 
@@ -2105,6 +2114,8 @@ function StepNegocio({
   setSorteoColaboradores,
   sorteoCondiciones,
   setSorteoCondiciones,
+  adFormat,
+  setAdFormat,
 }: {
   bizProduct: string;
   setBizProduct: (v: string) => void;
@@ -2138,6 +2149,8 @@ function StepNegocio({
   setSorteoColaboradores: (v: string) => void;
   sorteoCondiciones: string;
   setSorteoCondiciones: (v: string) => void;
+  adFormat: "1:1" | "9:16";
+  setAdFormat: (v: "1:1" | "9:16") => void;
 }) {
   const [referenceOpen, setReferenceOpen] = useState(false);
 
@@ -2470,6 +2483,28 @@ function StepNegocio({
               </button>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* Format selector */}
+      <div className="mt-6">
+        <p className="text-sm font-medium mb-3">Formato</p>
+        <div className="flex gap-2">
+          {([["1:1", "Feed 1:1"], ["9:16", "Stories 9:16"]] as const).map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setAdFormat(value)}
+              className="px-4 py-2 rounded-xl text-sm font-medium transition-all"
+              style={{
+                background: adFormat === value ? "#00B5AD" : "#1C1C1E",
+                color: adFormat === value ? "#000" : "#86868B",
+                border: `1px solid ${adFormat === value ? "#00B5AD" : "#2A2A2A"}`,
+              }}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -3244,7 +3279,7 @@ function StepGenerar({
             src={resultImage!}
             alt="Creativo generado"
             className="w-full rounded-xl"
-            style={{ maxWidth: "540px", margin: "0 auto", display: "block" }}
+            style={{ maxWidth: "540px", margin: "0 auto", display: "block", aspectRatio: adFormat === "9:16" ? "9/16" : "1/1" }}
           />
           {singleTimings && (
             <div style={{ maxWidth: "540px", margin: "12px auto 0" }}>

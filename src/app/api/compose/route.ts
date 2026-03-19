@@ -167,7 +167,7 @@ if (!productFile && requestedMode !== "TEMPLATE_BETA") {
     console.log(`[compose] Generating background with prompt: ${config.backgroundPrompt.slice(0, 50)}...`);
     backgroundBuffer = await generateBackground({
       prompt: config.backgroundPrompt,
-      aspectRatio: config.aspectRatio || "4:5",
+      aspectRatio: config.aspectRatio ?? "1:1",
       apiKeys,
     });
     generatedBackground = true;
@@ -263,7 +263,7 @@ async function parseJsonRequest(request: NextRequest, apiKeys?: string[]): Promi
     console.log(`[compose] Generating background with prompt: ${body.backgroundPrompt.slice(0, 50)}...`);
     const result = await generateBackground({
       prompt: body.backgroundPrompt,
-      aspectRatio: body.aspectRatio || "4:5",
+      aspectRatio: body.aspectRatio ?? "1:1",
       apiKeys,
     });
     backgroundUrl = `data:image/png;base64,${result.toString("base64")}`;
@@ -435,7 +435,7 @@ export async function POST(request: NextRequest) {
             { status: 400 }
           );
         }
-        const buffer = await generateBackground({ prompt, aspectRatio, apiKeys: userGeminiKeys });
+        const buffer = await generateBackground({ prompt, aspectRatio: aspectRatio ?? "1:1", apiKeys: userGeminiKeys });
         if (cachedUserTokens) await consumeTokensWithData(cachedUserTokens, tokensNeeded, operation);
         return NextResponse.json({
           success: true,

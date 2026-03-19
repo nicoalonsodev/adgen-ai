@@ -1078,6 +1078,7 @@ export async function generateSceneWithAvatarAndProduct(args: {
  */
 export async function generateGenericProduct(args: {
   productPng: Buffer;
+  aspectRatio?: string;
   apiKeys?: string[];
 }): Promise<Buffer> {
   const prompt = `Analyze the product in this image carefully. Your task is to generate a NEW image of a generic, unbranded version of this EXACT same product.
@@ -1120,7 +1121,7 @@ CRITICAL REQUIREMENTS:
     ],
     config: {
       imageConfig: {
-        aspectRatio: "1:1",
+        aspectRatio: args.aspectRatio ?? "1:1",
         imageSize: "1K",
       },
       responseModalities: ["IMAGE"],
@@ -1128,7 +1129,7 @@ CRITICAL REQUIREMENTS:
   };
 
   return generateImageWithFallback(gatewayParts, googleRequest, {
-    aspectRatio: "1:1",
+    aspectRatio: args.aspectRatio ?? "1:1",
     imageSize: "1K",
     callerName: "generateGenericProduct",
     userApiKeys: args.apiKeys,

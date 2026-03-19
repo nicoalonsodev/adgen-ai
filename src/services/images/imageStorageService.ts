@@ -2,7 +2,7 @@ import sharp from "sharp";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
 const BUCKET = "creatives";
-const THUMB_SIZE = 600; // 600x600 thumbnail 1:1 para la web
+const THUMB_MAX_SIDE = 600; // longest side of thumbnail — short side scales proportionally
 
 export interface UploadCreativeImagesResult {
   originalUrl: string;
@@ -32,11 +32,11 @@ export async function uploadCreativeImages(
   const width = metadata.width ?? 1080;
   const height = metadata.height ?? 1080;
 
-  // Generar thumbnail 1:1 webp en memoria
+  // Generar thumbnail proporcional: lado más largo = 600px, lado corto escala proporcionalmente
   const thumbnailBuffer = await sharp(imageBuffer)
-    .resize(THUMB_SIZE, THUMB_SIZE, {
-      fit: "cover",
-      position: "centre",
+    .resize(THUMB_MAX_SIDE, THUMB_MAX_SIDE, {
+      fit: "inside",
+      withoutEnlargement: false,
     })
     .webp({ quality: 82 })
     .toBuffer();
