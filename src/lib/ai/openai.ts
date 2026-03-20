@@ -1,6 +1,12 @@
  import OpenAI from "openai";
 import { getSceneLibrarySection, getTextureLibrarySection } from "./promptLibrary";
-import { ZONE_PERCENTAGES as Z } from "./promptRules";
+import {
+  ZONE_PERCENTAGES as Z,
+  buildZonePlacement,
+  ABSOLUTE_RULES_ANATOMY,
+  ABSOLUTE_RULES_BACKGROUND,
+  ABSOLUTE_RULES_TEXT_PRESERVATION,
+} from "./promptRules";
 
 function getClient() {
   return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -258,7 +264,39 @@ export async function generateTemplateCopyOpenAI(args: {
   // bullets, columnTitle, competitionTitle, competitionBullets, disclaimer, cta) are
   // fully owned by templateHint and omitted here to avoid conflicts and wasted tokens.
   const FIELD_RULE: Record<string, string> = {
-    backgroundPrompt: `- backgroundPrompt: A detailed prompt in Spanish to generate a background image. It must follow this exact style:
+    backgroundPrompt: tpl?.compositionMode === "scene-with-placeholder"
+      ? `- backgroundPrompt: A self-contained English image generation prompt that describes
+  a COMPLETE ADVERTISING SCENE — background environment, a real person, AND a generic
+  unbranded placeholder product from the category "${args.businessProfile?.category ?? "the product category"}".
+
+  The prompt MUST include ALL of these elements:
+  1. ENVIRONMENT: specific setting with surfaces, textures, depth of field, atmosphere
+  2. PERSON: age range (e.g. "woman, late 20s"), clothing, pose, natural interaction
+     with the placeholder product — holding it, using it, or presenting it
+  3. PLACEHOLDER PRODUCT: a generic, unbranded, label-free object appropriate for
+     the category. Simple shape, neutral colors. No text, no logos, no brand marks.
+     It must look like a stand-in that will be replaced — photorealistic but anonymous.
+  4. COPY ZONE: ${buildZonePlacement(
+      (tpl?.copyZone ?? "top") as "top" | "bottom" | "left" | "right" | "center",
+      "scene"
+    )}
+  5. LIGHTING: cinematic, photorealistic, matching person and environment.
+
+  Format: single flowing English paragraph, 150–250 chars.
+  End with: "No text, no logos. 4K photorealistic."
+
+  Example for belleza-cosmetica / copyZone top:
+  "Warm blurred spa interior, soft amber light. Woman late 20s in white robe holds
+  a plain white cylindrical bottle at chest height, gentle smile, looking slightly
+  off-camera. Top 40% of canvas completely clear soft background. No text, no logos.
+  4K photorealistic."
+
+${ABSOLUTE_RULES_TEXT_PRESERVATION}
+
+${ABSOLUTE_RULES_ANATOMY}
+
+${ABSOLUTE_RULES_BACKGROUND}`
+      : `- backgroundPrompt: A detailed prompt in Spanish to generate a background image. It must follow this exact style:
   "Fondo [tipo de ambiente y superficie], [descripción de textura]. Iluminación [tipo de luz y dirección], generando [descripción de sombras]. Ambiente [adjetivos de atmósfera], tonos [paleta de colores], estética [estilo visual]. Luz [calidad de luz], sombras [descripción]. Superficie uniforme sin objetos, sin texto, sin personas, sin productos. Estilo fotografía publicitaria de [categoría del producto], fondo limpio con profundidad sutil y sensación de [emoción relacionada al producto]."
   The prompt must be in Spanish, detailed, evocative, and adapted to the product category and tone provided by the user.
   Example for skincare: "Fondo minimalista cálido con pared beige suave y textura lisa tipo estudio fotográfico. Iluminación natural lateral entrando desde una ventana fuera de cuadro, generando sombras difusas y orgánicas con líneas diagonales suaves sobre la pared. Ambiente cálido, tonos arena y crema, estética clean y elegante tipo skincare premium. Luz de tarde ligeramente dorada, sombras suaves y desenfocadas. Superficie uniforme sin objetos, sin texto, sin personas, sin productos. Estilo fotografía publicitaria de cosmética, fondo limpio con profundidad sutil y sensación de calma y cuidado personal."
@@ -438,9 +476,7 @@ Adapt the copy tone, length, and emotional register to this specific visual form
   const templateHintBlock = args.templateHint
     ? `TEMPLATE: ${tpl?.name ?? ""} (${tpl?.id ?? ""})${tpl?.copyZone ? ` · Zone: ${tpl.copyZone}` : ""}${tpl?.sceneFullBleed ? " · full-bleed" : ""}${tpl?.personScene ? " · person in scene" : ""}${tpl?.personOnly ? " · person-only" : ""}
 TEMPLATE HINT:
-${args.templateHint}
-
-`
+${args.templateHint}`
     : "";
 
   // Gate: only inject when a background field is actually in filteredSchema.
@@ -468,7 +504,8 @@ ${args.backgroundStyleGuide}
       ? getTextureLibrarySection(args.businessProfile.category)
       : "";
   const textureExamplesBlock = textureExample
-    ? `TEXTURE REFERENCE EXAMPLE (use this as creative reference for the texture, photographic style, and mood of the backgroundPrompt — adapt to the specific product, do NOT copy verbatim):
+    ? `TEXTURE REFERENCE EXAMPLE — CRITICAL ANALYSIS REQUIRED:
+Study this example carefully. Extract the underlying photographic principles: macro texture quality, lighting direction, surface materiality, depth of field, and color temperature. Then apply those principles to the specific product being advertised — do NOT copy the example literally. The backgroundPrompt you generate MUST reflect a texture and photographic treatment that feels native to this product's world, not a transplant from the example:
 ${textureExample}
 
 `

@@ -1,12 +1,15 @@
 import { GoogleGenAI } from "@google/genai";
 import sharp from "sharp";
-import { ABSOLUTE_RULES_SCENE, ABSOLUTE_RULES_PRODUCT_INJECT, ABSOLUTE_RULES_TEXT_PRESERVATION, ABSOLUTE_RULES_PRODUCT, ABSOLUTE_RULES_BACKGROUND, resolvePlacementZone } from "./promptRules";
+import { ABSOLUTE_RULES_SCENE, ABSOLUTE_RULES_PRODUCT_INJECT, ABSOLUTE_RULES_TEXT_PRESERVATION, ABSOLUTE_RULES_PRODUCT, ABSOLUTE_RULES_BACKGROUND, resolvePlacementZone, buildZonePlacement } from "./promptRules";
 import { getLibrarySection, getSceneLibrarySection, type ImageBriefType } from "./promptLibrary";
 
 // Gemini — text generation (official Google API, same key rotation as image calls)
 const GEMINI_TEXT_MODEL = process.env.GEMINI_TEXT_MODEL ?? "gemini-2.5-flash";
 
+/** Background generation model — fast, cost-effective */
 const MODEL_NANO_BANANA = "gemini-2.5-flash-image";
+/** Scene/person/product integration model — higher quality, 4K support */
+const MODEL_SCENE = "gemini-2.5-flash-image";
 
 /** Semaphore to limit concurrent Gemini API calls and avoid mass timeouts */
 const GEMINI_MAX_CONCURRENT = 1;
@@ -815,7 +818,7 @@ export async function nanoBananaInjectProduct(args: {
     compressProductForGemini(args.productPng, args.aspectRatio),
   ]);
 
-  console.log(`[gemini:nanoBananaInjectProduct] model=${MODEL_NANO_BANANA} prompt_chars=${args.prompt.length}\n${args.prompt.slice(0, 300)}`);
+  console.log(`[gemini:nanoBananaInjectProduct] model=${MODEL_SCENE} prompt_chars=${args.prompt.length}\n${args.prompt.slice(0, 300)}`);
 
   const gatewayParts: Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }> = [
     toImageUrlPart(bg),
@@ -824,7 +827,7 @@ export async function nanoBananaInjectProduct(args: {
   ];
 
   const googleRequest = {
-    model: MODEL_NANO_BANANA,
+    model: MODEL_SCENE,
     contents: [
       {
         role: "user",
@@ -836,17 +839,18 @@ export async function nanoBananaInjectProduct(args: {
       },
     ],
     config: {
-      imageConfig: {
-        aspectRatio: args.aspectRatio ?? "1:1",
-        imageSize: "1K",
+      responseModalities: ["IMAGE", "TEXT"],
+      imageGenerationConfig: {
+        outputOptions: {
+          mimeType: "image/png",
+          imageResolution: "4K",
+        },
       },
-      responseModalities: ["IMAGE"],
     },
   };
 
   const raw = await generateImageWithFallback(gatewayParts, googleRequest, {
     aspectRatio: args.aspectRatio ?? "1:1",
-    imageSize: "1K",
     callerName: "nanoBananaInjectProduct",
     userApiKeys: args.apiKeys,
     extractImageFromGoogle: (response: any) => {
@@ -867,8 +871,28 @@ export async function generateBackground(args: {
 }): Promise<Buffer> {
   console.log(`[gemini:generateBackground] prompt_chars=${args.prompt.length}\n${args.prompt.slice(0, 300)}`);
 
-  const bgPrompt = `Generate a photographic background scene, no text anywhere in the image, no letters, no words, no numbers, no watermarks, no logos. No people, no humans, no hands, no faces, no body parts. No products, no bottles, no packages, no objects. Only the empty background scene:
-${args.prompt}`;
+  const bgPrompt = `Generate a single photographic background scene. Shot with a Phase One IQ4 150MP digital back, Schneider Kreuznach 80mm LS f/2.8 lens.
+ 
+SCENE:
+${args.prompt}
+ 
+ABSOLUTE PHOTOGRAPHIC RULES:
+- Shallow depth of field: f/2.8 to f/4, foreground surface sharp, background softly blurred with natural bokeh.
+- Lighting: single dominant key light source consistent with scene description. Fill light at 2:1 ratio. No mixed color temperatures. No lens flare.
+- Color science: shot in 14-bit RAW, graded with natural skin-tone-safe LUT. Subtle color harmony, no oversaturation, no HDR look.
+- Surface: the main surface must show realistic micro-texture (grain, weave, veining, pores) visible at full resolution. No plastic, no CG smoothness.
+- Perspective: slight 15-25 degree overhead angle looking down at the surface, creating natural product placement zone in center-frame.
+- Negative space: 70% of frame is clean, usable area for product compositing. Visual interest pushed to edges and background.
+ 
+ABSOLUTE PROHIBITIONS — ZERO TOLERANCE:
+- NO text, letters, numbers, watermarks, logos, signatures, stamps of any kind.
+- NO people, hands, faces, fingers, silhouettes, reflections of humans.
+- NO products, bottles, jars, tubes, packages, containers, boxes, bags.
+- NO floating objects, decorative props, or staged elements in the clean zone.
+- NO visible AI artifacts: no warped geometry, no texture repetition, no uncanny symmetry.
+- NO lens distortion, chromatic aberration, or vignetting unless specified in scene.
+ 
+OUTPUT SPEC: Photorealistic, indistinguishable from a real studio photograph. Magazine-grade advertising quality. Clean enough to composite a product on top without retouching the background.`;
 
   // 1. Google GenAI (Gemini) — intento principal
   try {
@@ -934,7 +958,7 @@ export async function generateScene(args: {
 
   const bg = await compressBgForGemini(args.backgroundPng);
 
-  console.log(`[gemini:generateScene] model=${MODEL_NANO_BANANA} prompt_chars=${args.prompt.length}\n${args.prompt.slice(0, 300)}`);
+  console.log(`[gemini:generateScene] model=${MODEL_SCENE} prompt_chars=${args.prompt.length}\n${args.prompt.slice(0, 300)}`);
 
   const gatewayParts: Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }> = [
     toImageUrlPart(bg),
@@ -942,7 +966,7 @@ export async function generateScene(args: {
   ];
 
   const googleRequest = {
-    model: MODEL_NANO_BANANA,
+    model: MODEL_SCENE,
     contents: [
       {
         role: "user",
@@ -953,17 +977,18 @@ export async function generateScene(args: {
       },
     ],
     config: {
-      imageConfig: {
-        aspectRatio: args.aspectRatio ?? "1:1",
-        imageSize: "1K",
+      responseModalities: ["IMAGE", "TEXT"],
+      imageGenerationConfig: {
+        outputOptions: {
+          mimeType: "image/png",
+          imageResolution: "4K",
+        },
       },
-      responseModalities: ["IMAGE"],
     },
   };
 
   const raw = await generateImageWithFallback(gatewayParts, googleRequest, {
     aspectRatio: args.aspectRatio ?? "1:1",
-    imageSize: "1K",
     callerName: "generateScene",
     userApiKeys: args.apiKeys,
     extractImageFromGoogle: (response: any) => {
@@ -974,6 +999,84 @@ export async function generateScene(args: {
   });
   const rawMeta = await sharp(raw).metadata();
   console.log(`[generateScene:output] Gemini raw=${rawMeta.width}×${rawMeta.height}`);
+  return ensureTargetSize(raw, args.aspectRatio ?? "1:1");
+}
+
+/**
+ * Generates a complete advertising scene from text only — no image input required.
+ *
+ * Produces in a single Gemini call:
+ *   1. A full background / advertising environment
+ *   2. A person interacting naturally in the scene
+ *   3. A FICTIONAL, GENERIC placeholder product from the given category
+ *      (to be replaced by the user's real product in the PRODUCT_IA step)
+ *
+ * Uses MODEL_SCENE (4K) so the placeholder product is detailed enough for
+ * the downstream replacement compositor to anchor onto.
+ */
+export async function generateSceneWithPlaceholder(args: {
+  sceneAction: string;
+  productCategory: string;
+  copyZone: "top" | "bottom" | "left" | "right";
+  aspectRatio?: string;
+  apiKeys?: string[];
+}): Promise<Buffer> {
+  console.log(
+    "[SCENE_PLACEHOLDER] generating scene, zone:", args.copyZone,
+    "category:", args.productCategory,
+    "sceneAction:", args.sceneAction.slice(0, 60),
+  );
+
+  const prompt = [
+    "You are a senior advertising art director and photographer. Generate a high-quality photorealistic advertising scene.",
+    `SCENE BRIEF:\n${args.sceneAction}`,
+    buildZonePlacement(args.copyZone, "scene"),
+    `PLACEHOLDER PRODUCT INSTRUCTIONS:
+- Include a generic, unbranded product in the scene appropriate for the category: '${args.productCategory}'
+- The person must be holding or interacting with it naturally
+- The product must be: simple shape, neutral colors, NO text, NO logos, NO brand marks
+- Make it clearly a placeholder — it will be replaced in post-production
+- Position it prominently and keep it fully visible
+- It must look photorealistic but completely generic`,
+    ABSOLUTE_RULES_SCENE,
+  ].join("\n\n");
+
+  console.log(`[gemini:generateSceneWithPlaceholder] model=${MODEL_SCENE} prompt_chars=${prompt.length}\n${prompt.slice(0, 300)}`);
+
+  const googleRequest = {
+    model: MODEL_SCENE,
+    contents: [
+      {
+        role: "user",
+        parts: [{ text: prompt }],
+      },
+    ],
+    config: {
+      responseModalities: ["IMAGE", "TEXT"],
+      imageGenerationConfig: {
+        outputOptions: {
+          mimeType: "image/png",
+          imageResolution: "4K",
+        },
+      },
+    },
+  };
+
+  const response = await generateContentWithRetry(null, googleRequest, {
+    callerName: "generateSceneWithPlaceholder",
+    maxAttempts: 3,
+    userApiKeys: args.apiKeys,
+  });
+
+  const parts = response.candidates?.[0]?.content?.parts ?? [];
+  const imgPart = (parts as any[]).find((p: any) => p.inlineData?.data);
+  if (!imgPart?.inlineData?.data) {
+    throw new Error("generateSceneWithPlaceholder: Gemini no devolvió imagen");
+  }
+
+  const raw = Buffer.from(imgPart.inlineData.data as string, "base64");
+  const rawMeta = await sharp(raw).metadata();
+  console.log(`[generateSceneWithPlaceholder:output] Gemini raw=${rawMeta.width}×${rawMeta.height}`);
   return ensureTargetSize(raw, args.aspectRatio ?? "1:1");
 }
 
@@ -1023,7 +1126,7 @@ export async function generateSceneWithAvatarAndProduct(args: {
     compressProductForGemini(args.avatarPng, args.aspectRatio),
   ]);
 
-  console.log(`[gemini:generateSceneWithAvatarAndProduct] model=${MODEL_NANO_BANANA} prompt_chars=${args.prompt.length}\n${args.prompt.slice(0, 300)}`);
+  console.log(`[gemini:generateSceneWithAvatarAndProduct] model=${MODEL_SCENE} prompt_chars=${args.prompt.length}\n${args.prompt.slice(0, 300)}`);
 
   const gatewayParts: Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }> = [
     toImageUrlPart(bg),
@@ -1033,7 +1136,7 @@ export async function generateSceneWithAvatarAndProduct(args: {
   ];
 
   const googleRequest = {
-    model: MODEL_NANO_BANANA,
+    model: MODEL_SCENE,
     contents: [
       {
         role: "user",
@@ -1046,17 +1149,18 @@ export async function generateSceneWithAvatarAndProduct(args: {
       },
     ],
     config: {
-      imageConfig: {
-        aspectRatio: args.aspectRatio ?? "1:1",
-        imageSize: "1K",
+      responseModalities: ["IMAGE", "TEXT"],
+      imageGenerationConfig: {
+        outputOptions: {
+          mimeType: "image/png",
+          imageResolution: "4K",
+        },
       },
-      responseModalities: ["IMAGE"],
     },
   };
 
   const raw = await generateImageWithFallback(gatewayParts, googleRequest, {
     aspectRatio: args.aspectRatio ?? "1:1",
-    imageSize: "1K",
     callerName: "generateSceneWithAvatarAndProduct",
     userApiKeys: args.apiKeys,
     extractImageFromGoogle: (response: any) => {
@@ -1099,7 +1203,7 @@ CRITICAL REQUIREMENTS:
 9. Think of it as a factory prototype before labeling — a real physical object, just without any branding applied yet.
 10. CRITICAL EDGE RULE: The product silhouette MUST have a PERFECTLY SHARP, CLEAN boundary against the white background. ABSOLUTELY NO soft glow, NO ambient haze, NO blur, NO feathering extending beyond the product shape. The edge where product meets white background must be a hard, crisp line. Every pixel outside the product silhouette must be exactly #FFFFFF white.`;
 
-  console.log(`[gemini:generateGenericProduct] model=${MODEL_NANO_BANANA} prompt_chars=${prompt.length}\n${prompt.slice(0, 300)}`);
+  console.log(`[gemini:generateGenericProduct] model=${MODEL_SCENE} prompt_chars=${prompt.length}\n${prompt.slice(0, 300)}`);
 
   const productBase64 = args.productPng.toString("base64");
 
@@ -1109,7 +1213,7 @@ CRITICAL REQUIREMENTS:
   ];
 
   const googleRequest = {
-    model: MODEL_NANO_BANANA,
+    model: MODEL_SCENE,
     contents: [
       {
         role: "user",
@@ -1120,17 +1224,18 @@ CRITICAL REQUIREMENTS:
       },
     ],
     config: {
-      imageConfig: {
-        aspectRatio: args.aspectRatio ?? "1:1",
-        imageSize: "1K",
+      responseModalities: ["IMAGE", "TEXT"],
+      imageGenerationConfig: {
+        outputOptions: {
+          mimeType: "image/png",
+          imageResolution: "4K",
+        },
       },
-      responseModalities: ["IMAGE"],
     },
   };
 
   return generateImageWithFallback(gatewayParts, googleRequest, {
     aspectRatio: args.aspectRatio ?? "1:1",
-    imageSize: "1K",
     callerName: "generateGenericProduct",
     userApiKeys: args.apiKeys,
     extractImageFromGoogle: (response: any) => {
@@ -1164,9 +1269,9 @@ Return ONLY a JSON object. All values are fractions from 0.0 to 1.0 relative to 
 
 No explanation. No markdown. Only the JSON.`;
 
-  console.log(`[gemini:detectProductBoundingBox] model=${MODEL_NANO_BANANA}`);
+  console.log(`[gemini:detectProductBoundingBox] model=${MODEL_SCENE}`);
   const response = await generateContentWithRetry(null, {
-    model: MODEL_NANO_BANANA,
+    model: MODEL_SCENE,
     contents: [{
       role: "user",
       parts: [
@@ -1278,7 +1383,7 @@ Sé preciso y honesto. Un score de 10 es excepcional, 7-8 es bueno, 5-6 es acept
   parts.push({ text: prompt });
 
   const response = await generateContentWithRetry(null, {
-    model: MODEL_NANO_BANANA,
+    model: MODEL_SCENE,
     contents: [{ role: "user", parts }],
   }, { callerName: "analyzeCreativeQuality", userApiKeys: args.apiKeys });
 

@@ -374,9 +374,14 @@ const aspectRatio = `${targetW / divisor}:${targetH / divisor}`;
   const userPrompt = req.productIAOptions?.prompt ?? "";
   const copyZone = req.productIAOptions?.copyZone ?? "right";
   const rawProductPrompt = req.productIAOptions?.rawProductPrompt === true;
+  const replaceExistingProduct = req.productIAOptions?.replaceExistingProduct === true;
 
-  const prompt = buildProductIAPrompt({ userPrompt, copyZone, rawMode: rawProductPrompt, personScene: req.productIAOptions?.personScene === true });
-  console.log(`[compose:buildProductIAPrompt] copyZone=${copyZone} rawMode=${rawProductPrompt} personScene=${req.productIAOptions?.personScene} prompt="${prompt.slice(0, 120).replace(/\n/g, " ")}..."`);
+  if (replaceExistingProduct) {
+    console.log("[PRODUCT_REPLACE] replacing placeholder product in scene");
+  }
+
+  const prompt = buildProductIAPrompt({ userPrompt, copyZone, rawMode: rawProductPrompt, personScene: req.productIAOptions?.personScene === true, replaceExistingProduct });
+  console.log(`[compose:buildProductIAPrompt] copyZone=${copyZone} rawMode=${rawProductPrompt} personScene=${req.productIAOptions?.personScene} replaceExistingProduct=${replaceExistingProduct} prompt="${prompt.slice(0, 120).replace(/\n/g, " ")}..."`);
 
   // 3) NanoBanana: integrate product into background
   const scene = await nanoBananaInjectProduct({
@@ -832,19 +837,41 @@ function buildProductIAPrompt(args: {
   /** true when the scene intentionally includes a person (e.g. persona-producto-left without avatar).
    *  Enables ABSOLUTE_RULES_ANATOMY. Never set for product-only templates. */
   personScene?: boolean;
+  /** true = Image 1 already contains a placeholder product; replace it with Image 2.
+   *  When false/undefined, behaviour is identical to the existing product-inject flow. */
+  replaceExistingProduct?: boolean;
 }) {
+  // Replacement preamble — injected at the very start when Image 1 has a placeholder product.
+  // Empty string when replaceExistingProduct is false/undefined → zero impact on existing behaviour.
+  const replacementBlock = args.replaceExistingProduct
+    ? `CRITICAL TASK — PRODUCT REPLACEMENT:
+Image 1 contains a scene with a person and a PLACEHOLDER product (generic, unbranded).
+Image 2 is the REAL product that must replace it.
+
+Your task:
+- Identify the placeholder product in Image 1
+- Replace it completely with the real product from Image 2
+- Maintain the EXACT same position, scale, and orientation of the placeholder
+- Preserve all lighting, shadows, and reflections to match the scene
+- The person's pose, hands, and interaction with the product must remain natural
+- The rest of the scene (background, person, environment) must remain IDENTICAL
+- Only the product changes — nothing else
+
+`
+    : "";
+
   // ── RAW mode: template's prompt goes to Gemini mostly as-is ─────────────
   // We still append the universal text-preservation rule so no template can
   // accidentally skip it, even when it owns the creative direction.
   if (args.rawMode && args.userPrompt) {
-    return `${args.userPrompt}
+    return `${replacementBlock}${args.userPrompt}
 
 ${ABSOLUTE_RULES_PRODUCT_INJECT}${args.personScene ? `\n${ABSOLUTE_RULES_ANATOMY}` : ""}`.trim();
   }
 
   // ── FULL mode: template owns the entire prompt ───────────────────────────
   if (args.copyZone === "full" && args.userPrompt) {
-    return `${args.userPrompt}
+    return `${replacementBlock}${args.userPrompt}
 
 ${ABSOLUTE_RULES_PRODUCT_INJECT}${args.personScene ? `\n${ABSOLUTE_RULES_ANATOMY}` : ""}`.trim();
   }
@@ -853,7 +880,7 @@ ${ABSOLUTE_RULES_PRODUCT_INJECT}${args.personScene ? `\n${ABSOLUTE_RULES_ANATOMY
   // gemini.ts / composeWithProductIA.ts only set the professional context and
   // absolute safety rules. The template in index.ts drives the creative direction.
   if (args.userPrompt && args.userPrompt.length > 20) {
-    return `You are an expert product photographer and digital compositor specializing in high-end commercial advertising. You will receive two images: a background scene and a product photo.
+    return `${replacementBlock}You are an expert product photographer and digital compositor specializing in high-end commercial advertising. You will receive two images: a background scene and a product photo.
 
 STEP 1 — ANALYZE THE BACKGROUND FIRST:
 Before placing the product, carefully examine the background image and identify:
@@ -879,7 +906,7 @@ ${ABSOLUTE_RULES_PRODUCT_INJECT}`.trim();
     "product",
   );
 
-  return `You are an expert product photographer and digital compositor specializing in high-end commercial advertising. You will receive two images: a background scene and a product photo.
+  return `${replacementBlock}You are an expert product photographer and digital compositor specializing in high-end commercial advertising. You will receive two images: a background scene and a product photo.
 
 STEP 1 — ANALYZE THE BACKGROUND FIRST:
 Before placing the product, carefully examine the background image and identify:

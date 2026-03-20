@@ -24,7 +24,8 @@ export type CompositionMode =
   | "scene-only"
   | "scene-with-product"
   | "split-comparison"
-  | "none";
+  | "none"
+  | "scene-with-placeholder";
 
 export interface TemplateMetadata {
   id: string;
@@ -188,6 +189,13 @@ hyperRealisticPrompts?: boolean;
    * Never in copySchema — OpenAI does not generate this field.
    */
   textSide?: "left" | "right" | "top" | "bottom";
+  /**
+   * "scene-with-placeholder" → GENERATE_BACKGROUND genera escena completa
+   * con persona + producto ficticio genérico de la categoría.
+   * El producto real del usuario se inyecta en PRODUCT_IA como reemplazo.
+   * undefined / ausente → comportamiento estándar (generateBackground solo texto)
+   */
+  backgroundMode?: "scene-with-placeholder";
 }
 
 export const TEMPLATE_META_LIST: TemplateMetadata[] = [
@@ -235,7 +243,7 @@ export const TEMPLATE_META_LIST: TemplateMetadata[] = [
   - cta is the action button at the bottom. Short and direct. Max 20 chars.
   - Adapt tone to the business niche — can be aspirational, not just pain-point.
 
-  - headline: single powerful claim, max 54 chars, min 43 chars.
+  - headline: single powerful claim, max 54 chars, min 50 chars.
     Examples:
     "Tu piel merece más que lo de siempre."
     "¿List@ para el cambio que querés ver?"
@@ -1718,6 +1726,47 @@ No hands, no people. Photorealistic. 4K.`,
     Example: "60% OFF en la segunda unidad"
   - bullets: array of 3 concrete benefits with relevant emoji, max 40 chars each.`,
   },
+  {
+    id: "scene-placeholder-test",
+    name: "Scene Placeholder Test",
+    icon: "🧪",
+    tag: "Test",
+    active: false,
+    compositionMode: "scene-with-placeholder",
+    backgroundMode: "scene-with-placeholder",
+    description: "Pipeline test: bg+escena+placeholder → copy → replace product. Copia de bebas-dynamicBg-cta.",
+    supportedRatios: ["1:1", "4:5"],
+    copyZone: "top",
+    copySchema: ["headline", "cta", "backgroundPrompt"],
+    skipExpandSceneBrief: true,
+    requiresSceneGeneration: true,
+    personScene: true,
+    sceneFullBleed: false,
+    hyperRealisticPrompts: true,
+    personOnly: false,
+    supportsSequence: false,
+    recommendedFor: [
+      "belleza-cosmetica",
+      "salud-bienestar",
+      "fitness-deporte",
+      "servicios-profesionales",
+      "moda-indumentaria",
+    ],
+    defaultBackgroundPrompt:
+      "CRITICAL: This background must use MUTED, OPAQUE, DESATURATED tones. Aim for warm earth tones, dusty pastels, deep moody interiors. A person holds a GENERIC UNBRANDED PRODUCT appropriate for the category. Full-bleed composition. No text, no logos.",
+    defaultProductPrompt:
+      "Replace the placeholder product in Image 1 with the real product from Image 2. Maintain the exact same position, lighting, shadows, and scene context. The rest of the scene must remain identical.",
+    rawProductPrompt: false,
+    templateHint: `TEMPLATE HINT for scene-placeholder-test:
+  Identical layout to bebas-dynamicBg-cta. Used for pipeline testing only.
+  active: false — does not appear in production UI.
+
+  - headline: single powerful claim, max 54 chars.
+  - cta: short action phrase, max 20 chars.
+  - backgroundPrompt: English prompt for the background scene WITH a person holding
+    a generic unbranded placeholder product. MUTED tones only. ~150-250 chars.
+  - sceneAction: describe the person and emotional moment. Centered horizontally.`,
+  },
 ];
 
 /** Helper: get metadata for a single template ID */
@@ -1735,6 +1784,12 @@ export interface ProductIAOptionsResult {
   compositionOrder: "scene-first" | "template-first";
   /** Whether the PRODUCT_IA API call should be made at all. */
   needsProductIA: boolean;
+  /**
+   * true = the background was generated with an embedded placeholder product.
+   * PRODUCT_IA should replace it with the real product from the user.
+   * Only set for compositionMode "scene-with-placeholder".
+   */
+  replaceExistingProduct?: boolean;
 }
 
 /**
@@ -1848,6 +1903,24 @@ export function buildProductIAOptions(
       // For these, Gemini runs first on the clean bg, then TEMPLATE_BETA applies overlay + text on top.
       compositionOrder: meta.sceneFullBleed === true ? "scene-first" : "template-first",
       needsProductIA: true,
+    };
+  }
+
+  // ── scene-with-placeholder: bg generated with embedded placeholder product; replace with real ─
+  if (mode === "scene-with-placeholder") {
+    return {
+      productIAOptions: hasProductFile
+        ? {
+            ...commonOptions,
+            prompt: effectivePrompt,
+            personScene: true,
+            sceneFullBleed: false,
+            replaceExistingProduct: true,  // survives Zod parse → reaches composeWithProductIA
+          }
+        : null,
+      compositionOrder: "template-first",
+      needsProductIA: hasProductFile,
+      replaceExistingProduct: true,
     };
   }
 

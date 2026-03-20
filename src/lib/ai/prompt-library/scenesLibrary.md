@@ -225,53 +225,90 @@ Three women in their late 20s–30s stand outside a gym after a group class, all
 ---
 
 ## Alimentos & Bebidas
-*Snacks, bebidas saludables, infusiones, proteínas, superfoods*
-
+ 
 ---
-
-### Ángulo placer — disfrute genuino en la cocina
-A warm woman in her early 30s stands at a bright modern kitchen island, golden morning light through wide windows. She holds the food product in one hand while reaching for a fresh ingredient — mid-preparation. Wooden cutting board with sliced avocado, colorful vegetables, linen napkin. Relaxed apron over casual white tee, genuinely smiling — not at camera, but at what she's making. Radiates conscious eating. Warm earthy tones — terracotta, olive, natural wood, pops of green. Shot at 40mm, lifestyle editorial, natural light. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### 🪞 Ángulo emocional — el ritual de consumo
+ 
+A woman, [late 20s / early 40s], [Latin American / Southern European] features — natural face, no makeup, hair loosely piled or falling at the shoulders. She sits at a small kitchen table or window ledge in early morning — the city or a garden barely visible through the glass behind her, still slightly out of focus from sleep. She holds a [mug / glass / bottle of product] in both hands at chest height, the way people hold something warm when they need grounding. The steam or condensation is visible — the product is real and present temperature. Her eyes are open but not yet fully in the day — soft gaze, no urgency, lips slightly parted in a private, unhurried exhale. The table surface: a small ceramic bowl with [superfood powder / granola / nuts] partially eaten, a spoon resting across the rim, a folded linen napkin slightly wrinkled from use. On the windowsill: one small plant, the light catching its leaves. The kitchen behind is warm and lived-in — not styled, not sparse. Morning light is golden and low, entering from the left. Shot on Sony A7R V, 35mm, f/1.8, warm morning grade, slight grain. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
-### Ángulo lifestyle — momento cotidiano
-A relaxed woman in her 30s sits at a small round café table by a window, afternoon sun creating warm intimate atmosphere. She holds the beverage naturally — mid-sip or just lowered from lips. Other hand rests on an open book. Casual weekend clothes — soft cardigan over simple top. Blurred café behind: pendant lights, brick, other patrons. "Me time." Muted warm tones — caramel, cream, soft amber. Shot at 50mm, salon-style bokeh. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### 😩 Ángulo problema — el cuerpo que pide un cambio
+ 
+A person, [late 20s / mid 40s], [any ethnicity], mid-afternoon in an office, kitchen, or living room — the specific moment of an energy crash. They sit slightly slumped at a desk or couch, one hand supporting their head, elbow on the surface. In front of them: the remnants of the problem — an empty coffee cup with a dried ring at the bottom, a wrapper from a processed snack, a half-eaten something that didn't satisfy. Their other hand scrolls a phone or rests flat on the table. Their expression is not dramatic — it is the dull, specific look of someone whose body is running on the wrong fuel and knows it. The light is flat and artificial — overhead office light or the grey light of a clouded afternoon window. On the desk or table: a visible clock or phone time showing 3–4pm, a full water glass untouched, and just within reach — slightly out of their current attention — the [product]: a [protein bar / functional drink / superfood packet / herbal tea] not yet opened. The solution is present but not yet chosen. Shot on Canon R5, 50mm, f/2.0, slightly desaturated cool grade, no fill light. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
-### Ángulo energético — fuel para el día
-A bright, energetic woman in her late 20s walks through a sun-drenched farmers market, product in one hand, tote bag slung over shoulder. Mid-stride, caught candidly, laughing. Market stalls behind with colorful produce, flowers, textiles — soft focus. Patterned top, rolled jeans, sneakers. Bursts with color, movement, vitality. Saturated warm tones — sunflower, terracotta, leafy green, dappled sunlight. Shot at 35mm, handheld feel, dynamic composition. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### ✨ Ángulo aspiracional — la vitalidad que se nota
+ 
+A radiant person, [early 30s / early 40s], [Mediterranean / Latin American features] — warm skin with a natural glow that reads as health, not product. They stand or sit in a bright, airy kitchen or outdoor terrace, morning light flooding the space. Their posture is open and energized — not posed, but the kind of upright ease that comes from a body that is well. They hold the [product] at their side or on the table in front of them, naturally — as if it was just set down a moment ago, not arranged for camera. Their expression is composed and quietly satisfied: the look of someone who has made a decision that is working. On the surface: a [smoothie bowl / protein shake glass / tea cup] partially consumed with a spoon or straw resting on the rim, evidence of an actual meal rather than a prop. A few whole ingredients are visible nearby — [fresh fruit / nuts / seeds / herbs] — not styled, but present. Shot on Fujifilm GFX 100S, 63mm, f/2.8, warm editorial grade, soft highlight roll-off. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
-### Ángulo problema — alimentación sin sentido
-A tired person sits at a cluttered kitchen table under flat unflattering overhead light. Fast food containers, crumpled napkins, soda can surround them. Staring at phone scrolling mindlessly while eating. Slumped posture, blank expression. The healthy product sits unopened on the counter behind — visible but not yet chosen. Contrast between chaos on table and clean product tells the story. Desaturated, slightly cold tones. Shot at 35mm, documentary honest. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### 🛒 Ángulo urgencia — el descubrimiento en góndola
+ 
+A person, [late 20s / early 30s], [any ethnicity], standing in a health food store or supermarket natural aisle — shelves of competing products soft-focused behind them, shapes and colors visible but no logos legible. They hold the [product] extended toward camera with one hand, label perfectly facing viewer. Their other hand holds a phone showing either a search result, a friend's recommendation in a chat, or a nutrition comparison — partially legible, enough to register. Their expression is the specific mix of recognition and decision: one eyebrow slightly raised, slight forward lean, the look of someone who has found what they were looking for. They wear a casual, clean outfit — tote bag on one shoulder, the kind of shopper who reads labels. The lighting is clean commercial — crisp overhead store lighting with warm product spotlight accents. Shot on Nikon Z9, 35mm, f/2.0, commercial editorial grade, slightly desaturated background to isolate product. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
-### Ángulo familiar — mesa compartida
-A family scene at a bright dining table — a parent in their 30s pours or serves the product while a child watches with curiosity. Warm mid-morning light streams from a side window. The table has colorful plates, a fruit bowl, and a loaf of bread. The parent looks at the child with a warm smile while presenting the product naturally. The home is modern but lived-in — artwork on the wall, a high chair, toys visible in the background. Warm, nurturing tones — buttercream, soft wood, terracotta. Shot at 35mm, lifestyle, slightly elevated angle. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### 🔄 Ángulo transformación — el hábito nuevo
+ 
+A person, [mid 30s], [any ethnicity], photographed at a kitchen counter mid-preparation — the specific moment of building a new ritual. One side of the counter tells the old story: an empty coffee pod, a sugar bowl, a processed cereal box slightly pushed aside. The other side, where they stand, tells the new one: a [blender with superfood smoothie / shaker bottle with protein / cup of functional tea] being prepared, the [product] open and in use, a measuring spoon, a small bowl of fresh ingredients. Their posture faces the new side fully — one hand on the blender lid or shaker cap, the other holding the product, expression focused and quietly intentional. They wear comfortable home clothes — this is a Tuesday morning, not a photoshoot. The light comes from the window on the preparation side — warm and direct, while the old-habit side recedes into shadow. The transformation is spatial and behavioral, not theatrical. Shot on Sony A7IV, 40mm, f/2.2, split warm-cool grade across the counter. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
-### Ángulo premium — experiencia gourmet
-A sophisticated person in their 30s stands at a sleek marble kitchen counter, the product artfully placed alongside premium ingredients — truffle oil, fresh herbs, a beautiful cutting board. They hold a tasting spoon, mid-preparation of something elevated. Wearing a dark apron over a simple black tee. Kitchen is modern and minimal — pendant lights, matte black fixtures, copper accents. The scene elevates the product to gourmet status. Rich, moody tones — charcoal, warm copper, deep green herbs. Dramatic side lighting from a window. Shot at 50mm, food editorial, shallow depth of field. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### 🪟 Ángulo vulnerabilidad — el proceso real
+ 
+A person, [late 20s / mid 30s], [any ethnicity], sitting on a kitchen floor or at a bare table in honest, unflattering morning light. They wear comfortable clothes — an old t-shirt, hair not done. In front of them: the [product] and a half-prepared [shake / bowl / drink] that is mid-process, not finished, not Instagram-ready. Their expression is not performing wellness — it is the honest look of someone who is trying, on a day when trying takes effort. Slightly tired eyes, natural skin with visible texture, a posture that is upright but not energized. One hand holds the product, the other stirs or mixes without looking — automatic, habitual, real. The kitchen around them is ordinary: a dish in the drying rack, a plant that needs water, a grocery list on the fridge door partially visible. The lighting is overcast window light — grey and honest, no warmth added. The message is not aspiration — it is recognition. Shot on Leica SL2, 50mm, f/2.0, documentary neutral grade, no retouching. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
-### Ángulo ritual matutino — el primer sorbo *(nuevo)*
-A woman in her early 30s stands barefoot on a warm-toned kitchen floor in the first minutes of the morning. Hair undone, oversized linen shirt, eyes still soft with sleep. She cradles the product — a beverage or infusion — with both hands, first sip mid-way. Steam rises visibly. The window behind her shows pre-dawn blue light slowly becoming golden. No phone, no noise. Just this. Communicates the sacredness of the morning ritual. Deep blue to warm gold gradient atmosphere. Shot at 35mm, intimate documentary. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### 🌙 Ángulo nocturno / hygge — el ritual de calma
+ 
+A person, [late 20s / early 40s], [any ethnicity], curled into a couch or armchair in a dim, warm living space at night. They wear a soft oversized knit or a worn hoodie, feet tucked under them, a blanket partially draped. They hold a [mug of herbal tea / warm functional drink / small bowl of evening snack] in both hands — the gesture of someone receiving comfort from something warm. The steam from the drink rises faintly, catching the amber lamplight. The only light sources: one warm floor lamp behind them and the faint glow of a candle on the coffee table, its wax half-melted, flame reflected in the mug surface. On the coffee table: the [product packaging] placed naturally, a book face-down open to a page, a soft throw partially unfolded. The window behind shows darkness and faint rain on the glass. Their expression is completely at rest — eyes soft, jaw unclenched, a person who has arrived at the end of the day and found it good. Shot on Sony A7III, 50mm, f/1.4, very shallow depth of field, warm amber practical light grade. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
-### Ángulo post-ejercicio — recarga inteligente *(nuevo)*
-A woman in her late 20s sits on the front steps of her building after a run, hair in a loose bun, earbuds hanging around her neck. She opens the product — a healthy drink or snack — with the ease of habit. Running shoes dusty, legs slightly sore. She looks down the quiet street while taking the first bite or sip, expression of quiet satisfaction. Morning light just hitting the pavement. Urban, real, everyday hero. Warm urban morning tones — concrete, gold, sky blue. Shot at 35mm, candid street editorial. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### 🔬 Ángulo ciencia — el ingrediente que justifica todo
+ 
+A sharp person, [early 30s], [South Asian / East Asian / any ethnicity], at a bright, clean kitchen counter or a minimal desk. They hold the [product] up at eye level with one hand, the other hand pointing at a specific section of the ingredient label — index finger extended, precise. Their expression is analytical and confident: slightly narrowed eyes, head tilted a few degrees, the look of someone who knows exactly what they're looking at and why it matters. On the surface: a printed or hand-annotated ingredient comparison sheet, a few of the raw ingredients displayed beside the product — a small pile of [seeds / dried herbs / powder in a small bowl] — real, unprocessed, legible as source materials. A phone shows a research article or nutrition database screen, partially in frame. The lighting is clean and cool — diffused daylight, clinical precision, no warm styling. Shot on Phase One, 40mm, f/4.0, large softbox diffusion, product photography precision. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
-## Tecnología (electrónica, gadgets, software, apps)
-*Prompts hiperrealistas para imágenes generadas por IA — Gemini*
-
+ 
+### 👥 Ángulo social proof — el descubrimiento compartido
+ 
+Two people, [late 20s / early 30s], [any ethnicities — visibly different], sitting together at a café table, a kitchen, or an outdoor market. Person A reaches into their bag or across the table and produces the [product] — holding it toward Person B with the specific enthusiasm of someone sharing something that changed their routine: arm slightly extended, one eyebrow raised, the half-smile of someone who already knows the reaction they're about to get. Person B takes it, reads the label or smells it, expression moving from curiosity to genuine interest — the recognition of someone who has been looking for exactly this. Between them: two cups at different stages, an open food container, a farmers market bag with fresh produce spilling slightly at the top. Neither looks at camera. The conversation is the whole frame. The light is warm and natural — morning café light or outdoor dappled sun. Shot on Leica M11, 35mm Summilux, f/2.0, candid documentary style, warm afternoon light. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 🤍 Ángulo minimalismo — un solo ingrediente, toda la verdad
+ 
+A person, [mid 30s / early 40s], [any ethnicity with neutral palette], standing in a completely uncluttered kitchen or white space — clean surfaces, no styling, no props. They hold the [product] in both open upturned palms at chest height — the offering gesture of someone with nothing to hide. Their expression is completely still: not selling, not performing, simply certain. Beside them or on the surface: a single raw ingredient — one [cacao pod / turmeric root / matcha scoop on a ceramic spoon / whole coffee cherry] — the only other object in frame. The product and the source. That is the entire argument. Their clothing is neutral — white, oatmeal, or slate, no pattern. A single beam of natural daylight from a narrow window rakes across the scene at 45 degrees, catching the product surface. Everything else is negative space. Shot on Hasselblad X2D, 90mm, f/2.8, natural daylight only, ultra-clean grade, maximum negative space. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 👩‍👧 Ángulo generacional / familiar — la mesa que conecta
+ 
+Two or three family members across generations — a grandmother or parent [50s–60s] and a younger person [20s–30s] — sharing a meal or a ritual at a warm kitchen or dining table. The older person prepares or serves the [product or dish containing it] — their movements practiced and automatic, the ease of someone who has done this a thousand times. The younger person watches, participates, or receives — expression of familiarity and comfort, the look of someone who grew up with this but is only now understanding why it matters. On the table: real food in real vessels — ceramic bowls with slight chips, a wooden spoon, linen napkins slightly crumpled, the product visible and integrated into the scene rather than displayed. Steam rises from something warm. The light is warm domestic afternoon — window sun mixing with the ambient warmth of a kitchen that has fed people for years. Shot on Canon R5, 50mm, f/2.5, warm intimate grade, slight lens diffusion. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 🤲 Ángulo sensorial — el placer que entra por los sentidos
+ 
+Extreme close-up: a person's hands preparing or consuming the [product] — the specific gesture of their trade. For [protein shake]: both hands on a shaker, thumbs pressing the lid, the liquid inside shifting color as it mixes, a fine mist of powder still settling on the inner walls. For [superfood bowl]: a spoon lifting a loaded scoop — seeds, fruit, powder visible in layers, the liquid pooling slowly in the spoon's well. For [herbal tea]: both hands cradling a ceramic mug, fingertips pressing into the warmth, steam rising in a thin column, the surface of the liquid showing a faint swirl. For [snack]: one hand picking up a piece — the texture of the surface catching warm side light, a slight crumb falling. The product packaging is partially visible at the edge of frame — not centered, just present. The surface beneath is real: a worn wooden board, a ceramic plate with slight glaze imperfections, a linen cloth with natural texture. The lighting is warm and directional — a soft window light from camera-left, catching every texture. Shot on Canon 100mm macro L, f/2.8, extremely shallow DOF, Profoto strip softbox from camera-left, warm food photography grade. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 🌍 Ángulo aventura / outdoor — energía en movimiento
+ 
+A person, [late 20s / early 30s], [Latin American / Southeast Asian / any ethnicity], outdoors in an active setting — a trail head, a park at sunrise, a beach at low tide, or a city street mid-run pause. They are mid-activity or just stopped: slightly flushed skin, hair wind-affected, clothing functional and worn. They hold the [product — protein bar / functional drink / energy shot] in one hand, mid-consumption or just finished — the cap off, a bite taken, a straw in. Their expression is not posed exertion — it is the specific, private satisfaction of a body that is moving well and being fed well. Their other hand rests on a knee or holds a water bottle. Behind them: the environment blurred but present — trees, trail, water, urban movement — the world continuing around them. The lighting is natural outdoor morning — directional sun, clean shadows, the energy of a day in full motion. Shot on Fujifilm X-T5, 23mm, f/2.0, natural outdoor grade, slight film emulation, warm skin tones preserved. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+*Prompts optimizados para Gemini Imagen — énfasis en autenticidad alimentaria, gestualidad real y hiperrealismo sensorial.*
+*Sub-rubros cubiertos: Snacks saludables — Bebidas funcionales / jugos — Infusiones / tés / café — Proteínas / suplementos — Superfoods / ingredientes*
+*Posicionamiento: Bienestar / Performance / Placer*
 ---
 
 ### 💆 Ángulo emocional — el dispositivo que acompaña
@@ -463,85 +500,260 @@ A woman in her 40s sits in a quiet, warm room, holding a piece of jewelry in her
 ---
 
 ## Educación & Cursos
-*Formación online, coaching, mentoría*
-
+ 
 ---
-
-### Ángulo transformación — el momento "lo logré"
-A proud person in their early 30s at a clean home desk, laptop showing a completion dashboard (blurred). They lean back with accomplished expression, hands behind head or clasped in celebration. Natural side window light creates motivational warmth. Desk has notebook with handwritten notes, pen, coffee cup. Bookshelf or plant behind — signs of growth. Professional breakthrough moment. Warm aspirational tones — golden light, warm wood, clean whites. Shot at 40mm, editorial portrait, medium depth. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### 🪞 Ángulo emocional — ritual de aprendizaje
+ 
+A focused person, [late 20s / early 40s], [Latin American / Southern European] features — natural face, slight tiredness around the eyes that reads as dedication rather than neglect. Sitting at a wooden desk in a home corner converted into a study space: warm-painted wall behind, a shelf with a few books, a small succulent in a ceramic pot. It is late afternoon — golden light enters through a window to the left, casting long soft shadows across the desk surface. They have a laptop open in front of them, screen showing the [platform / course interface] — glowing softly without being the focal point. One hand rests on the keyboard, the other holds a pen over an open notebook with handwritten notes, some underlined, some circled. A ceramic mug of tea or coffee sits to the side, slightly steaming, half-full. Their expression is one of quiet concentration — not stressed, not performing focus, but genuinely absorbed. Earbuds in, one slightly loose. The desk surface has a worn quality: a pencil with the eraser used down, a sticky note with a word or phrase, a folded receipt used as a bookmark. Calm, intimate, self-directed. Shot on Sony A7R V, 35mm, f/1.8, warm afternoon grade, slight grain. Subject and screen/product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
-### Ángulo problema — estancamiento profesional
-A person in their late 20s slumps at a desk surrounded by open textbooks, laptop, and scattered papers. They stare at the screen with glazed eyes, one hand supporting their chin. A coffee cup is empty. Post-it notes on the wall show attempted organization. The room feels small and overwhelming. Late night — desk lamp is the only light source, creating harsh shadows. Cool desaturated tones — blue-grey, white, flat artificial light. Shot at 35mm, documentary, slightly messy frame. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### 😩 Ángulo problema — el estancamiento profesional
+ 
+A person, [early 30s / mid 40s], [any ethnicity], sitting at a corporate office desk or a kitchen table that doubles as a workspace. The space reads as competent but uninspired — a standard laptop, a printed document with highlighted lines, a company ID badge hanging from the monitor corner. Their posture is slightly slumped: shoulders inward, chin resting on one hand, elbow on the desk. The expression is one of quiet frustration — not dramatic, but the look of someone who has realized they've stopped growing. Eyes slightly unfocused, looking at something off-frame or slightly past the screen. The lighting is flat and artificial — overhead white office light or a single desk lamp with a cool bulb, the kind that reveals fatigue. On the desk: a coffee cup that has gone cold, a planner open to a page with very few entries, a printed job posting or professional development brochure slightly crumpled near the edge. In the blurred background: other people working, or an empty hallway, or a wall calendar with nothing circled. Shot on Canon R5, 50mm, f/2.0, slightly desaturated cool grade, no fill light. Subject on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
-### Ángulo comunidad — aprender juntos
-Two people in their 30s sit at a bright co-working table, collaborating over laptops. One points at a screen while the other nods with understanding, holding a notebook. The course or platform interface is visible (blurred) on both screens. Modern energizing space — white walls, a big window, a plant, motivational art. Both dressed smart-casual. Bright optimistic tones — white, soft blue, warm wood, green accents. Shot at 35mm, lifestyle editorial, candid interaction. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### ✨ Ángulo aspiracional — el resultado logrado
+ 
+A confident person, [30s / early 40s], [Mediterranean / Latin American] features — warm skin, relaxed posture, dressed professionally but not stiffly: a well-fitted blazer over a casual shirt, or a clean linen blouse. They sit at a bright, organized home office or co-working space — large window behind them, natural light flooding the room. On the desk: a laptop half-closed, a professional notebook with a pen clipped to it, a small [certificate / printed diploma / course completion badge] leaning casually against the monitor — visible but not forced. They look directly into the camera with the composed expression of someone who has already done the work: relaxed jaw, slight natural smile, posture open and grounded. One hand rests on the desk near the [certificate / device], the other relaxed in their lap. The environment reads as earned success — not luxury, but intention. A shelf in the background shows books, a plant, and one framed photo out of focus. Shot on Fujifilm GFX 100S, 63mm, f/2.8, warm editorial grade, soft highlight roll-off. Subject on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
-### Ángulo inversión — apostar por una misma *(nuevo)*
-A woman in her 30s sits at a kitchen table, laptop open showing an enrollment or checkout page (blurred). She has her credit card in one hand, the other hovering over the keyboard — a decisive moment of commitment. Her expression is not anxious but resolved, grounded. Beside the laptop: a notebook with a handwritten list of goals, a mug, morning light through a window. The scene says "this is the moment I chose myself." Warm optimistic tones — cream, warm wood, golden light. Shot at 40mm, candid lifestyle. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### 🛒 Ángulo urgencia — la decisión en el momento
+ 
+A person, [late 20s / early 30s], [any ethnicity], sitting at a desk or on a couch with a laptop open, the screen showing a [course enrollment page / landing page] with a visible countdown timer or limited spots indicator — legible enough to read the format, not the exact copy. Their posture is forward-leaning: both elbows on the desk, face close to the screen, one hand on the trackpad. Their expression is at the edge of decision — brows slightly furrowed, lips pressed, the look of someone who has read the same page twice and is about to click. Their other hand holds a credit card loosely, not yet placed on the keyboard. The lighting is a mix of screen glow and warm ambient lamp light — the screen reflects faintly on their cheekbones. On the desk: a glass of water, a phone face-down, a sticky note with a few pros/cons or a name and number written on it. The room is slightly dim — it feels like a late-night moment of decision. Shot on Nikon Z9, 35mm, f/2.0, cool ambient with warm screen glow grade. Subject and screen on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
-### Ángulo aplicación — el conocimiento en práctica *(nuevo)*
-A professional in their 30s stands confidently in a real workplace or creative studio, mid-task — presenting to colleagues (blurred), working on a project, or demonstrating a skill. Their body language shows ownership and capability. The course branding is visible on a laptop or notebook in their hand. Behind them, the environment confirms their field: design tools, business materials, a whiteboard. The scene says "I learned this, and now I do this." Bright professional tones, natural light. Shot at 35mm, corporate documentary. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### 🔄 Ángulo transformación — el antes implícito
+ 
+A person, [mid 30s], [any ethnicity], photographed in two implied states within a single frame: they sit at a desk that is clearly mid-transition — one side shows old materials (a printed CV slightly worn, a closed textbook, a sticky note that reads "update LinkedIn"), the other side shows new energy: a laptop open to a [course dashboard], a fresh notebook with organized notes, a pen uncapped and recently used. The person themselves reads as in motion: they face the new side, posture upright, one hand actively scrolling or typing, the other holding a highlighter over the new notebook. They wear a clean, simple outfit — not corporate, not casual, but composed. Their expression is quietly motivated: focused eyes, slight forward lean, no performance. The light comes from the window on the new-materials side — the old side is in softer, receding shadow. The transition is spatial and emotional, not literal. Shot on Sony A7IV, 40mm, f/2.2, split warm-cool grade matching the two sides of the desk. Subject on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 🪟 Ángulo vulnerabilidad — el miedo a empezar
+ 
+A person, [late 20s / early 40s], [any ethnicity], sitting alone at a kitchen table or small desk in a modest, lived-in space. In front of them: a laptop open to a [course sign-up page or platform homepage]. They are not typing. Their hands are folded in their lap or resting flat on the table — the gesture of someone who has arrived but hasn't moved yet. Their expression is honest and slightly raw: the specific look of wanting something and being afraid of it at the same time. Eyes looking at the screen but not quite seeing it, a slight tension in the jaw. The room is ordinary and real — a jacket hung on the chair back, a bill or envelope on the table corner, a phone with a cracked screen nearby. The lighting is natural and slightly flat — overcast window light, no warmth added. Nothing is styled. The laptop screen glows softly, the only thing with energy in the frame. Shot on Leica SL2, 50mm, f/2.0, documentary neutral grade, no retouching. Subject on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 🌙 Ángulo nocturno — el aprendizaje después de todo lo demás
+ 
+A person, [late 20s / mid 30s], [any ethnicity], sitting at a desk or on a bed with a laptop propped on a pillow or lap desk, late at night. The only light sources: the laptop screen glowing warm, and a small bedside or desk lamp with a warm amber bulb. The room around them is dark and still — you sense a sleeping household, a quieted day. They wear comfortable clothes: a worn sweatshirt, hair loosely tied or slightly disheveled. On the surface nearby: a half-eaten snack on a small plate, a phone charging, a glass of water, earbuds coiled next to them. The laptop screen shows a [video lesson / module list / course interface] — mid-play, a progress bar partially filled. Their expression is one of quiet determination: eyes slightly heavy but alert, the look of someone who found the only hour that belongs to them. Shot on Sony A7III, 50mm, f/1.4, very shallow depth of field, warm amber practical light grade. Subject and screen on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 🔬 Ángulo ciencia — el método detrás del aprendizaje
+ 
+A sharp person, [early 30s], [South Asian / East Asian / any ethnicity], sitting at a very organized desk in a bright, minimal space. They wear a clean Oxford shirt or structured top, hair pulled back or neatly kept, minimal accessories. In front of them: a laptop open to a [course platform], a printed or handwritten learning framework — a diagram, a skill map, or a structured note with levels and arrows. They hold a pen, pointing at a specific node in the diagram, head slightly tilted in analysis. Their expression is focused and precise — narrowed eyes, slight forward lean, processing rather than feeling. On the desk: a set of color-coded sticky notes arranged deliberately, a timer (physical or on screen), one textbook open to a specific page with a clip marking it. The lighting is clean and cool — a large window with diffused daylight, no warm tones, clinical and clear. Shot on Phase One, 40mm, f/4.0, softbox diffusion, product photography precision applied to human scene. Subject on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 👥 Ángulo social proof — la recomendación entre pares
+ 
+Two people, [late 20s / early 30s], [any ethnicities — visibly different from each other], sitting together at a café table or a shared workspace. One of them — Person A — has a laptop open showing a [course platform or completion screen], pointing at it with genuine enthusiasm, mid-explanation. Person B leans in, one elbow on the table, chin resting on their hand, expression reading authentic recognition — the look of someone who is already half-convinced. Between them: two coffee cups, one empty, one half-full, a phone face-up with a browser or app open, a shared notebook with a page turned toward Person B. The environment is warm and real: background café noise implied by blurred figures and warm overhead pendants, or an open-plan office with soft activity. Neither person looks at camera. The conversation is the whole world. Shot on Leica M11, 35mm Summilux, f/2.0, candid documentary style, warm afternoon light. Subject, laptop and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 🤍 Ángulo minimalismo — claridad ante el ruido
+ 
+A person, [mid 30s / early 40s], [Scandinavian / Northern European features or any light-neutral palette], standing or sitting in a completely bare, quiet space — warm white wall with subtle plaster texture, no decoration, no clutter. They hold a single device — a tablet or closed laptop — in both hands at chest height, the way you'd hold something that has simplified your life. Their expression is completely still: not excited, not performing, simply clear. They wear a clean white or oatmeal-toned shirt, loose trousers in a neutral tone, no jewelry. The only other element in frame: the [course logo / platform name / certificate] visible on the device screen, catching light. A single beam of natural daylight from an off-frame narrow window rakes across the scene at 45 degrees, casting one long soft shadow. Everything else is negative space. Shot on Hasselblad X2D, 90mm, f/2.8, natural daylight only, high-contrast negative space, ultra-clean grade. Subject and device on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 👩‍👧 Ángulo generacional — aprender para ellos
+ 
+A parent, [mid 30s / early 40s], [Latin American / Mediterranean features], sitting at a kitchen or living room table with a laptop open to a [course platform]. In the background — slightly out of focus but unmistakably present — a child, [5–10 years old], playing quietly on the floor or doing homework at the same table. The parent faces the screen, one hand on the trackpad, expression one of quiet resolve: not stressed, but purposeful. The child looks up briefly toward the parent with an expression of simple familiarity — this is a normal moment in their household. The lighting is warm domestic — overhead kitchen light mixed with late afternoon window sun, the kind that makes ordinary rooms feel like home. On the table: a child's drawing near the parent's elbow, the parent's phone face-down, a glass of water, a notebook with scattered notes. The course is not the point — the reason for the course is. Shot on Canon R5, 50mm, f/2.5, warm intimate domestic grade, slight lens diffusion. Subject and screen on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 🤲 Ángulo sensorial — el placer táctil del aprendizaje
+ 
+Extreme close-up: a person's hands at a desk — one hand writing in a notebook with a good pen, the other resting flat on the open page. The handwriting is real and slightly imperfect: a mix of printed and cursive letters, some words underlined twice, a small diagram with arrows in the margin. The notebook paper has a slight texture — cream-colored, slightly warm, not bright white. The pen leaves a faint ink trail still slightly wet on the last letters. Around the hands: the edge of a laptop keyboard partially in frame, a highlighter uncapped and resting diagonally, one corner of a printed [course workbook or module sheet]. The desk surface is light wood with natural grain. The lighting is warm and directional — a soft window light from the left, creating gentle shadows in the pen grooves and notebook spiral. Everything is slightly imperfect and very real. Shot on Canon 100mm macro L, f/2.8, extremely shallow DOF, Profoto strip softbox from camera-left. Subject and materials on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 🌍 Ángulo aventura / expansión — el aprendizaje como apertura al mundo
+ 
+A person, [late 20s / early 30s], [Latin American / Southeast Asian features], sitting at an outdoor table — a rooftop terrace, a hostel common area, or a café with a view of a city street. They have a laptop open and earbuds in, clearly mid-lesson, but their posture is open and expansive rather than hunched: back straight, one arm outstretched on the table, slight smile that reads as private satisfaction. Behind them: an urban landscape with movement — blurred figures, buildings, a skyline — the world going on while they carve out this moment inside it. The lighting is natural and dynamic — dappled sun or overcast bright daylight, the energy of outdoors. On the table: a passport or travel card visible near the laptop, a local coffee cup, a phone with a translation or map app open on screen. The [course / platform] on the laptop screen reads as a window into something larger than the street behind them. Shot on Fujifilm X-T5, 23mm, f/2.0, natural outdoor grade, slight film emulation. Subject and screen on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+*Prompts optimizados para Gemini Imagen — énfasis en hiperrealismo humano, gestualidad auténtica y referencia técnica fotográfica.*
 ---
 
 ## Servicios Profesionales
-*Consultoría, agencias, coaching, legal, contable*
-
+ 
 ---
-
-### Ángulo confianza — el experto accesible
-A professional in their 40s sits in a modern meeting space, natural light from large windows creating a bright, trustworthy atmosphere. Smart casual — blazer over simple top. They hold a tablet or document, leaning slightly forward with engaged, approachable expression. Behind them: whiteboard with strategic notes, books, a plant. Expertise + approachability. Clean professional tones — navy, white, soft grey, warm accents. Shot at 50mm, corporate editorial, shallow depth of field. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### 🪞 Ángulo emocional — la presencia antes de la reunión
+ 
+A composed professional, [late 30s / early 40s], [Latin American / Southern European] features — no makeup or minimal grooming, natural face with slight expression lines that read as experience. They sit alone at a large meeting table or at a clean desk before the workday begins — the space is theirs and nobody else's right now. A laptop is open but the screen is dimmed. In front of them: a leather-bound notebook open to a page with handwritten notes, a few words circled, some arrows. Their hands are folded on the table, or one hand holds a pen resting lightly on the page — mid-thought, not mid-task. Their expression is one of quiet internal focus: the look of someone preparing, not performing. The space reads as [consulting firm / coaching studio / law office / accounting practice] — defined by one strong visual element in the background: a bookshelf dense with titles, a whiteboard with a half-erased framework, or a framed client letter. Morning light enters through a window to the left, long and golden, the room still mostly in shadow. Shot on Sony A7R V, 35mm, f/1.8, warm early morning grade, slight grain. Subject and [notebook / laptop / document] on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
-### Ángulo resultado — impacto medible
-A satisfied professional in their 30s stands confidently in front of a large screen or whiteboard showing growth charts or positive metrics (blurred but clearly upward). Arms crossed with quiet pride, direct smile at camera. Well-dressed in business casual — a quality shirt, rolled sleeves. The office behind is modern, clean, successful. Morning light creates an optimistic, forward-looking atmosphere. Clean bright tones — white, charcoal, one accent brand color, warm natural light. Shot at 40mm, corporate editorial, medium depth. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### 😩 Ángulo problema — el cliente antes de pedir ayuda
+ 
+A person, [mid 30s / late 40s], [any ethnicity], sitting at a home or office desk surrounded by the visible symptoms of an unresolved problem. The specific chaos depends on the sub-rubro: for [legal] — printed contracts, highlighted clauses, a letter with an official stamp face-up, a phone with a missed call from an unknown number; for [accounting] — receipts piled in an open folder, a spreadsheet on screen with several red cells visible, a calculator with a half-entered number; for [consulting] — a printed report with conflicting data points circled in different colors, a whiteboard photo on their phone, a coffee cup from yesterday still on the desk; for [coaching] — a journal with several crossed-out entries, a planner open to a blank week. The person holds their head with both hands, elbows on the desk — not dramatic, but unmistakably overwhelmed. Their posture has collapsed inward. The lighting is flat and harsh — overhead fluorescent or a single cool desk lamp, the kind that reveals every problem. Shot on Canon R5, 50mm, f/2.0, desaturated cool grade, no fill. Subject on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
-### Ángulo humano — detrás del servicio hay personas
-A warm professional in their 30s sits at a round table with a client (blurred or partially visible), leaning in with genuine interest, notepad in hand. The meeting space is casual — a bright café or casual office with plants and natural light. Two cups of coffee on the table between them. The professional's expression shows active listening, empathy. Warm, inviting tones — natural wood, cream, soft grey, green plant accents. Shot at 50mm, documentary moment, shallow depth on the professional. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### ✨ Ángulo aspiracional — el profesional que ya resolvió
+ 
+A confident professional, [late 30s / early 50s], [Mediterranean / Latin American / any ethnicity], seated or standing at a polished but not sterile workspace — a well-organized desk, a bright co-working space, or a clean modern office with plants and natural light. Their posture is open, grounded, unhurried. They hold or rest one hand near a [signed document / printed proposal / tablet showing results / professional portfolio] — the physical evidence of work completed and trusted. The other hand is relaxed. They look directly into camera with the expression of someone who has solved this problem many times before: steady eyes, a slight natural smile, no tension in the jaw. Their clothing is professional and intentional — a fitted blazer over a clean shirt, quality shoes, minimal jewelry. Behind them: a shelf with a few industry titles, one framed credential slightly off-center, a small plant. The light is warm and controlled — soft natural window light mixed with a clean practical lamp. Shot on Fujifilm GFX 100S, 63mm, f/2.8, warm editorial grade, soft highlight roll-off. Subject and [document / device] on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
-### Ángulo proceso — el trabajo detrás *(nuevo)*
-A professional in their 30s works alone at a spacious desk covered in organized materials — documents, a laptop with spreadsheets (blurred), sticky notes in a clear system. They lean forward focused, pen in hand, marking something significant. The office or studio around them communicates serious craft: bookshelves, a whiteboard with diagrams. It's 8am or 9pm — early dedication or late commitment. The scene builds trust by showing the work. Cool professional tones — charcoal, white, warm lamp accent. Shot at 35mm, documentary corporate. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### 🛒 Ángulo urgencia — el momento de contratar
+ 
+A person, [early 30s / late 40s], [any ethnicity], sitting at a desk or kitchen table with a laptop or phone showing a [service landing page / booking calendar / contact form]. Their posture is forward-leaning — both elbows on the surface, face closer to the screen than usual. One hand is on the trackpad or hovering over the keyboard. Their expression is at the precise edge of decision: brows slightly knitted, lips pressed, the look of someone who has waited long enough and knows it. On the desk: a handwritten list of options that has been narrowed down — only one name or option remains uncrossed. A phone face-up with a chat thread or a saved contact. A cold cup of coffee. The lighting is a mix of screen glow and a warm lamp — the room is dim, the screen is the brightest thing. The scene implies a moment that has been building for weeks and is happening right now. Shot on Nikon Z9, 35mm, f/2.0, cool ambient with warm screen glow grade. Subject and screen on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
+ 
+### 🔄 Ángulo transformación — el cliente antes y después, en un solo frame
+ 
+A person, [mid 30s / early 50s], [any ethnicity], photographed at a desk that tells two stories within a single frame. One side of the desk holds the old state: a folder with the problem — a disputed document, a failed report, a crossed-out plan, a printed rejection. The other side holds the new state: a clean [signed agreement / corrected balance sheet / approved proposal / coaching action plan] with a pen resting on top, recently completed. The person faces the new side, posture upright and composed, one hand resting on the completed document — the gesture of someone who has arrived somewhere. Their expression is quietly resolved: not euphoric, but settled. The light comes from the window on the resolved side — the problem side is in softer, receding shadow. The transition is spatial and emotional, not theatrical. Shot on Sony A7IV, 40mm, f/2.2, split warm-cool grade mirroring the two desk sides. Subject on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 🪟 Ángulo vulnerabilidad — el profesional real
+ 
+A professional, [late 30s / mid 40s], [any ethnicity], sitting alone in their office or studio at an in-between moment — not presenting, not in a meeting, just present. Their jacket is off, draped over the back of the chair. Sleeves slightly rolled. Hair not perfectly set. On the desk: a notebook with a page of crossed-out ideas, a pen set down mid-thought, a phone face-down. They look toward camera — not performing authority, not smiling for an audience. Their expression is honest: the specific look of someone who cares deeply about their work and carries that weight visibly. Not sad, not weak — human. The room around them is real: a bookshelf slightly imperfect, a framed photo slightly crooked, a plant that needs water. The lighting is natural and slightly flat — overcast window light, no artificial warmth added. The humanness is the whole point. Shot on Leica SL2, 50mm APO-Summicron, f/2.0, documentary neutral grade, no retouching. Subject on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 🌙 Ángulo nocturno — la dedicación que el cliente nunca ve
+ 
+A professional, [late 30s / mid 40s], [any ethnicity], working alone at their desk late at night. The office or home office is dark except for two sources: a warm desk lamp casting a cone of amber light over the work surface, and the cool glow of a laptop screen reflecting faintly on their face. The city or a quiet street is barely visible through a window behind them — dark, still. On the desk: an open [contract with annotations / spreadsheet mid-review / client brief with sticky notes / coaching session notes] — the specific document of their trade, mid-work. A half-drunk glass of water, a pen in hand, a phone showing a late hour. Their posture is still focused — not slumped, not dramatic, but unmistakably deep into something that matters. Their expression is one of quiet, private commitment. This is the work the client benefits from but never sees. Shot on Sony A7III, 50mm, f/1.4, very shallow depth of field, warm amber practical light grade. Subject and work surface on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 🔬 Ángulo ciencia — el método que genera confianza
+ 
+A sharp professional, [early 40s], [South Asian / Eastern European / any ethnicity], standing or sitting at a clean, organized workspace. Their appearance is precise: fitted shirt or blazer, hair controlled, minimal accessories, reading glasses on or held in one hand. In front of them: a structured document, diagram, or framework — a [legal clause map / financial model / consulting methodology chart / coaching assessment tool] — spread on the desk or displayed on a large monitor. They point at a specific section with one finger, head slightly tilted in explanation or analysis. Their expression is focused and authoritative — not cold, but exact. On the desk: color-coded folders, a legal pad with structured notes, a second monitor with data, a single professional credential or certification frame on the wall behind them, just legible enough to register. The lighting is clean and cool — large window with diffused daylight, no warm tones, clinical precision. Shot on Phase One, 40mm, f/4.0, large softbox diffusion, architectural sharpness. Subject and [document / screen] on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 👥 Ángulo social proof — la recomendación entre pares
+ 
+Two people, [30s / 40s], [any ethnicities — visibly different], in a professional but relaxed setting: a café, a co-working lounge, or the corridor outside an office. Person A — the recommender — speaks with genuine conviction, leaning slightly toward Person B, one hand gesturing toward a phone showing a [profile / website / document] of the professional or service. Their expression is that specific mix of certainty and enthusiasm that only comes from personal experience. Person B — the listener — leans forward, one elbow on the table or knee, nodding slightly, expression reading as genuine recognition: the look of someone who realizes they've been looking for this. Between them: two coffee cups at different stages, a phone or tablet on the table, a business card or printed one-pager slightly to the side. Neither looks at camera. The conversation is everything. The background is warm and slightly blurred — other professionals in motion, ambient professional life. Shot on Leica M11, 35mm Summilux, f/2.0, candid documentary style, warm afternoon light. Subject and [device / card] on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 🤍 Ángulo minimalismo — autoridad sin ruido
+ 
+A professional, [40s / early 50s], [Scandinavian / Northern features or any neutral-palette ethnicity], standing in a completely uncluttered space — warm white wall with subtle plaster or matte texture, no art, no objects. Their clothing is intentional and restrained: a perfectly fitted dark blazer, a clean white shirt, minimal or no accessories. Their posture is upright and still — not rigid, but certain. They hold a single object in both hands at chest height: a [closed leather portfolio / tablet / folded document / business card] — the only element that names or implies the service. Their expression is completely composed: not smiling, not performing warmth, simply present and certain. A single beam of natural daylight from a narrow off-frame window rakes across the scene at 45 degrees, casting one precise shadow. Everything else in the frame is negative space. Authority communicated through absence. Shot on Hasselblad X2D, 90mm, f/2.8, natural daylight only, ultra-clean grade, maximum negative space. Subject and [object] on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 👩‍👧 Ángulo generacional — la confianza construida con el tiempo
+ 
+A senior professional, [mid 50s / early 60s], [Mediterranean / Latin American features], seated at a classic but not ostentatious desk — dark wood, a few framed credentials on the wall behind, a bookshelf with decades of accumulated titles. Beside them or across the desk: a younger person, [late 20s / early 30s], clearly a client or a junior colleague, leaning forward with a document or notebook, expression of trust and attentiveness. The senior professional points at something on a shared document — their gesture is practiced, specific, the movement of someone who has explained this a hundred times and still means it. The younger person nods, makes a note. The interaction is real: no performance for camera, no eye contact with lens. The lighting is warm and classic — late afternoon window light mixing with a traditional brass desk lamp. The scene reads as: this person has been here before, and so has their family. Shot on Canon R5, 50mm, f/2.5, warm intimate grade, slight lens diffusion. Subject and [document / desk object] on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 🤲 Ángulo sensorial — la materialidad del trabajo profesional
+ 
+Extreme close-up: a professional's hands at a desk — one hand holds a quality pen, the other steadies a [legal document / financial report / client proposal / printed coaching plan] on a clean surface. The paper is real: slightly warm white, matte finish, visible text in a clean serif font — not fully legible, but clearly professional. The pen nib rests on a signature line or an annotation — the specific moment just before or just after marking something that matters. The fingernails are trimmed and clean, unpolished or with a very natural finish. A slight callus on the inner middle finger from years of writing. The cuff of a fitted shirt or blazer is visible at the wrist edge. The desk surface is dark oak or warm slate, with a faint reflection of the document. The lighting is warm and directional — a soft window light from camera-left, creating subtle shadows in the paper texture and pen grooves. Shot on Canon 100mm macro L, f/2.8, extremely shallow DOF, Profoto strip softbox from camera-left, warm professional grade. Subject and [document] on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 🌍 Ángulo aventura / expansión — el crecimiento como horizonte
+ 
+A professional, [late 30s / early 40s], [Latin American / Southeast Asian / any ethnicity], in a setting that implies scale and movement: a rooftop meeting space, an airport lounge, a modern glass-walled conference room with a city skyline behind them. Their posture is expansive — back straight, one arm extended on the table toward a [laptop showing a growth chart / printed expansion proposal / global map with marked cities]. They look at the material in front of them with the expression of someone who is thinking bigger than the room they're in: focused eyes, slight forward lean, the quiet energy of someone who has outgrown their previous limits. They wear a sharp but mobile outfit — a fitted blazer, no tie, quality leather bag on the chair beside them. On the table: a phone with an international number on screen, a business card from another country, a coffee cup from the location. The background is blurred but implies scale — city, movement, altitude. Shot on Fujifilm X-T5, 23mm, f/2.0, natural outdoor or glass-filtered light grade, slight film emulation. Subject and [document / device] on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+*Prompts optimizados para Gemini Imagen — énfasis en hiperrealismo profesional, gestualidad auténtica y referencia técnica fotográfica.*
+*Sub-rubros cubiertos: Consultoría / Agencias — Coaching — Legal — Contable*
 
 ## Bebés & Maternidad
-*Pañales, cremas bebé, productos maternales, juguetes 0–3*
-
+ 
 ---
-
-### Ángulo tierno — conexión madre-hijo
-A young mother in her late 20s sits in a nursery rocking chair, soft morning light through sheer white curtains. She holds a baby (6–12 months) on her lap with one arm while holding the baby product in the other hand — applying cream or presenting the package naturally. Both are in soft pastel clothing — whites, pale yellows. The nursery is minimal but warm: a crib visible behind, a small stuffed animal, a mobile. Her expression is pure tenderness, looking down at the baby. Ultra-soft warm tones — cream, pale pink, butter yellow, warm whites. Shot at 50mm, intimate portrait, very shallow depth of field. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### 🪞 Ángulo emocional — el ritual de cuidado
+ 
+A mother, [late 20s / early 30s], [Latin American / Mediterranean] features — natural face, no makeup, hair loosely tied with a few strands fallen at the temples. She kneels on a soft bath mat beside a low changing table or a padded mat on the floor. Her baby, [3–6 months], lies on their back in front of her — awake, calm, making eye contact with her rather than camera. The mother applies [product name] to the baby's skin with both hands — slow, deliberate strokes along the baby's legs and belly, the way someone does something they have done a hundred times and still finds tender. The baby's feet are slightly raised, one tiny hand gripping her index finger without being prompted. The room is warm and dim — morning light filtering through sheer curtains, one small wall lamp on low. On the changing surface: a folded clean cotton onesie, a single wipe, the product within reach. A baby mobile hangs just out of frame, casting a faint shadow. The father or partner is partially visible in the background — seated, watching, present but not central. Warm ivory, blush, and sage tones. Shot on Sony A7R V, 50mm, f/1.8, warm documentary grade, slight grain. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
-### Ángulo seguridad — protección informada
-A parent in their early 30s stands in a bright, clean bathroom, holding the baby product up to read the label carefully, one hand supporting a baby on their hip. The baby plays with a teething toy, content. The bathroom is spotless — white tiles, a small tub in the background, warm natural light. Expression: serious but loving, the look of a parent who checks every ingredient. Clean, clinical but warm tones — white, soft blue, natural skin tones. Shot at 40mm, editorial documentary, commercial quality. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### 😩 Ángulo problema — el agotamiento real
+ 
+A parent, [late 20s / early 30s], [any ethnicity] — father, mother, or non-binary parent — sitting on the edge of a bed or a nursing chair at what is clearly an unreasonable hour. Their posture tells everything: shoulders dropped, back slightly curved, eyes carrying the specific heaviness of interrupted sleep for weeks. They hold the baby against their chest — the baby is awake, restless, not yet settled. The parent's free hand reaches toward the [product — cream, soother, sleep aid, wipes] on the nightstand, stretching without fully getting up, the economy of movement of someone running on minimal reserves. The nightstand is real: a phone showing 3:47am, a half-drunk glass of water, a burp cloth slightly damp, the product within reach. The only light is a small warm nightlight and the faint phone screen glow. Their expression is not dramatic despair — it is the specific, honest look of someone doing their absolute best at the hardest possible time. Shot on Canon R5, 50mm, f/2.0, very warm low-light grade, minimal fill, authentic shadows. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
-### Ángulo padre presente — paternidad activa *(nuevo)*
-A father in his early 30s sits on the floor of a nursery, fully engaged — changing, bathing, or applying the product to the baby with careful concentration. Baby on a clean mat, kicking happily. The father's expression is absorbed and tender — no performance, just care. He's in casual home clothes, barefoot. The nursery is modern, gender-neutral — light wood, soft grey, white. The scene normalizes involved fatherhood. Soft neutral tones — white, light wood, sage. Shot at 40mm, candid documentary, natural light. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### ✨ Ángulo aspiracional — la familia plena
+ 
+A couple, [early 30s], [Mediterranean / Latin American features], with their baby, [8–14 months], in a bright, airy living space — large windows, warm natural light, light oak floors, a few thoughtfully chosen toys visible but not cluttering the space. The baby sits independently on a soft play mat, holding a [product or toy] in both hands, examining it with the focused expression of a small person encountering something new. One parent sits cross-legged on the floor nearby, leaning slightly toward the baby, one hand lightly on their back — present without hovering. The other parent is on the couch just behind, feet tucked up, a coffee mug in hand, watching them both with the relaxed expression of someone who is exactly where they want to be. Nobody looks at camera. The scene radiates the specific contentment of a family that has found its rhythm. The light is warm, diffused, editorial — the kind that makes ordinary Sunday mornings look like everything. Shot on Fujifilm GFX 100S, 63mm, f/2.8, warm editorial grade, soft highlight roll-off. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
-### Ángulo agotamiento — la maternidad real *(nuevo)*
-A mother in her late 20s sits on the floor of a nursery at 3am, back against the crib, baby finally asleep in her arms. The only light is a soft nightlight casting warm amber. Her expression is exhausted but fiercely loving. The product sits beside her — already used, already part of the night routine. Dark circles, hair loose, oversized sleep shirt. No glamour, total authenticity. The scene says "I'd do all of this again." Deep amber and near-black tones, one warm light source. Shot at 35mm, documentary intimate. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### 🛒 Ángulo urgencia — la primera compra
+ 
+A parent, [late 20s], [any ethnicity], standing in a baby products aisle or sitting at a laptop or phone with a product page open — clearly a first-time parent: the expression gives it away. They hold the [product] in one hand, reading the back label with careful attention — brows slightly furrowed, lips moving almost imperceptibly. Their other hand holds a phone showing a search result or a recommendation from a parenting group. In a baby carrier strapped to their chest, a newborn sleeps against them — impossibly small, head resting just below the parent's collarbone, one tiny fist visible. The parent hasn't fully registered the baby's weight anymore — it's already part of them. On the floor beside them: a basket with two or three other products, clearly comparison shopping. Their expression oscillates between overwhelmed and determined: someone who will get this right. Shot on Nikon Z9, 35mm, f/2.0, clean retail or warm home light grade. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
+ 
+### 🔄 Ángulo transformación — el postparto honesto
+ 
+A mother, [late 20s / early 30s], [any ethnicity], photographed at a bathroom mirror. The scene implies time passed since birth — her body is postpartum real: a slightly soft belly visible under a loose nursing top, hair growing back at the temples, faint dark circles still present but less acute than weeks ago. She looks at her own reflection with an expression that is neither sad nor performing happiness — it is the look of someone in the middle of becoming. In one hand: the [product — postnatal cream, stretch mark oil, nursing balm] at chest height, recently applied, a slight sheen visible on the skin of her collarbone. With her other hand, she touches her own jawline lightly — not fixing anything, just present with herself. Behind her in the mirror's reflection: the edge of a crib, a mobile, a folded muslin cloth on the bathroom shelf. The lighting is natural morning light from a frosted window — honest, not flattering, not harsh. Shot on Leica SL2, 50mm, f/2.0, documentary neutral grade, no retouching, full skin texture preserved. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 🪟 Ángulo vulnerabilidad — la maternidad sin filtro
+ 
+A mother, [late 20s / early 30s], [any ethnicity], sitting on the bathroom floor with her back against the bathtub — not because something is wrong, but because this is the only quiet room with a lock. She wears a nursing bra and loose postpartum underwear — real, functional, unstyled. Her hair is unwashed, twisted into a clip that's slightly coming apart. She holds the [product] loosely in both hands in her lap, not yet using it — just holding it, a brief pause inside a relentless day. Her expression is honest and complex: tired, tender, slightly overwhelmed, but not broken. Through the partially open door behind her, the faint sound of a baby is implied — a mobile, a monitor light blinking on the shelf. The bathroom is ordinary and lived-in: a damp towel on the edge of the tub, a nursing pad on the counter, a half-used tube of something near the sink. The lighting is soft and natural — a frosted window, no warmth added. Shot on Leica SL2, 35mm, f/2.0, documentary neutral grade, zero retouching. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 🌙 Ángulo nocturno — el ritual de la noche
+ 
+A parent, [late 20s / early 30s], [any ethnicity], in a dimly lit nursery at night. The only light: a small warm nightlight in the corner casting a soft amber glow across the room, and the faint light from a baby monitor screen. They stand over a crib or sit in a nursing chair, the baby [2–5 months] cradled against their chest or lying on the changing mat in front of them — drowsy, almost asleep. The parent applies [product — night cream, soothing balm, gentle oil] to the baby's skin with one hand, movements slow and deliberate, the other hand keeping a gentle weight on the baby's belly. The baby's eyes are half-open, heavy. The room around them: a white crib with a muslin swaddle draped over one side, a small shelf with a few board books and a stuffed animal, a humidifier glowing faintly. The parent's expression is one of total present-moment focus — no phone, no distraction, just this. Warm amber, deep ivory, and soft shadow tones throughout. Shot on Sony A7III, 50mm, f/1.4, very shallow depth of field, warm amber practical light grade. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 🔬 Ángulo ciencia — seguro para su piel
+ 
+A parent, [early 30s], [any ethnicity], sitting at a kitchen table in bright natural daylight, the [product] held up at eye level in one hand — tilted slightly so the ingredient label faces camera. Their other hand holds a phone showing a dermatology article or a pediatrician recommendation — the screen partially legible, enough to register as research. Their expression is focused and analytical: the look of someone who has done the homework. They wear a clean, minimal outfit. On the table: a printed list of ingredients to avoid, a highlighter, a second product for comparison placed face-down to the side. The baby is present but peripheral — in a bouncer just off to the side, calm, visible at the edge of frame. The lighting is clean and cool — large window with diffused daylight, clinical clarity. The message is not fear — it is informed confidence. Shot on Phase One, 40mm, f/4.0, large softbox diffusion, clean product photography precision applied to human scene. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 👥 Ángulo social proof — lo que se pasa entre madres
+ 
+Two mothers, [late 20s / early 30s], [any ethnicities — visibly different], sitting together at a kitchen table or a park bench, each with a baby or toddler nearby — one in a carrier, one in a stroller just beside the bench, one playing on a blanket on the grass. Mother A reaches into her bag and pulls out the [product], holding it toward Mother B with the specific enthusiasm of someone sharing something that actually worked: arm slightly extended, label toward her friend, one eyebrow raised, a half-smile that says "I know, I know." Mother B leans forward, takes it with both hands, reads the label — her expression is genuine curiosity mixed with the recognition of someone who has been looking for exactly this. Between them on the table or blanket: two takeaway coffee cups, a muslin cloth, a packet of baby snacks half-open. Neither looks at camera. The warmth between them is real. Shot on Leica M11, 35mm Summilux, f/2.0, candid documentary style, warm outdoor afternoon light. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 🤍 Ángulo minimalismo — solo lo que importa
+ 
+A mother or father, [early 30s], [any ethnicity with light-neutral palette], in a completely uncluttered nursery or bedroom — warm white walls, a single white crib with one folded muslin, natural light from a narrow window. The parent stands or sits beside the crib, the sleeping baby [newborn / 1–2 months] visible inside — impossibly small, one fist near their cheek. The parent holds the [product] in both open upturned palms at chest height — an offering gesture, not a hold. Their expression is completely still: not performing joy, not performing exhaustion. Simply present. Simply certain about this one thing. The product is the only element with distinct color in the entire frame. No clutter, no props, no styling. The silence is the point. Shot on Hasselblad X2D, 90mm, f/2.8, natural daylight only, high-contrast negative space, ultra-clean grade. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 👩‍👧 Ángulo generacional — lo que aprendimos de nuestras madres
+ 
+Three generations in a warm domestic space: a grandmother, [60s], [Mediterranean / Latin American features] — silver-streaked hair, soft hands with visible veins, the authority of someone who has done this before; her daughter, [early 30s], the new mother — tired but present; and the baby, [2–4 months], lying on a soft blanket between them. The grandmother applies [product] to the baby's skin with practiced ease — her technique specific, her movements automatic, shaped by decades. The mother watches from close beside her, one hand resting near the baby's head, learning or remembering. Their expressions are not posed: the grandmother focused and calm, the mother quietly absorbing, the baby serene under familiar hands. On the surface beside them: a folded cotton cloth, a small bowl of warm water, one other product set aside. The lighting is warm domestic — afternoon window sun mixing with the ambient warmth of a home that has held many babies. Shot on Canon R5, 50mm, f/2.5, warm intimate grade, slight lens diffusion. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 🤲 Ángulo sensorial — suavidad que se ve
+ 
+Extreme close-up: an adult hand — large, with visible knuckles, slight dry skin at the wrist that reads as a parent's working hand — applying [product] to a baby's skin. The baby's thigh or upper arm fills most of the frame: the skin is impossibly soft, slightly rosy from warmth, with the faint natural folds of baby fat at the crease. The product — a cream or oil — sits on the skin surface mid-absorption: still slightly shiny, catching warm side light from camera-right, the texture visible between the adult's fingertips as they spread it in slow circles. The scale difference between the adult hand and the baby's limb is the emotional content of the entire image. The background is entirely blurred warm cream — a blanket or sheet, indeterminate. No faces, no staging, no context beyond this one moment of contact. Shot on Canon 100mm macro L, f/2.8, extremely shallow DOF, Profoto strip softbox from camera-right, warm skin grade. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 🌍 Ángulo aventura / expansión — el mundo por descubrir
+ 
+A family, [early 30s parents], [Latin American / Southeast Asian features], outdoors in a park, a beach, or an open urban space on a bright morning. Their toddler, [14–24 months], stands or sits on the grass a few feet ahead of them — looking at something just off-frame with the total focused wonder only toddlers have. One parent crouches at the toddler's level, pointing at whatever caught the child's attention, expression matching their wonder. The other parent stands slightly behind, the [product — sunscreen, outdoor toy, stroller, carrier] visible and in active use — not held for camera, but actually being used. The scene is motion and light: the toddler's hair slightly lifted by breeze, the parents' body language open and energized. The background is blurred natural environment — trees, soft sky, movement. The lighting is bright outdoor morning — directional sun, clean shadows, the energy of a day just beginning. Shot on Fujifilm X-T5, 23mm, f/2.0, natural outdoor grade, slight film emulation, warm skin tones preserved. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+*Prompts optimizados para Gemini Imagen — énfasis en autenticidad familiar, gestualidad real y hiperrealismo emocional.*
+*Productos cubiertos: Cuidado del bebé — Maternidad y postparto — Juguetes y estimulación 0–3 — Accesorios y equipamiento*
+ 
 ## Automotriz
 *Accesorios, limpieza, gadgets de auto, lubricantes*
 

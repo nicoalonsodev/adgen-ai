@@ -183,13 +183,39 @@ export const ABSOLUTE_RULES_TEXT_PRESERVATION = `ABSOLUTE RULES — violation is
   must remain perfectly intact and legible — do NOT erase, cover, blur,
   distort, or modify them in any way.`;
 
-export const ABSOLUTE_RULES_ANATOMY = `- The person must have EXACTLY two arms and two hands —
-  correct human anatomy is mandatory. Never generate extra limbs.`;
+export const ABSOLUTE_RULES_ANATOMY = `
+ANATOMY & PHOTOREALISM — NON-NEGOTIABLE:
 
-export const ABSOLUTE_RULES_PRODUCT = `- Preserve the product's exact appearance, colors, labels,
-  and proportions — do NOT alter the product in any way.
-- The product must always be FULLY VISIBLE and FULLY OPAQUE —
-  never crop, clip, fade, dissolve, or apply transparency to it.`;
+LIMBS: Exactly 2 arms, 2 hands. Never extra or missing limbs. Both shoulders correctly attached.
+
+HANDS: 5 fingers each (thumb+index+middle+ring+pinky — count before finalizing). Taper naturally,
+visible knuckles, tendons, palm creases, lunula, cuticles, dorsal veins, loose skin at joints.
+No sausage fingers, fused/extra digits, or featureless backs.
+
+ARMS: Subtle muscle volume (bicep, tricep, forearm). Visible tendons at wrist, organic body hair,
+cephalic/basilic veins. Elbow with natural loose skin. Consistent tone/texture wrist-to-hand.
+No rubbery cylinders, plastic skin, or wrist discontinuity.
+
+SKIN: DSLR-portrait realism. Visible pores, micro-imperfections, slight facial asymmetry, subsurface
+scattering (translucent/warm under light), natural undertones. No airbrushed/plastic/uniform texture.
+
+HAIR: Strand-by-strand. Flyaways, root-to-tip gradient, gravity-driven flow, individual hairs at
+hairline. Texture matches ethnicity/style. No wig uniformity, plastic sheen, identical strands.
+
+EYES: Radial iris fibers, limbal ring, correct pupil dilation, catchlight, wet sclera sheen,
+caruncle pink, subtle sclera veins. Individual lashes, natural lid folds. No glassy/cartoon eyes.
+
+FINAL BAR: Indistinguishable from a DSLR portrait. Correct proportions for age and ethnicity.
+`;
+
+export const ABSOLUTE_RULES_PRODUCT = `
+PRODUCT INTEGRATION — physically present in the scene:
+- GRIP: Hand wraps naturally around product, fingers occlude label partially, knuckles adjust to shape. No floating.
+- LIGHTING: Same source, direction, color temperature, and intensity as person and background. No flat studio light on product if scene is directional.
+- SHADOW + CONTACT: Product casts shadow consistent with scene light on hand/surface. Shares same focus plane as hand — never sharp product on blurred hand.
+- SCALE: Proportional to hand (30ml serum fits in one hand with fingers reaching around).
+- LABEL: Reproduce all text, logos, graphics pixel-perfect. Never redraw or hallucinate content. Product FULLY VISIBLE, FULLY OPAQUE, never cropped or faded.
+`;
 
 export const ABSOLUTE_RULES_BACKGROUND = `- DO NOT modify, alter, recolor, blur, brighten, darken,
   or change ANY part of the background. Only add the requested element.`;

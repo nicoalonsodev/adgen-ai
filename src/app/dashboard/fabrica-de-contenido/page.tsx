@@ -665,6 +665,12 @@ export default function FabricaDeContenido() {
           mode: "GENERATE_BACKGROUND",
           prompt: bgPrompt,
           aspectRatio: adFormat,
+          ...(templateDef?.backgroundMode === "scene-with-placeholder" && {
+            backgroundMode: "scene-with-placeholder",
+            sceneAction: copy?.sceneAction ?? "",
+            copyZone: templateDef?.copyZone ?? "left",
+            productCategory: businessProfile?.category ?? "",
+          }),
         }),
       });
       const bgData = await bgRes.json();
@@ -1097,6 +1103,12 @@ export default function FabricaDeContenido() {
               mode: "GENERATE_BACKGROUND",
               prompt: bgPrompt,
               aspectRatio: adFormat,
+              ...(tplMeta?.backgroundMode === "scene-with-placeholder" && {
+                backgroundMode: "scene-with-placeholder",
+                sceneAction: copy?.sceneAction ?? "",
+                copyZone: tplMeta?.copyZone ?? "left",
+                productCategory: businessProfile?.category ?? "",
+              }),
             }),
           });
           const _bgData = await _bgRes.json();
@@ -1376,7 +1388,17 @@ export default function FabricaDeContenido() {
           const bgRes = await fetch("/api/compose", {
             method: "POST",
             headers: { "Content-Type": "application/json", Accept: "application/json" },
-            body: JSON.stringify({ mode: "GENERATE_BACKGROUND", prompt: bgPrompt, aspectRatio: adFormat }),
+            body: JSON.stringify({
+            mode: "GENERATE_BACKGROUND",
+            prompt: bgPrompt,
+            aspectRatio: adFormat,
+            ...(tplDef?.backgroundMode === "scene-with-placeholder" && {
+              backgroundMode: "scene-with-placeholder",
+              sceneAction: (slide as any)?.sceneAction ?? "",
+              copyZone: tplDef?.copyZone ?? "left",
+              productCategory: businessProfile?.category ?? "",
+            }),
+          }),
           });
           const bgData = await bgRes.json();
           if (!bgRes.ok) throw new Error(bgData.error || `Error ${bgRes.status}`);

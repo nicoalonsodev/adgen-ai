@@ -16,7 +16,7 @@ import { compose, composeWithAutoLayout, composeWithSmartUsage, composeWithPrese
 
 import { composeWithProductIA } from "@/services/product-composer";
 import { composeWithTemplateBeta } from "@/services/product-composer/composeWithTemplateBeta"; // ← AGREGAR
-import { generateBackground, analyzeCreativeQuality, generateImageBriefGemini, expandSceneBrief } from "@/lib/ai/gemini";
+import { generateBackground, analyzeCreativeQuality, generateImageBriefGemini, expandSceneBrief, generateSceneWithPlaceholder } from "@/lib/ai/gemini";
 import { generateTemplateCopyOpenAI, analyzeCreativeReference, generateSequenceCopy } from "@/lib/ai/openai";
 import type { ImageBriefType } from "@/lib/ai/promptLibrary";
 import { getSceneLibrarySection } from "@/lib/ai/promptLibrary";
@@ -411,12 +411,20 @@ export async function POST(request: NextRequest) {
       let mode: string | undefined;
       let prompt: string | undefined;
       let aspectRatio: string | undefined;
+      let backgroundMode: string | undefined;
+      let sceneAction: string | undefined;
+      let copyZone: string | undefined;
+      let productCategory: string | undefined;
 
       if (contentType.includes("application/json")) {
         const body = await clone.json().catch(() => ({}));
         mode = body.mode;
         prompt = body.prompt;
         aspectRatio = body.aspectRatio;
+        backgroundMode = body.backgroundMode;
+        sceneAction = body.sceneAction;
+        copyZone = body.copyZone;
+        productCategory = body.productCategory;
       } else if (contentType.includes("multipart/form-data")) {
         const fd = await clone.formData().catch(() => new FormData());
         const configStr = fd.get("config") as string | null;
@@ -425,10 +433,42 @@ export async function POST(request: NextRequest) {
           mode = cfg.mode;
           prompt = cfg.prompt;
           aspectRatio = cfg.aspectRatio;
+          backgroundMode = cfg.backgroundMode;
+          sceneAction = cfg.sceneAction;
+          copyZone = cfg.copyZone;
+          productCategory = cfg.productCategory;
         }
       }
 
       if (mode === "GENERATE_BACKGROUND") {
+        // Branch: scene-with-placeholder — generates full scene with generic product placeholder
+        if (backgroundMode === "scene-with-placeholder") {
+          if (!sceneAction) {
+            return NextResponse.json(
+              { success: false, error: "Missing sceneAction for scene-with-placeholder mode" },
+              { status: 400 }
+            );
+          }
+          const resolvedCopyZone = (copyZone ?? "left") as "top" | "bottom" | "left" | "right";
+          const resolvedProductCategory = productCategory ?? "";
+          const buffer = await generateSceneWithPlaceholder({
+            sceneAction,
+            productCategory: resolvedProductCategory,
+            copyZone: resolvedCopyZone,
+            aspectRatio: aspectRatio ?? "1:1",
+            apiKeys: userGeminiKeys,
+          });
+          if (cachedUserTokens) await consumeTokensWithData(cachedUserTokens, tokensNeeded, operation);
+          return NextResponse.json({
+            success: true,
+            requestId,
+            data: {
+              image: `data:image/png;base64,${buffer.toString("base64")}`,
+              promptUsed: `scene-with-placeholder:${resolvedProductCategory}:${resolvedCopyZone}`,
+            },
+          });
+        }
+
         if (!prompt) {
           return NextResponse.json(
             { success: false, error: "Missing config.prompt for GENERATE_BACKGROUND" },

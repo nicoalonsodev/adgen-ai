@@ -30,6 +30,7 @@ import { buildPersonaProductoTopLayout } from "./persona-producto-top";
 import { buildPersonaHeroBottomLayout } from "./persona-hero-bottom";
 import { buildBebasUrgenciaTopLayout } from "./bebas-urgencia-top";
 import { buildBebasDynamicBgCtaLayout } from "./bebas-dynamicBg-cta";
+import { buildScenePlaceholderTestLayout } from "./scene-placeholder-test";
 import { TEMPLATE_META_LIST, type TemplateMetadata } from "./meta";
 import type { LayoutSpec } from "../layoutSpec";
 
@@ -67,6 +68,7 @@ const LAYOUT_BUILDERS: Record<string, BuildLayoutFn> = {
   "persona-hero-bottom": buildPersonaHeroBottomLayout as BuildLayoutFn,
   "bebas-urgencia-top": buildBebasUrgenciaTopLayout as BuildLayoutFn,
   "bebas-dynamicBg-cta": buildBebasDynamicBgCtaLayout as BuildLayoutFn,
+  "scene-placeholder-test": buildScenePlaceholderTestLayout as BuildLayoutFn,
 };
 
 export const TEMPLATE_REGISTRY: Record<string, TemplateDefinition> = Object.fromEntries(

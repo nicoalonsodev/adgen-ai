@@ -291,6 +291,12 @@ copyZone: z.enum(["right", "left", "top", "bottom", "center", "full"]).default("
    * the person fill the whole frame. Used with templates that have a dark overlay.
    */
   sceneFullBleed: z.boolean().optional().default(false),
+  /**
+   * true = the background scene contains a PLACEHOLDER product (generic, unbranded).
+   * PRODUCT_IA must REPLACE the placeholder with the real user product
+   * instead of adding a new one. Only set by the "scene-with-placeholder" compositionMode.
+   */
+  replaceExistingProduct: z.boolean().optional().default(false),
 });
 export type ProductIAOptions = z.infer<typeof ProductIAOptionsSchema>;
 /* ═══════════════════════════════════════════════════════════════
