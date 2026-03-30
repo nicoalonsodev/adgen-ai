@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Henko Creative Hub",
-  description: "Henko Creative Hub",
+  title: "Creative Hub",
+  description: "Creative Hub",
 };
 
 export default function RootLayout({

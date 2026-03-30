@@ -132,97 +132,59 @@ Extreme close-up: a woman's hand mid-application — ring finger and middle fing
 
 *Prompts optimizados para Gemini Imagen — énfasis en hiperrealismo humano, gestualidad auténtica y referencia técnica fotográfica.*
 
----
-
 ## Salud & Bienestar
-*Suplementos, vitaminas, colágeno, detox, wellness*
 
+### 💛 Ángulo emocional — el hábito que sostiene
+ 
+A woman, late 30s, Argentine or Colombian features — warm olive skin, dark eyes slightly tired but present, natural brows, dark hair loosely pulled back with a few strands at the temples. She sits at a small kitchen table in early morning — the city barely visible through a window behind her, still grey with dawn. She holds a glass of water in one hand, and with the other she places a single capsule or tablet on the table surface in front of her — not swallowing it yet, just setting it down with the quiet deliberateness of someone who has made this the first decision of their day. Her expression is not happy, not sad — it is the specific calm of someone who has learned that consistency is its own form of care. She wears an oversized cream cotton t-shirt, hair not yet done, face completely bare. On the table: the product — a small amber glass bottle or a blister pack partially used, not new — a half-filled glass of water with a slight condensation ring forming beneath it, a phone face-down. No coffee yet. This is the moment before the day begins. Shot on Sony A7R V, 35mm, f/1.8, cool grey dawn grade warming slightly toward the window, no fill, slight grain. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
-### Ángulo vitalidad — energía matutina
-A vibrant woman in her late 30s, bright eyes, natural glow, hair in a casual twist. She stands in a modern open kitchen at dawn, golden first light through floor-to-ceiling windows. She holds the supplement bottle in one hand while pouring a glass of water with the other, mid-motion. Relaxed linen outfit in muted tones. Kitchen counter has cutting board with fruit, green smoothie, and one plant. Radiates "morning ritual." Warm golden tones, soft shadows. Shot at 35mm, lifestyle editorial. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### ✨ Ángulo aspiracional — la persona que volvió a ser
+ 
+A radiant man, early 40s, Brazilian or West African features — deep warm-brown skin, broad shoulders relaxed and open, dark eyes with a direct and unhurried gaze, a natural ease in the body that reads as earned rather than effortless. He stands in a bright, open park in mid-morning — mature trees behind him, dappled light filtering through the canopy, the city visible but blurred in the far background. He is not mid-exercise. He has just finished — a light sheen on the skin, breathing returned to normal, a water bottle loosely held in one hand at his side. He looks directly at camera with the expression of someone who has nothing left to prove: jaw relaxed, weight evenly distributed, the full-body ease of a person whose relationship with their own health has shifted from obligation to ownership. He wears a plain grey athletic t-shirt, dark running shorts, clean training shoes with visible mileage. No headphones, no gadgets — just a man and his body in a space he has made his own. The light through the canopy catches the left side of his face and shoulder in warm irregular patches. Shot on Fujifilm GFX 100S, 63mm, f/2.8, warm editorial outdoor grade, soft highlight roll-off. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
-### Ángulo confianza — recomendación genuina
-A relatable woman in her 40s sits on a light sofa in a cozy modern living room, afternoon light from a side window creating soft directional shadows. She holds the supplement bottle at chest height with both hands, warm genuine smile — sharing a discovery. Soft knit sweater in dusty rose. Bookshelves, throw blanket, tea on side table behind her. Domestic, warm, trustworthy. Neutral warm tones — blush, cream, light wood. Shot at 50mm, shallow depth of field, natural light. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### 😩 Ángulo problema — el peso de no atenderse
+ 
+A woman, mid-40s, Northern European or Eastern European features — pale skin with visible undereye circles, a slight tension held permanently in the jaw and forehead even at rest, light brown hair pulled back in a way that is functional rather than considered. She sits at a desk in a home office or bedroom that doubles as a workspace — late afternoon, the light outside the window already fading. She is not working. She has stopped — both hands flat on the desk, a laptop open in front of her with the screen dimmed, a half-drunk cup of tea gone cold visible at the edge of frame. She looks at nothing in particular: a gaze that has gone slightly past the screen, the specific unfocused look of someone whose body is sending a signal they have been ignoring for months. Her expression carries no drama — only the dull, recognizable weight of someone who has been managing symptoms instead of addressing them: mild persistent headache in the brow, shoulders slightly elevated from chronic tension, the particular flatness of a person running on insufficient resources. On the desk: a planner open to a page dense with handwriting, a phone with a notification visible on the screen but unread, a blister pack of over-the-counter pain relief nearly empty. The solution is not in frame. Shot on Canon R5, 50mm, f/2.0, desaturated cool afternoon grade, flat window light, no fill. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
-### Ángulo transformación — versión mejorada de una misma
-A confident woman in her 40s, well-groomed but natural, standing in a bright yoga space — light wood floor, large window, rolled yoga mat nearby. She holds the product casually at her side while standing tall with excellent posture. Expression: composed pride, quiet certainty. Smart athleisure in muted olive or navy. Minimal space: single plant, meditation cushion, clean lines. Communicates inner and outer alignment. Soft neutral tones. Shot at 40mm, editorial wellness. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### 🪟 Ángulo vulnerabilidad — el momento antes de pedir ayuda
+ 
+A man, early 30s, Argentine or Chilean features — medium olive skin, dark eyes with a quality of guardedness that is beginning to give way, slight stubble, dark hair slightly overgrown and untended. He sits in the waiting room of a mental health clinic or therapy practice — not a hospital, not a sterile space, but a room designed to be calm: a low-light warm lamp in the corner, a few plants on the windowsill, chairs upholstered in a muted sage fabric, a small side table with a glass of water on it that someone placed there for him. He sits with both forearms resting on his knees, hands loosely interlaced, looking at the floor between his feet. His expression is the specific combination of effort and relief of someone who finally made the appointment: not broken, not performing — simply present in the difficulty of having shown up. He wears a plain dark grey hoodie, dark jeans, worn sneakers — the clothes of someone who got dressed to leave the house and that was already a decision. The room around him is quiet and real: a framed print on the wall slightly askew, the sound of a door closing somewhere down the hall implied by the stillness in his posture. Shot on Leica SL2, 50mm APO-Summicron, f/2.0, warm clinical interior grade, practical lamp as key light, zero retouching, full texture pass preserved. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
-### Ángulo problema — agotamiento invisible
-A tired woman in her late 30s sits at a messy home office desk, late afternoon shadows. Laptop open, papers, empty coffee cups, half-eaten snack. She rubs her temple with one hand while the other rests next to the supplement bottle — positioned as the answer. Eyes slightly glazed, shoulders hunched, running on empty. Comfortable but wrinkled top. Tells the story of invisible burnout. Moody warm tones, slightly desaturated. Shot at 35mm, documentary style. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### 🔄 Ángulo transformación — no el mismo cuerpo, la misma persona distinta
+ 
+A woman, late 30s, Peruvian or Bolivian features — warm copper-brown skin, dark hair in a practical ponytail, strong natural brows, a body that is clearly active but not idealized — real arms, real waist, the specific physicality of a person who has been doing the work consistently for months rather than performing fitness for a photo. She stands in a gym or a home training space — a wall-mounted pull-up bar visible behind her, a yoga mat rolled up against the wall, a set of dumbbells on the floor. She is not mid-exercise. She has just finished stretching and is standing upright, looking at her phone — on the screen, partially visible: a training app or health tracking interface showing a streak or a completed session marker. Her expression is not triumphant — it is the quiet, private satisfaction of a number that matches how she feels: brows slightly relaxed, jaw unclenched, the settled look of someone whose body has become a place they trust again. She wears a plain dark sports bra and high-waist leggings, hair slightly damp at the temples, no makeup. On the floor beside her: a water bottle with a worn sticker on the side from a previous gym, a small towel with a sweat mark at one end — evidence of actual effort. Shot on Sony A7IV, 40mm, f/2.2, clean natural indoor light, warm-neutral grade, no beautifying retouching. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
-### Ángulo natural — conexión con lo orgánico
-A calm woman in her early 30s stands in a sunlit greenhouse or garden room, surrounded by green plants at various heights. She holds the wellness product in one hand, the other hand gently touching a leaf of a nearby plant. Wearing a natural linen dress, barefoot on stone tiles. Sun filters through glass ceiling creating dramatic light beams and plant shadows on her skin. Expression is peaceful, grounded. The product feels like it belongs among the greenery. Rich green tones with warm golden light accents. Shot at 35mm, botanical editorial style. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### 🌙 Ángulo nocturno — el cuerpo que finalmente baja
+ 
+A woman, early 40s, Japanese or Korean features — warm pale skin, monolid eyes heavy and soft from the hour, fine dry texture visible at the cheekbones, hair loosely braided over one shoulder. She sits on the edge of her bed at 10:30pm — the wall clock visible in the background, slightly out of focus. The room is winding down around her: a floor lamp on its lowest setting casting a warm amber pool, the rest of the room in deep shadow. She holds a small glass of water in one hand — not drinking, just holding — and with the other she places a capsule or drops from a small tinted glass bottle onto her tongue, eyes slightly closed, the specific gesture of someone doing something entirely for themselves at the end of a long day. On the nightstand: the product — a small amber dropper bottle or a blister pack, one capsule removed — a paperback face-down open to a page, a phone already on do-not-disturb with the screen dark. Her expression is not peaceful in the performed sense — it is the genuine, specific relaxation of a person whose nervous system is beginning to let go: jaw unclenched, shoulders fractionally dropped, brow smooth. She wears a plain dark cotton sleep shirt, no jewelry. Shot on Sony A7III, 50mm, f/1.4, amber practical light only, very shallow depth of field, deep warm shadows. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
-### Ángulo nocturno — descanso reparador
-A serene woman in her 40s sits propped up in bed, bedside lamp casting a warm amber pool of light. She holds the supplement capsule between two fingers, about to take it with the glass of water on her nightstand. She wears simple cotton pajamas. The bedroom is dark and peaceful — only the lamp and the faint blue of a window showing twilight. A book is face-down on the covers, reading glasses beside it. The scene captures the commitment to self-care even at the end of a long day. Warm amber against deep blue-grey darkness. Shot at 50mm, intimate, very soft focus edges. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### 🔬 Ángulo ciencia / clínico — la credibilidad que tranquiliza
+ 
+A composed woman, late 40s, Indian or South Asian features — warm medium-brown skin, sharp dark eyes behind minimal wire-frame glasses, silver-streaked dark hair in a low bun, the specific posture of someone who has spent decades being precise. She stands in a consultation room or a clean clinical office — white walls with a faint warm undertone, a desk with an open laptop showing a patient file or a lab result interface, a framed medical degree on the wall behind her partially in frame and partially blurred. She holds a printed result sheet or a product information card in one hand at mid-chest height — not displaying it toward camera, but reviewing it herself, index finger resting on a specific line of data. Her expression is analytical and calm: slightly narrowed eyes, head tilted a few degrees — the look of someone reading something they understand completely and are about to explain with care. She wears a clean white medical coat over a slate grey fitted top, a plain stethoscope around the neck, no visible jewelry except small stud earrings. The lighting is clean and clinical — large diffused overhead panels, a secondary neutral fill from a window to her left with a roller blind half-drawn. No warm styling, no lifestyle props. Shot on Phase One, 40mm, f/4.0, clinical white grade, large softbox diffusion, precise shadow control. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
-### Ángulo médico — respaldo profesional *(nuevo)*
-A woman in her early 40s sits across a well-lit consultation desk. A healthcare professional (partially visible, blurred) gestures toward a printed chart while the woman holds the product, nodding with relief and clarity. Clean, bright clinical environment — white walls, a potted plant, natural light from a side window softening the space. The woman's expression is "finally, someone explained it properly." She wears casual smart clothing. Warm neutral tones with clinical whites. Shot at 50mm, documentary, shallow depth on the patient. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### 👥 Ángulo social proof — la recomendación que llega de alguien real
+ 
+Two women, early and mid 30s, sitting together at a café table or on a park bench in warm midday light. Woman A: Moroccan or Algerian features, warm tan skin, natural curly dark hair loose, wearing a plain white linen shirt. Woman B: Venezuelan or Dominican, warm medium-brown skin, straight dark hair with a natural part, wearing a sage green fitted top. Woman A speaks directly to Woman B — not performing for camera, not aware of camera — with the specific body language of someone sharing something they have actually lived: leaning slightly forward, one hand open on the table between them, the other gesturing lightly, the half-smile of someone who knows they are about to change someone's week. Woman B listens with her full body turned toward her friend, arms slightly crossed but not defensively — the posture of someone who is genuinely taking something in, expression moving between recognition and curiosity. On the table between them: a phone screen partially visible showing an app, a clinic's website, or a product page — the thing being recommended, readable enough to register as real, not legible enough to compete with the conversation. Two coffees, both at different stages. Neither looks at camera. The recommendation is the whole frame. Shot on Leica M11, 35mm Summilux, f/2.0, warm natural midday grade, candid documentary style. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
-### Ángulo constancia — el hábito que se mantiene *(nuevo)*
-A woman in her 30s stands at her kitchen counter in the early morning, still in pajamas, hair slightly disheveled. She's already mid-routine — product open, a glass of water half-drunk beside it. Expression is calm and automatic: this is just what she does. A simple wall calendar behind her has small checkmarks on consecutive days. Warm tungsten kitchen light, pre-dawn atmosphere. The scene communicates "this is no longer a challenge — it's just life." Warm amber and cream tones. Shot at 40mm, candid lifestyle. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
----
-
-## Fitness & Deporte
-*Proteínas, pre-workout, suplementos deportivos, equipamiento*
-
----
-
-### Ángulo performance — antes del entrenamiento
-A fit woman in her early 30s, hair in high ponytail, minimalist athletic wear in black and dark teal. She stands in a raw industrial gym — exposed brick, metal equipment, natural light from high windows. She holds the protein container at waist level, scooping powder into a shaker with focused determination. Jaw set, eyes forward, coiled with pre-workout energy. Barbell rack and weight plates visible behind, blurred. Gritty, serious, no-nonsense. Cool industrial tones — charcoal, concrete grey, teal. Shot at 35mm, dramatic side lighting. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
----
-
-### Ángulo post-entrenamiento — recompensa merecida
-A strong woman in her late 20s, post-workout glow, light sheen of sweat. She sits on a wooden bench in a clean modern gym, towel draped over shoulder, shaker bottle raised in a casual toast. Behind her, empty gym bathed in warm late-afternoon light through large windows. Satisfied, accomplished expression — genuine smile of someone who showed up. Athletic wear in deep burgundy or navy. Warm golden tones, cinematic light. Shot at 50mm, shallow depth of field, bokeh on equipment. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
----
-
-### Ángulo motivacional — determinación pura
-An athletic man in his 30s, muscular but lean, stands in an outdoor training area at sunrise — pull-up bars, concrete, raw urban backdrop with warm early light painting long shadows. He holds the product confidently at chest height with one hand, other arm hanging naturally. Strong planted stance, direct eye contact. Expression: fierce calm, quietly certain. Simple dark training gear. Sunrise behind creates rim lighting on shoulders and arms. Warm-cool contrast — golden light against cool concrete. Shot at 35mm, dramatic. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
----
-
-### Ángulo problema — estancamiento físico
-A frustrated athlete in their 30s sits on the floor of a dimly lit gym, back against a wall, legs extended, staring at the ceiling. A nearly empty, old supplement container sits beside them — clearly the wrong product. Hands on knees, showing frustration. Gym equipment looms in background, unused. Harsh overhead fluorescent creating unflattering shadows. Monochromatic cool tones — grey, steel blue, concrete. Moody and honest. Shot at 35mm, documentary style. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
----
-
-### Ángulo outdoor — naturaleza como gimnasio
-A toned woman in her late 20s stands on a rocky trail at golden hour, mountains or hills softly blurred behind her. She takes a sip from her shaker bottle after a trail run, one hand on her hip, catching her breath with a look of exhilaration. Windblown ponytail, trail running shoes, compression leggings with dust. The landscape is vast and dramatic behind her. The product is her reward for conquering nature. Rich warm light, earth tones — dusty orange, sage, granite grey. Shot at 35mm, adventure editorial, lens flare from sun. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
----
-
-### Ángulo lifestyle — fitness integrado
-A fit couple in their 30s in a bright modern kitchen, post-workout. He leans against the counter while she prepares two shaker bottles with the product. Both in athletic wear, relaxed and smiling. The kitchen has a fruit bowl, a yoga mat rolled in the corner, sneakers by the door. Natural morning light floods through windows. The scene shows fitness as a shared lifestyle, not a chore. Warm, domestic, aspirational. Honey and cream tones with pops of athletic color. Shot at 40mm, lifestyle editorial, candid feel. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
----
-
-### Ángulo recuperación — el día después *(nuevo)*
-A fit man in his 30s sits on the edge of his bed in the morning, still sore but calm. He wears compression shorts and a simple tee. He holds the recovery product in both hands, reading the label with focused attention. Through a window behind him, early light reveals a pair of running shoes and a foam roller on the floor. The bedroom is simple and functional — no clutter. Expression: disciplined, long-term thinker. Soft morning light, cool neutrals. Shot at 50mm, intimate editorial. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
----
-
-### Ángulo comunidad — entrenar juntos *(nuevo)*
-Three women in their late 20s–30s stand outside a gym after a group class, all flushed and energized. One holds the product, showing the label to the others who lean in curiously. They're all sweaty, hair disheveled, laughing — the authentic post-workout glow. The gym exterior is visible behind: a glass door, a signboard, morning sky. The scene captures the social energy of shared fitness. Bright outdoor light, athletic wear in complementary earth tones. Shot at 35mm, candid, group documentary. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
----
+ 
+*Prompts optimizados para Gemini Imagen — énfasis en hiperrealismo humano, autenticidad corporal y referencia técnica fotográfica.*
+*Sub-nichos cubiertos: Salud mental / bienestar emocional — Fitness / movimiento — Medicina / clínicas / servicios de salud*
+*Posicionamiento: Clínico / Transformación personal*
 
 ## Alimentos & Bebidas
  
@@ -442,62 +404,262 @@ A person in their 30s stands in a fitting room, side profile to a full-length mi
 A person in their late 20s stands near a window in a bright, organized wardrobe room. They hold the new seasonal piece up against their body, comparing it to the rest of their wardrobe visible behind on a hanging rail. Expression is anticipatory delight — "this changes everything." Natural light floods the space. The wardrobe behind shows a curated, considered collection — quality over quantity. Soft neutral tones with one pop of the new garment's color. Shot at 35mm, editorial lifestyle. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
 
 ---
+## Tecnología & Lifestyle Digital
+*Prompts hiperrealistas para imágenes generadas por IA — Gemini*
+
+---
+
+### 🎧 Ángulo ritual — el setup como acto de concentración
+*(Auriculares / wearables · Perfil ejecutivo)*
+
+A composed man, mid-40s, Northern European or British features — strong jaw, visible grey at the temples, deep-set light eyes with fine crow's feet, slight stubble not carefully shaped. His skin shows real texture: a small horizontal scar near the left eyebrow, visible pores on the nose bridge. He sits at a dark walnut desk in a quiet home office — early morning, before anyone else is awake. The room is deliberately minimal: one architect's desk lamp with warm tungsten glow angled low over the surface, a small potted olive tree in the far corner catching window light. He holds the headphones in both hands at chest height, thumbs pressing gently on the ear cup padding — the moment just before putting them on, a private ritual. The cable (or charging stem) hangs between his hands. His eyes are cast slightly downward, jaw relaxed, weight back in a leather chair — the posture of someone who is about to disappear into work. On the desk: a matte black ceramic mug with a visible ring stain underneath, a mechanical keyboard with a few keycaps slightly worn at the letters, one legal pad open with handwritten notes, the top line of which reads something illegible. A single cable runs neatly along the desk edge. The product is clearly visible, label or logo toward camera, held naturally. Shot on Sony A7R V with 85mm Zeiss Batis, f/1.4, warm tungsten grade, shallow DOF — desk surface falls into bokeh. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+
+---
+
+### 😤 Ángulo problema — la fricción antes del producto
+*(Laptop / monitor · Perfil lifestyle cotidiano)*
+
+A frustrated woman, early 30s, Mexican or Colombian features — warm medium-brown skin, dark hair pulled into a messy bun with several strands loose at the neck, no makeup. She sits at a kitchen table that has become a makeshift desk — clearly not designed for work. The laptop screen is open but angled slightly wrong; she's leaning forward uncomfortably, chin almost touching her left hand which props up her face. Her right hand holds a mouse she's been using on a wooden surface without a pad — the friction is visible in her arm position. Her expression reads genuinely worn: furrowed brow, eyes slightly unfocused, the look of someone who has been staring at a screen too long. Around the laptop: a half-eaten piece of toast on a small plate pushed to one side, a water glass with condensation, three sticky notes pressed to the edge of the screen but starting to curl, a phone face-down next to the keyboard. The product — a laptop or compact monitor — sits to her right, not yet in use, just arrived or just noticed. Shot on Canon R5, 50mm, f/2.0, harsh midday window light from the left, no fill. The image carries the visual weight of someone at a limit. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+
+---
+
+### ✨ Ángulo aspiracional — la concentración como lujo
+*(Auriculares · Perfil ejecutivo)*
+
+A radiant woman, early 40s, South Korean or Taiwanese features — warm light skin, sharp cheekbones, dark eyes with a focused calm that reads as earned. She sits in a well-designed open workspace — a co-working space or private office with floor-to-ceiling glass facing a city skyline, soft overcast light filling the space evenly without harsh shadows. She wears the headphones naturally, seated sideways in an ergonomic chair, legs crossed, one elbow resting on the armrest. She's looking at an open laptop but her gaze isn't exactly on the screen — more through it, thinking. Her left hand holds a pen between her fingers without writing, the way people do when their mind is ahead of their hands. A slight natural smile — not performance, just the expression of someone who is fully in the zone. On the desk in front of her: the product box, already opened and to the side, as if recently unboxed — flaps open, inner packaging visible but tidy. A glass of sparkling water. A slim hardcover notebook, closed. Her clothing is architectural and clean: an oversized sand-colored blazer, fitted black turtleneck. Shot on Fujifilm GFX 100S, 80mm equivalent, f/2.8, cool editorial daylight grade, slight highlight rolloff. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+
+---
+
+### 🛒 Ángulo urgencia — el descubrimiento directo
+*(Smartphone · Perfil lifestyle cotidiano)*
+
+A direct woman, late 20s, Brazilian or Peruvian features — rich warm-brown skin, strong brows, dark eyes, naturally full lips, natural curly hair held back in a low puff. She stands in a bright electronics retail space — fluorescent overheads mixed with warm product display spotlights. Behind her, competing smartphones on display pedestals are intentionally soft-focus — you can read shapes, colors, screen glows, but no logos. She holds this product extended forward in her right hand, screen or product body facing camera, arm slightly bent at the elbow. Her left hand points directly at it — index finger extended, a gesture that reads as: this one, stop scrolling. Her expression is unsmiling, one eyebrow raised, the look of someone who has done the research. She wears a rust-colored oversized hoodie and small gold hoop earrings. Her body is angled slightly toward camera — not posed, but present. The lighting is clean commercial: crisp shadows under the pointing hand, slightly cooler white tones. Shot on Nikon Z9, 35mm, f/2.0, desaturated background, commercial editorial grade. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+
+---
+
+### ☀️ Ángulo transformación — el trabajo que fluye
+*(Gadgets de escritorio / accesorios · Perfil ejecutivo)*
+
+A man, mid-30s, Northern Italian or Spanish features — light olive skin, dark hair slightly grown out and unstyled in a way that reads as intentional, a few days of stubble. He sits at a glass-and-steel desk in a bright modern apartment, afternoon sun streaming in from a window to his right — the kind of natural light that makes screens slightly difficult to see but the room feel alive. He's mid-task: one hand on a wireless trackpad, the other hovering near the keyboard, eyes on a monitor just out of frame. The product — a desktop gadget or smart accessory — sits directly in front of him, integrated naturally into the workspace as if it's been there for months. His posture is relaxed but upright, leaning slightly forward — the posture of flow state, not performance. His expression is quietly focused: mouth slightly open, brow neutral. The desk surface: a magnetic cable organizer with cables running neatly, a small desk plant in a black ceramic pot, one USB hub with an LED ring faintly glowing, a white ceramic mug. He wears a dark olive crewneck sweater, a single thin watch on his left wrist. Shot on Sony A7IV, 40mm, f/2.2, warm afternoon grade, slight lens diffusion at edges. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+
+---
+
+### 🪟 Ángulo vulnerabilidad — la desconexión honesta
+*(Smartphone · Perfil lifestyle cotidiano)*
+
+A woman, late 30s, Algerian or Tunisian features — warm medium-brown skin, dark eyes with visible fatigue, hair loosely braided over one shoulder, no makeup. She sits on a couch near a large window, knees drawn up slightly, shoulders slightly rounded — the posture of someone who has been on her phone too long and knows it. The phone rests face-down on the couch cushion beside her, clearly just set down. Her hands are in her lap, slightly clasped. She's looking toward the window, not at anything specific — the expression of someone between scrolling and thinking: eyes slightly unfocused, jaw soft, lips neutral. The room: warm-toned with visible clutter of life — a throw blanket pulled to one side, a book open face-down on the arm of the couch, a phone charger cable coiled near the base. Natural midday light from the window cuts across her face, leaving one half lit, one in warm ambient shadow. This is the moment the product — a new phone or a digital wellness device — sits on the side table at her right, noticed but not yet picked up. Shot on Leica SL2, 50mm APO-Summicron, f/2.0, documentary neutral grade, no skin retouching. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+
+---
+
+### 🌙 Ángulo nocturno — la rutina del cierre
+*(Gadgets de escritorio / accesorios · Perfil ejecutivo)*
+
+A calm man, early 40s, Argentine or Chilean features — light skin with slight evening stubble, dark circles visible under his eyes — not dramatic, just real — dark hair slightly disheveled from a long day. He sits at his desk at night, the room lit only by a warm desk lamp to his right and the faint ambient glow of a monitor now locked, its screensaver casting a very dim blue wash on the far wall. He's in the process of shutting down: one hand closing a notebook, the other resting near the product — a smart desk gadget, a wireless charging hub, or a compact ambient light device — which is the last thing still on and glowing warmly. His gaze is on the product, not the screen, the expression of someone winding down who hasn't quite let go yet. On the desk: a mug now empty and cooling, a pen resting across the closed notebook, three physical documents stacked and aligned — someone who left things orderly before leaving. A pair of folded glasses near the keyboard. He wears a dark grey long-sleeve henley, top button open. Deep amber and soft ivory tones. Shot on Sony A7III, 50mm, f/1.4, very shallow DOF, practical warm light only. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+
+---
+
+### 🔬 Ángulo ciencia — la tecnología que se entiende
+*(Laptop / monitor · Perfil ejecutivo)*
+
+A focused woman, early 30s, Indian or Sri Lankan features — warm medium-brown skin, sharp dark eyes, high cheekbones, natural eyebrows slightly full at the inner corner, hair in a tight low bun with two strands escaping at the temple. She stands at a standing desk in a minimalist home office — white walls, soft LED panel lighting from above, no art, one black open shelving unit with technical books and two small plants visible but out of focus. She has the product — a laptop, an ultrawide monitor, or a docking station — opened or positioned at an angle, and she presses one finger against a specific feature: a port, a display hinge, a sensor, a button she wants to show. Her face is turned slightly toward the camera but her eyes are on the product — the gaze of someone explaining, not selling. Her other hand holds a small black notebook pressed flat against her chest. She wears a clean white fitted oxford shirt, one button left open at the collar. Cool clinical tones — white, soft grey, neutral LED light. Shot on Phase One, 40mm, f/4.0, clean product photography grade, large diffusion panels softening all shadows. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+
+---
+
+### 👥 Ángulo social proof — compartir el hallazgo
+*(Smartphone · Perfil lifestyle cotidiano)*
+
+Two men, late 20s and early 30s, sitting close together at a high café table. Man A: West African features — deep brown skin, natural low fade, small round glasses, easy smile. Man B: Mixed or Brazilian features — warm tan skin, dark wavy hair, a light beard grown in unevenly. Both dressed casually: one in a faded indigo denim shirt, the other in a white graphic tee under an open flannel. Man A holds the smartphone tilted toward Man B, showing him something on the screen — his expression is the half-grin of someone saying "just look at this." Man B leans in, one elbow on the table, chin almost in his hand — the posture of genuine curiosity, not performance. Between them on the table: two glasses with ice coffee, one already half-drunk with a straw, a small shared plate with two remaining bites of something, two phones — one face up (the product) being shown, one face down (the other man's, unneeded). The light is warm indoor café light with one natural light window behind them, rim lighting Man B's shoulder. Shot on Leica M11, 35mm Summilux, f/2.0, candid documentary style, warm ambient grade. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+
+---
+
+### 🤍 Ángulo minimalismo — el objeto que desaparece en el uso
+*(Gadgets de escritorio / accesorios · Perfil ejecutivo)*
+
+A composed man, mid-50s, Japanese or Korean features — pale warm skin, fine lines at the outer eyes that read as distinguished, slightly greying temples, a quietly dignified bearing. He stands at a bare standing desk in a room with warm white plaster walls — no art, no decoration, no objects except what is on the desk surface. A single bar of natural light enters from a narrow skylight directly overhead, falling in a clean vertical band across the product and his hands. He has both hands resting lightly on the desk surface, palms down, fingertips just touching the product — a compact desk gadget, a precision input device, a minimal wireless hub — as if he is feeling it rather than using it. His eyes are looking at the product, not the camera. Not demonstrating. Not explaining. Simply present with the object. He wears a white heavyweight cotton shirt, slightly oversized, untucked over dark straight-leg trousers. No watch, no rings, no other accessories. The product carries the only design detail in the frame. Shot on Hasselblad X2D, 90mm, f/2.8, natural daylight only, ultra-high-resolution, no retouching. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+
+---
+
+### 👨‍💻 Ángulo generacional — tecnología que se hereda
+*(Laptop · Perfil lifestyle cotidiano)*
+
+A man, late 50s, and his son, mid-20s, seated side by side at a large kitchen table converted into a workspace. The father: South American features — warm tan skin, silver hair cut short, rectangular glasses pushed up his nose, hands that look like they've done physical work. The son: clearly resembles his father — same bone structure, younger skin, a few days of beard. The father has his hands on a laptop keyboard, working slowly — he's figuring something out, not performing ease. The son has pulled his chair close, leaning slightly over his father's shoulder, one hand resting on the back of the chair, pointing at the screen with one finger — patient, not condescending. The product sits open between them. The father's expression is focused, slightly skeptical — the look of someone learning a new system. The son's expression is quietly attentive, watching his father's hands more than the screen. The kitchen behind them: a pot on the stove with the lid ajar, a dish towel draped over a chair back, a family photo on the wall that's slightly out of focus. Warm morning light from a window to the left. Shot on Canon R5, 50mm, f/2.5, warm intimate grade. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+
+---
+
+### 🤲 Ángulo sensorial — el tacto que convence
+*(Gadgets de escritorio / accesorios o auriculares)*
+
+Extreme close-up: a pair of hands — a man's, mid-30s, warm olive skin, short trimmed nails, no rings — holding a compact tech product at chest height, both hands cradling it from below with the thumbs pressing gently into the top surface. The product is a precision object: you can see the material quality — brushed aluminum, matte texture, a fine seam where two materials meet, a subtle LED indicator glowing at the edge. The pressure of the thumbs causes the very faintest skin compression at the fingertip pads. The product's weight is visible in how the hands hold it: it is not light, it is dense and satisfying. In the background: a desk surface, blurred — you can read the shape of a keyboard and a cable, but nothing is legible. The light comes from camera-right, a clean directional source — it rakes across the material surface, making the texture and machining visible with precision. One corner of the product catches a specular highlight, sharp and clean. Shot on Canon 100mm macro L, f/2.8, extremely shallow DOF, Profoto D2 monoblock with 1×3 strip softbox from camera-right, cool daylight product grade. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+
+---
+
+*Prompts optimizados para Gemini Imagen — énfasis en hiperrealismo humano, gestualidad auténtica, diversidad de perfiles ejecutivo/lifestyle y referencia técnica fotográfica.*
 
 ## Hogar & Decoración
 *Muebles, textil hogar, velas, objetos deco*
 
 ---
 
-### Ángulo lifestyle — el espacio transformado
-A contented person in their 30s relaxes in a beautifully styled living room where the home product is integrated naturally — throw blanket on sofa, candle on coffee table, or decorative object on shelf. Warm late-afternoon light through linen curtains, honey-toned atmosphere. Person holds book and tea, fully at ease. Room tells a story of taste: plants, curated objects, neutral textures. Warm earthy tones — sage, terracotta, cream, natural linen. Shot at 35mm, interior editorial, medium depth of field. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+### 🪴 Ángulo emocional — el espacio que finalmente se siente tuyo
+ 
+A woman, early 30s, Peruvian or Bolivian features — warm medium-brown skin, dark eyes, thick dark hair in a loose low braid falling over one shoulder, a few short pieces framing the face. She sits cross-legged on the floor of a living room in the late afternoon — the room is not magazine-perfect but clearly loved: a linen sofa with a slightly flattened cushion, a stack of books on the floor used as a side table, a monstera plant in a terracotta pot with one leaf that has a small brown edge. The product — a textile, candle, ceramic object, or small piece of furniture — is placed in front of her or beside her, integrated into the scene as if it has always been there. She is not looking at it. She looks toward the large window to her left, where warm golden hour light floods in, catching dust particles in the air. Her expression is completely still: jaw relaxed, a barely perceptible softness at the corners of her eyes. She holds a ceramic mug in both hands, not drinking — just holding. She wears a rust-orange oversized linen shirt tucked loosely into wide-leg cream trousers, bare feet on a jute rug. The rug has a slight pull in one corner. Shot on Sony A7R V, 35mm Zeiss Batis, f/1.8, golden hour warm grade, slight skin texture pass in post. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
-### Ángulo hygge — calidez invernal
-A serene person in their 30s sits on a deep sofa wrapped in the textile product (throw, blanket, cushion arrangement), holding a steaming mug, looking out a rain-streaked window. The room is warm despite the grey outside — candles burning on the sill, soft warm lamp light, a stack of books nearby. They wear thick wool socks and an oversized sweater. The entire scene is a visual hug. Muted warm tones — cream, cinnamon, soft grey, candlelight amber. Shot at 50mm, intimate editorial, very shallow depth of field. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### 😮‍💨 Ángulo problema — el espacio que no refleja quién eres
+ 
+A woman, late 20s, Romanian or Bulgarian features — pale skin with light freckles across the nose and cheeks, light brown hair in a ponytail, blue-grey eyes with a tired expression. She stands in the center of a rental apartment living room — the kind that is functional but impersonal: white walls, generic landlord furniture, a flat-pack bookshelf slightly misaligned on one side, a cheap ceiling light with no shade, a beige curtain slightly too short for the window. She holds the product — a decorative object, a textile, a vase — with both hands at waist height, looking down at it and then around the room with the expression of someone calculating: brow furrowed slightly, lips pressed, head tilted. The product is clearly beautiful and clearly out of place in the current setting — that contrast is the point. On the floor nearby: two moving boxes still partially unpacked, a roll of tape, a folded IKEA instruction sheet. She wears a plain grey oversized tee tucked half-in, jogger pants, white tube socks. No makeup. Hair slightly flat. The room is lit by a mix of grey overcast daylight from the window and the one overhead light. Shot on Canon R5, 50mm, f/2.0, flat overcast grade, cool shadows. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
-### Ángulo renovación — transformación en proceso
-A person in their 30s stands in a bright room mid-decoration, holding the product (a vase, lamp, or textile) and holding it up to visualize where to place it. The room is half-styled — some areas beautiful and done, others bare or in progress. Paint swatches on the wall, a stepladder nearby, natural light flooding the space. Expression of creative excitement and possibility. Bright, optimistic tones — white walls, warm wood, pops of the product's color. Shot at 35mm, lifestyle editorial. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### ✨ Ángulo aspiracional — el espacio que ya llegó
+ 
+No person in frame. A composed interior scene: a corner of a living room, late morning light entering from the left through sheer linen curtains, filtering warm and diffused across the scene. The product is the clear focal point — a candle burning with a visible clean flame and a small pool of melted wax, a ceramic vase with a single stem of dried pampas grass, or a folded throw draped over the arm of a sofa with intentional imprecision. Around the product: a low oak coffee table with a slight natural grain, a stack of three coffee table books — spines not fully legible — one with a small ceramic coaster on top used as a bookmark. A white linen sofa with plump cushions, one slightly compressed from recent use. A worn but beautiful Turkish rug underneath, a few colors slightly faded. On the floor near the sofa: a pair of reading glasses folded, a half-burned match on the edge of a small tray beside the candle. The scene suggests a person was just here and stepped away — not a staged showroom, but a life. Shot on Fujifilm GFX 100S, 55mm, f/3.2, warm editorial grade, slight highlight roll-off, no people. Product centered but slightly off-axis. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
-### Ángulo regalo — el objeto perfecto *(nuevo)*
-A person in their 30s sits on the floor of a bright living room surrounded by carefully chosen wrapping tissue, holding the home product up with both hands — deciding how to present it. A gift bag and ribbon are nearby. Their expression is quiet delight — they know they chose well. Large window behind, morning light, white walls. The product is the protagonist. Clean warm tones — white, blush, warm wood. Shot at 40mm, lifestyle editorial, soft shadows. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### 🛒 Ángulo urgencia — el hallazgo que cambia el espacio
+ 
+A woman, early 30s, Moroccan or Algerian features — warm olive skin, dark eyes with a strong natural brow, dark curly hair loose and full, small gold hoop earrings. She stands in a home goods store or design market — the kind with exposed brick walls, hanging pendant lights in warm Edison bulbs, open wooden shelving with objects grouped by material and color, all background elements soft-focus. She holds the product extended toward camera — both hands, slightly tilted forward, label or surface facing viewer — with the expression of someone who has just pulled this from a shelf and cannot believe it. Her eyes are wide but not theatrical, one eyebrow raised, mouth slightly open: the genuine moment of discovery. She wears a terracotta-colored linen trench coat loosely over a white tee, tapered black trousers, flat mules. A canvas tote bag hangs from one forearm, slightly heavy — she has already found other things. The store light is warm commercial with practical pendant spots catching the product surface. Shot on Nikon Z9, 35mm, f/2.0, warm amber commercial grade, slightly desaturated background. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
-### Ángulo sensorial — el primer encendido *(nuevo)*
-*Específico para velas, difusores, productos aromáticos.*
-A person in their 30s leans slightly toward a just-lit candle on a minimal wooden table, eyes closed, inhaling the first moments of scent. Their expression is pure sensory pleasure — a small involuntary smile. The room around them is simple and beautiful: afternoon light through sheer curtains, a single plant, linen cushions on a sofa behind. The candle's small flame reflects in their slightly glossy eyes as they open them. Warm amber and cream tones, soft shadows. Shot at 50mm, extreme shallow depth of field. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### ☀️ Ángulo integración diaria — ya forma parte de la mañana
+ 
+A man, mid-30s, Portuguese or Spanish features — light olive skin, dark eyes, three-day stubble, dark hair slightly disheveled from sleep. He moves through his kitchen in early morning light — barefoot, slow, clearly not fully awake. The product is integrated into the scene as part of his established ritual: a candle already lit on the counter beside the coffee maker, a ceramic object in its designated place on the windowsill, or a textile — a linen kitchen cloth — draped from the oven handle the way it always is. He is not presenting the product. He passes it the way you pass a familiar thing — without looking, without thinking, his hand grazing the surface of the product as he moves. His expression is interior, private. Morning light from the window to his right is low and golden, casting long soft shadows across the counter surface. On the counter: a French press with coffee grounds still inside, a small wooden cutting board with crumbs, an open jar of honey with the dipper resting across the rim. He wears a faded white cotton t-shirt and grey linen shorts, a slight wrinkle from sleep on his cheek. Shot on Sony A7IV, 40mm, f/2.2, warm morning grade. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
+ 
+### 🪟 Ángulo vulnerabilidad — el gesto de crear un hogar
+ 
+A woman, late 30s, Ethiopian or Eritrean features — deep dark skin, high cheekbones, natural hair in a puff, a small nose ring, no makeup except a slight shine at the cheekbones. She kneels on the floor of an empty or nearly empty room — a new apartment, mid-move-in, walls bare, floors slightly dusty at the edges. She is arranging the product — placing a rug, positioning a ceramic, draping a textile across a piece of furniture — with the focus and care of someone building something from nothing. Her hands are fully engaged, slightly tense at the knuckles from the effort of getting it exactly right. Her expression is concentrated and tender at once: the look of someone who takes the making of a home seriously. She wears a worn denim shirt with the sleeves rolled, paint-stained at the forearm, over a simple black top, loose dark trousers. Her phone rests on the floor nearby, showing a Pinterest or reference image. The light is mid-afternoon, coming from a large bare window — direct, slightly harsh, real. Shot on Leica SL2, 50mm APO-Summicron, f/2.0, documentary neutral grade, no retouching, full texture preserved. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 🌙 Ángulo nocturno — el ritual de cerrar el día
+ 
+No person in frame, or a person visible only from the waist down or as a blurred presence. A bedroom or living room interior, fully dark except for: the product — a lit candle casting a warm amber pool of light across the immediate surface, a salt lamp glowing in the corner, or a textile on the bed illuminated by a low bedside lamp. The room is intimate and deliberately dim. If a person is present: a woman, late 20s, visible only from the collarbone down — she sits on the edge of a bed in a dark robe, hands resting in her lap, the candle or object on the nightstand beside her. The nightstand has: the product at center, a small glass of water with slight condensation, a paperback book face-down and slightly splayed from being left open too long, one earbud case open. The candle wax has formed a full melt pool — clearly been burning a while. A thin ribbon of smoke rises from a previously extinguished second candle nearby. The color palette is almost entirely warm amber, deep ivory, and near-black shadow. Shot on Sony A7III, 50mm, f/1.4, very shallow depth of field, amber practical light only, no fill. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 🔬 Ángulo craft — el objeto bien hecho
+ 
+Extreme close-up of the product in isolation or in the hands of its maker. If hands are present: a craftsperson, mid-40s — hands only visible, gender ambiguous. Skin shows real labor: slight calluses at the palm base, clay or pigment residue in the crease of the knuckles, a small cut from a tool at the index finger tip, cuticles unpushed. The hands hold the product — a candle being poured mid-process, a ceramic being turned on a wheel with hands pressing the clay, a piece of fabric being held up to the light to check for translucency — with the grip of someone who has done this thousands of times. The product surface is in critical focus: handmade texture, slight irregularities in the glaze, wax surface with a single air bubble near the wick base, linen weave with visible variation in thread thickness. The background is a workshop: blurred surfaces showing tools, clay dust on a wooden shelf, a window with natural north light. Light from camera-right, a single warm diffused source. Shot on Canon 100mm macro L, f/2.8, extremely shallow depth of field, Profoto D2 with large diffusion panel. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 👥 Ángulo social proof — compartir el espacio
+ 
+Two women, late 20s and early 30s, in a shared apartment living room, midday light from a large window. Woman A: Filipino or Indonesian features, warm medium skin, dark straight hair parted in the middle, a faint natural lip, silver rings on multiple fingers. Woman B: Mexican or Guatemalan, warm brown skin, curly dark hair loose, small hoop earrings, a light scar on her chin. Both sit on the floor, knees bent, facing a low table where the product is placed — a candle lit between them, a textile unfolded on the table, or a ceramic object they are clearly deciding where to place. Woman A leans forward with both hands on the table, head tilted, expression of genuine consideration — she's thinking. Woman B sits back on her palms, looking at the same object with a slight smile and a small nod: she's already decided she loves it. Between them on the table: two mugs, one with a clear tea color, one darker coffee, a takeout menu folded twice, a house plant cutting in a small jar of water. The intimacy is domestic and easy — two people sharing a space, deciding together. Shot on Leica M11, 35mm Summilux, f/2.0, candid documentary style, warm midday grade. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 🤍 Ángulo minimalismo — un solo objeto en el espacio correcto
+ 
+No person. A single product — a candle, a ceramic vessel, a folded textile, a small sculptural object — placed on a surface with nothing else: a white plaster shelf, a pale oak windowsill, a smooth concrete ledge. The surface has its own natural texture — slight variation in the plaster, a small knot in the oak grain, hairline variation in the concrete pour. The product has a shadow: a long, soft shadow from a narrow window to the left, the light entering at a low angle and raking across the surface just enough to reveal texture. The background is a single warm-white wall — not flat painted, but plaster with subtle variation, photographed at an angle that makes the texture barely visible. Nothing else in the frame. The product is not centered — it sits at the right third of the frame, the shadow extending toward the left. The color of the product is the only saturated element in an otherwise near-monochrome composition. Shot on Hasselblad X2D, 120mm macro, f/4.0, natural daylight only, no fill, ultra-high detail pass. Product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 👨‍👩‍👧 Ángulo generacional — lo que se hereda en los objetos
+ 
+A woman, early 50s, and her daughter, mid-20s, in a warm domestic interior — a dining room or living room with visible signs of a long-inhabited life: family photos on the wall out of focus, a cabinet with mismatched ceramics behind them, a rug with visible wear at the center path. The mother: Southern European or Latin American features, warm skin with visible sun damage on the forearms, silver-streaked dark hair in a loose bun, reading glasses hanging from her collar. The daughter: clearly her child in bone structure, but younger — fuller cheeks, darker hair without silver, her mother's same strong brow. The product — a candle, a textile, a ceramic — rests on the table between them. The mother has her hands on it, demonstrating something: the way to trim a wick, how to fold the textile, where to place the object in a room. Her gesture is practiced and automatic — muscle memory. The daughter watches with her chin resting in one hand, expression of attentive warmth — she is learning something she did not know she wanted to know. Neither looks at camera. Shot on Canon R5, 50mm, f/2.5, warm intimate grade, slight lens diffusion. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 🌿 Ángulo estacional — el objeto que cambia con la luz
+ 
+No person. An interior vignette — a corner of a room at a very specific hour: either deep golden late afternoon in autumn, or the clean blue-white of a winter morning. The product adapts to its season: a heavy textured throw in a burnt sienna or forest green, a candle in dark amber or smoked glass, a ceramic with a matte earth-tone glaze. The light source is architectural — a window frame casting a precise rectangle of light across a wooden floor or white wall, the edge of the light catching the product surface at exactly the right angle to reveal its texture and material quality. Around the product: seasonal context objects, never more than two — a single branch of dried eucalyptus in a simple bud vase, a few stacked books with cloth spines, a pair of wool socks left on the sofa armrest. The product is the warmest, most textured element in the frame. The color palette is deliberately limited: warm neutrals plus the single color of the product. Shot on Fujifilm GFX 100S, 63mm, f/3.5, seasonal editorial grade — amber and low-contrast for autumn, cooler and sharper for winter. Product centered or right-of-center. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+*Prompts optimizados para Gemini Imagen — énfasis en escenas habitadas, luz arquitectónica real y objetos con historia de uso.*
 
 ## Joyería & Accesorios
 *Anillos, collares, relojes, carteras, lentes*
 
 ---
 
-### Ángulo elegancia — brillo personal
-A poised person in their 30s stands in a softly lit dressing area — large mirror, velvet chair, warm lamp creating intimate golden tones. They wear the jewelry piece or accessory as the focal point, one hand slightly adjusting or touching it — gesture of self-admiration. Simple dark outfit to make the accessory pop. Mirror reflects light, creating secondary light source. Quiet self-assurance. Rich warm tones — gold, deep burgundy, cream. Shot at 85mm, very shallow depth of field, jewelry commercial quality. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+### 💛 Ángulo emocional — la pieza que tiene historia
+ 
+A woman, late 30s, Argentine or Chilean features — warm olive skin, dark eyes with faint crow's feet at the corners, thick dark eyebrows slightly ungroomed, natural lip. She sits at a small wooden vanity in a bedroom, early morning, the light diffused and warm from a linen-curtained window to her left. She holds a delicate gold chain necklace between both hands — not fastening it, not displaying it, simply holding it suspended between her fingers the way you hold something that belongs to someone else, or once did. The chain catches the light in one small arc. Her expression is quiet and inward: lips pressed softly together, gaze lowered toward the piece, the specific stillness of a memory surfacing. She wears a plain white cotton slip, one shoulder strap slightly fallen. Her hair is loose, unstyled, dark waves against her neck. On the vanity surface: a small ceramic dish with two other rings resting inside it — worn, familiar pieces — a folded note with handwriting visible but illegible, and a photograph face-down. Nothing staged. The emotion is entirely in the gesture and the expression. Shot on Sony A7R V, 35mm Zeiss Batis, f/1.8, warm golden morning grade, slight grain, no retouching. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
-### Ángulo cotidiano — elegancia diaria
-A confident woman in her 30s sits at a coffee shop window, wearing the jewelry piece as part of an effortless everyday look. One hand gestures naturally as if mid-conversation, the bracelet or ring catching window light. She holds a white ceramic cup in the other hand. Simple outfit — blue oxford shirt, rolled sleeves showing the accessory. The café is bright and modern behind her, softly blurred. Shows luxury as a daily companion, not a special occasion. Bright natural tones — white, light blue, warm gold highlights. Shot at 50mm, lifestyle editorial, medium depth. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### ✨ Ángulo aspiracional — la mujer que ya llegó
+ 
+A radiant woman, early 40s, Brazilian or Colombian features — deep warm-brown skin, strong jaw, dark eyes with a direct and unhurried gaze, natural full brows. She stands near a floor-to-ceiling window in a minimal, high-ceiling apartment — late afternoon light flooding the space at a low angle, catching every surface. She wears a simple deep ivory silk blouse tucked into wide-leg camel trousers, bare feet on light oak flooring. At her ears: a pair of sculptural gold drop earrings — architectural, confident, slightly oversized — catching the low sun and throwing a faint warm reflection onto the side of her neck. She does not look at camera. Her gaze is slightly past the frame — out the window, or somewhere in thought. One hand rests at her collarbone, fingers loosely touching the base of her neck just below where the earrings end. Her posture is completely relaxed: weight shifted to one hip, shoulders back without tension, the ease of someone who is entirely herself. The apartment behind her is sparsely furnished — one low cream sofa, a single stem of dried pampas in a tall black ceramic vase. Shot on Fujifilm GFX 100S, 63mm, f/2.8, warm editorial grade, soft highlight roll-off. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
-### Ángulo regalo — emoción de recibir
-A woman in her early 30s sits on a neutral sofa, holding a just-opened jewelry box with visible delight — mouth slightly open, eyes bright, genuine surprise. The accessory catches the light from a nearby window. A gift card or wrapping paper sits beside her. One hand touches her chest in an instinctive grateful gesture. Warm intimate tones — soft gold, blush, cream backdrop. Shot at 50mm, shallow depth of field on the jewelry piece, candid editorial. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### 🤲 Ángulo sensorial — el detalle que lo dice todo
+ 
+Extreme close-up: a woman's hand and wrist, shot from slightly above at a three-quarter angle. She wears two stacked bracelets — one a fine hammered gold bangle, the other a delicate chain with a single small charm — both resting naturally against the inner wrist bone, slightly slipped toward the palm from the angle of the hand. Her skin is warm medium-brown, the knuckles of the ring finger slightly prominent, a faint tan line where a ring has been worn for years. The wrist is turned slightly outward — not posed, just the natural rotation of someone who just set something down on a surface. The bracelets catch warm directional light from camera-right: the hammered finish creates irregular bright points, the chain throws a fine shadow-line across the inside of the wrist. Her nails are cut short, unpainted, cuticles natural. The surface beneath: white Carrara marble with fine grey veining, slightly cool against the warmth of the gold. On the far right edge of frame: the edge of a small linen cloth, folded. Background entirely blurred warm cream — a wall or fabric, indeterminate. Shot on Canon 100mm macro L, f/2.8, extremely shallow DOF, Profoto strip softbox from camera-right, warm jewelry-grade skin pass. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
-### Ángulo íntimo — el significado detrás *(nuevo)*
-A woman in her 40s sits in a quiet, warm room, holding a piece of jewelry in her open palm — examining it with soft nostalgia or quiet pride. Perhaps a ring she earned herself, or a piece that marks a milestone. Her expression is contemplative and tender, not performative. Simple clothing, natural light from a side window. A few personal objects on the surface beside her — a letter, a small photo frame, blurred. The product carries emotional weight beyond aesthetics. Warm amber, cream, deep shadow. Shot at 85mm, extreme shallow depth of field, documentary. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### 🎁 Ángulo social proof — el regalo que no necesita palabras
+ 
+Two women, late 20s, sitting close together on a light linen sofa in a bright living room — midday window light from the left, soft and diffused. Woman A: Peruvian or Bolivian features, warm tan skin, dark straight hair with a natural part, wearing a dusty rose oversized knit. Woman B: Northern Italian or French, lighter olive skin, hazel eyes, medium-length brown hair loosely tucked behind one ear, wearing a cream fitted long-sleeve. Woman A holds a small open jewelry box in her palm — the kind lined in ivory suede, lid resting against her wrist — and inside it, clearly visible: a fine gold ring with a small pavé detail. She holds it toward Woman B, both hands cupped, the gesture less of presentation and more of offering: quiet, certain. Woman B's hands come forward to receive it — fingertips just touching the edge of the box, expression completely open: eyes slightly bright, lips parted, the specific face of someone genuinely moved rather than politely surprised. Neither looks at camera. Between them on the sofa: a small piece of tissue paper from the unwrapping, slightly crumpled, one corner catching the light. A ribbon loosely coiled at the edge of the cushion. The conversation is entirely in their hands. Shot on Leica M11, 35mm Summilux, f/2.0, warm diffused documentary grade, candid. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
+ 
+### 🌙 Ángulo nocturno — ponerse la pieza antes de salir
+ 
+A woman, early 30s, West African features — deep warm-brown skin, high cheekbones, natural hair pinned up loosely with a few coils falling at the neck, wearing a sleeveless dark emerald satin top. She stands in front of a full-length mirror in a bedroom at night — the only light from a warm Edison bulb lamp to her right, its glow catching the left side of her face and the length of her arms. She fastens a thin gold chain necklace at the back of her neck, both arms raised, elbows slightly out, fingertips working the clasp — the specific and intimate choreography every woman knows. In the mirror, her reflection shows her expression: focused on the clasp, lower lip slightly caught between her teeth in concentration, the small private effort of doing something entirely for yourself. The necklace pendant rests just below the collarbone — a small sculptural piece that catches the lamp light once. On the dresser beside the mirror: a perfume bottle, a small tray with two other necklaces coiled, one gold hoop earring standing upright against the tray edge — its pair presumably already in. The room behind her is dark and warm. Shot on Sony A7III, 50mm, f/1.4, amber practical light only, deep background shadow, minimal fill. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 🔬 Ángulo artesanal — la mano que la hizo
+ 
+A man, mid-40s, Southern European features — strong hands with visible knuckles, a thin scar across the back of the right index finger, slight callusing at the fingertips from years of fine work. He sits at a jeweler's workbench — a worn wooden surface with small tool marks and fine metal dust in the grain, decades of use visible without being dirty. He holds a ring between thumb and forefinger of his right hand, raised to eye level, inspecting it against the light of a single focused jeweler's lamp — a bright, tight beam from above-right that catches the piece precisely and leaves everything else in warm shadow. His left hand rests on the bench beside a row of small hand tools: a burnisher, a setting pick, a pair of fine-tipped tweezers. A loupe rests near his left elbow, not in use — he doesn't need it for this. His expression is completely absorbed: eyes slightly narrowed, jaw relaxed, the total concentration of someone who has done this ten thousand times and still looks at each piece as if it's the first. He wears a plain dark navy work apron over a grey linen shirt, sleeves rolled to the elbow. Behind him: a pegboard with hanging tools, a small torch with a blue pilot flame visible, an open notebook with hand-drawn sketches of ring settings. Shot on Phase One, 40mm, f/4.0, jeweler's lamp as key light, secondary warm fill from left, deep warm shadows. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 🤍 Ángulo minimalismo — una pieza, toda la atención
+ 
+A woman, mid-30s, Scandinavian features — pale skin, straight platinum-blonde hair just past the jaw, light eyes, a slight natural flush across the cheeks. She stands in a completely bare space — walls warm white with a faint plaster texture, floor a pale natural oak. A single narrow beam of natural daylight from a window off-frame left rakes across the scene at 45 degrees, casting a long clean shadow of her figure across the floor to the right. She holds her right hand slightly raised at chest height, palm inward, fingers loosely together — the natural position of someone examining their own hand. On her middle finger: a single sculptural ring — bold, architectural, clearly the only object the image is about. The ring catches the raking light on one edge only, throwing a thin, precise shadow across her knuckle. Her other hand rests at her side. She wears a white linen shirt tucked into off-white wide-leg trousers, fabric slightly wrinkled at the hip. No other jewelry, no accessories, no props. The ring is the only element with visual weight in the entire frame. Shot on Hasselblad X2D, 90mm, f/2.8, natural daylight only, maximum negative space, ultra-clean grade. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 👩‍👧 Ángulo generacional — lo que se pasa de mano en mano
+ 
+A woman, late 50s, and her daughter, late 20s, sitting together at a kitchen table in warm afternoon light — the kind of kitchen that has been used for decades, nothing matching perfectly, everything comfortable. The mother: Mediterranean features, silver hair pinned loosely, warm amber-brown eyes with deep laugh lines, hands that show their age with dignity. The daughter: clearly her mother's daughter in the bone structure — same nose, same eye shape, younger. The mother takes a gold bracelet from her own wrist — a classic chain, slightly worn, the gold with the soft patina of years — and holds it out to her daughter, dropping it gently into her open palm. The daughter looks down at it in her hand, not at her mother. Her expression is the specific quiet of receiving something that carries weight: not excited, not sad — simply present with it. The mother watches her with the expression of someone completing something. Between them on the table: two ceramic cups of tea, both steaming, a small plate with two cookies half-eaten, the discarded clasp that the mother just unfastened still warm on the table surface. Shot on Canon R5, 50mm, f/2.5, warm intimate afternoon grade, slight lens diffusion. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 🔄 Ángulo transformación — la que se pone la pieza y es otra
+ 
+A woman, early 30s, Uruguayan or Paraguayan features — warm medium-brown skin, dark eyes, natural brows slightly grown in, hair just past the shoulders in loose waves, one side tucked behind the ear. She stands at a bathroom mirror in morning light — large window to her left, the kind of flat overcast light that is honest without being harsh. She has just fastened a pair of small gold hoop earrings — both already in, her hands now lowered, fingertips resting lightly at her jaw. She looks at her own reflection with the specific expression of someone who has just recognized themselves: not vanity, not performance — the quiet click of a person stepping into a version of themselves they have been working toward. Her skin is real — a faint blemish on the chin, slight undereye shadow, no makeup except a light lip. She wears a clean white fitted t-shirt, hair down. The mirror is slightly steamy at the bottom edge from a recent shower. On the shelf below the mirror: a face wash with the pump tilted, a moisturizer with the cap off, a small plant in a white pot. The earrings are the only finished thing in a scene that is still becoming. Shot on Sony A7R V, 35mm, f/1.8, overcast window grade, natural skin tone pass, no fill. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 🪟 Ángulo vulnerabilidad — la que no necesita esconderse
+ 
+A woman, late 40s, Northern European or Baltic features — fair skin with visible capillaries at the nose, pronounced nasolabial folds, a small dark mole above the lip, fine lines across the forehead and at the outer corners of both eyes — features that read as a full life, nothing corrected. Zero makeup. She sits near a large window in harsh midday light — the kind that reveals everything and forgives nothing. The light cuts directly across one side of her face, the other in soft shadow. Her grey-streaked hair is pulled back loosely, several pieces fallen around her face. She wears a simple dark burgundy linen top, collar open at the throat. At her collarbone: a thin gold chain necklace — delicate, simple — its pendant, a small irregular organic shape, catching the direct light in a single bright point against her chest. She holds the necklace pendant between two fingers — not presenting it, not adjusting it — the unconscious gesture of someone who reaches for the same piece every day without thinking. Her eyes look directly into camera. Not performing. Not softening. Simply here. Shot on Leica SL2, 50mm APO-Summicron, f/2.0, documentary neutral grade, full texture pass preserved, zero retouching. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### ⏱️ Ángulo urgencia — la decisión frente a la vitrina
+ 
+A woman, late 20s, Mexican or Guatemalan features — warm tan skin, strong nose, dark eyes with a sharp and deliberate gaze, full natural brows, dark hair pulled back in a sleek low bun. She stands inside a jewelry store, leaning slightly forward over a glass display case — elbows not yet resting on the glass, weight shifted forward in the posture of someone who has almost decided. The interior display below the glass is intentionally soft-focus — shapes of rings and bracelets legible as forms, no competing pieces in sharp detail. Her right hand is extended, index finger pointing at a specific spot on the glass — the gesture of "that one, right there." In her left hand, slightly raised: her phone, screen visible showing a split-second of a product page or a saved image — the reference she came in with, the thing she has been looking for. Her expression is certain and slightly impatient: jaw forward, one eyebrow marginally raised, the look of someone who stopped browsing two weeks ago and is here to finish it. She wears a camel fitted blazer, small gold studs already in her ears. The store lighting is warm commercial — product spotlights creating precise pools of light on the display surfaces, clean shadows under her chin and pointing hand. Shot on Nikon Z9, 35mm, f/2.0, warm commercial editorial grade, background softened. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 🏔️ Ángulo aventura / outdoor — la pieza que viaja con ella
+ 
+A woman, early 30s, Andean or Patagonian features — warm copper-brown skin, high cheekbones with natural wind-flush, dark hair escaping from a loose braid, a faint sun freckle across the nose from years outdoors. She stands at a rocky overlook at golden hour — the landscape behind her is mountain and open sky, blurred but present: ochre, dusty sage, deep blue. She wears a worn olive canvas jacket over a cream wool base layer, the collar open. At her wrist: a thick woven cord bracelet with a single hammered silver element — not delicate, not precious in the traditional sense, but clearly chosen and worn daily. The bracelet shows use: a slight discoloration at the cord from water and sun, the silver element naturally oxidized at the edges into a darker tone that reads as authentic. She holds a map or a small field notebook in one hand, the other hand — the one with the bracelet — rests on a rock, fingers spread lightly. She looks out at the landscape, not at camera. Her expression is completely at ease: the settled calm of someone in a landscape that is theirs. The late light rakes across the back of her hand, catching the silver element in a single warm line. Shot on Fujifilm X-T5, 23mm, f/2.0, warm golden hour outdoor grade, slight film emulation, natural skin tones preserved. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 🕯️ Ángulo hygge — el brillo contra el frío
+ 
+A woman, early 40s, Slavic or Central European features — pale skin with a natural warmth from the firelight, light brown hair loose and slightly wavy from the cold outside, a faint redness at the nose and cheeks from having just come in. She sits curled into one end of a deep linen sofa, feet tucked under her, wrapped in an oversized chunky-knit cream throw. In her hands: a large ceramic mug of something warm — both palms pressed into the sides, wrists crossed. At her wrist, just visible above the edge of the mug: a slim gold bracelet — delicate, simple — catching the warm amber light of the single candle on the coffee table in front of her and the low glow of a fireplace just off-frame right. The bracelet is the brightest thing in the frame. The only other light is a floor lamp behind her on low, and the faint blue-grey of a winter evening through a small window — darkness and frost on the glass, the outside making the inside feel warmer by contrast. On the coffee table: the candle, its wax half-melted, a small stack of two books, a pine cone, a folded soft scarf. Her expression is entirely at rest: eyes soft and slightly downcast toward the mug, jaw completely unclenched, the particular peace of someone who has arrived somewhere warm and has nowhere else to be. Shot on Sony A7III, 50mm, f/1.4, amber candlelight and firelight practical grade, very shallow depth of field, deep cool shadows on the window side. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+ ---
+ 
+*Prompts optimizados para Gemini Imagen — énfasis en hiperrealismo humano, gestualidad auténtica y referencia técnica fotográfica.*
+*Tipos cubiertos: Anillos — Collares / cadenas — Aros / pendientes — Pulseras / brazaletes*
+*Posicionamiento: Premium / Artesanal / Minimalista / Romántico*
 
 ## Educación & Cursos
  
@@ -759,20 +921,57 @@ A family, [early 30s parents], [Latin American / Southeast Asian features], outd
 
 ---
 
-### Ángulo orgullo — el auto como extensión personal
-A proud car owner in their 30s stands beside their clean vehicle in a garage or driveway, golden late-afternoon light creating long shadows. They hold the car product in one hand while the other rests on the vehicle's hood — a possessive, caring gesture. The car gleams, reflecting the warm light. They wear casual but neat clothes — jeans, a quality tee. Behind them, a partially visible organized garage shelf. Warm golden tones, deep shadows, metallic reflections. Shot at 35mm, automotive editorial, dramatic light. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+### 💛 Ángulo emocional — el vínculo que no se explica
+ 
+A man, early 40s, Argentine or Brazilian features — warm olive skin, dark eyes with faint lines at the corners, a few days of dark stubble, strong hands with a visible callus at the base of the right thumb. He stands beside a dark charcoal SUV parked on an empty residential street at dusk — the last light of the day catching the roof line and the top edge of the windshield in a single warm gold line. His left hand rests flat on the hood of the car — not gripping, not posing — the easy, unconscious touch of someone resting their hand on something that is simply theirs. He looks at the car, not at camera. His expression is entirely private: a slight downward tilt of the head, jaw relaxed, the specific quiet of someone alone with something they care about and do not need to explain. He wears a plain dark navy bomber jacket, a white t-shirt underneath, dark jeans, clean white sneakers slightly scuffed at the toe. The street behind him is blurred but legible — a row of warm-lit windows, a parked bicycle, a tree with its roots slightly lifting the pavement. The car's body catches the dusk light along the shoulder line — one long, slow curve from front wheel arch to rear. Shot on Sony A7R V, 35mm, f/1.8, warm dusk grade, slight grain, no fill. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
-### Ángulo ritual — cuidado dominical *(nuevo)*
-A person in their 30s stands in their driveway on a bright Sunday morning, bucket and product nearby, mid-wash of their vehicle. They've paused, looking at the clean section with satisfaction — cloth in one hand, product bottle in the other. Casual weekend clothes, sneakers. The neighborhood is quiet behind them, soft morning light. The scene captures the meditative pleasure of caring for something you own. Clean bright tones — sky, white suds, metallic gloss. Shot at 40mm, lifestyle editorial. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### ✨ Ángulo aspiracional — el que llegó
+ 
+A sharp woman, late 30s, Colombian or Venezuelan features — warm tan skin, strong jaw, dark eyes with a direct and composed gaze, dark hair in a sleek low bun, a single fine gold chain at the collarbone. She steps out of the driver's side of a deep navy sedan — door open, one foot already on the pavement, the other still inside, mid-exit. She wears a tailored dark charcoal blazer over a white silk blouse, slim-cut trousers, pointed leather flats. Her left hand holds the door frame — not for support, just contact — and her right hand carries a slim leather folio, relaxed at her side. She looks ahead, not at camera: the gaze of someone who knows exactly where she is going and has already factored in the time. The setting is the forecourt of a modern office building or a high-end residential tower — clean concrete, a line of trimmed hedges, glass facade behind her reflecting the sky. The car behind her is partially visible: the open door, the interior — clean dark upholstery, a phone mounted on the dash, the steering wheel with a gloved grip — and the rear three-quarter of the body catching morning light along the shoulder line. Shot on Fujifilm GFX 100S, 63mm, f/2.8, cool editorial morning grade, sharp mid-tones, soft highlight roll-off. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
-
-### Ángulo viaje — en ruta *(nuevo)*
-A driver in their 30s pulls over at a scenic rest stop — mountains or coastal road in the background, golden hour light. They step out of the vehicle and hold the product (interior freshener, emergency kit, phone mount) while looking out at the view with a relaxed smile. The car door is open, road visible. Windblown hair, comfortable travel outfit. The scene communicates freedom + preparedness. Dramatic natural tones — warm gold, deep sky, dusty road. Shot at 35mm, travel editorial, lens flare. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
-
+ 
+### 😩 Ángulo problema — el auto que ya no da más
+ 
+A frustrated man, mid-30s, Uruguayan or Paraguayan features — medium-brown skin, dark eyes slightly narrowed, short dark hair, two days of stubble. He stands on the side of a road, late afternoon, slightly overcast light — the flat, grey kind that offers no comfort. Behind him: an older compact sedan, clearly aging — paint faded and slightly chalky at the hood edges, a crack in the rear bumper repaired with tape, a side mirror held on with a cable tie, the rear left tire visibly lower than the others. The car's hood is up. He does not look at it. He stands a few steps away from it, one hand pressing his phone to his ear, the other hand on the back of his neck — the posture of someone who has made this call before and is tired of making it. His expression is specific: not dramatic despair, but the dull, recognizable exhaustion of someone whose situation has been inconvenient for too long. He wears a plain grey crewneck slightly untucked, dark work trousers, worn leather shoes. A work bag sits on the ground beside him, one buckle undone. The road behind him stretches empty in both directions. The light is flat and uninspiring. Everything in the frame says: this is not working anymore. Shot on Canon R5, 50mm, f/2.0, desaturated cool grade, no fill, flat ambient light. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
 ---
+ 
+### 🏔️ Ángulo aventura / outdoor — el auto en su elemento
+ 
+A man, late 20s, Andean or Patagonian features — warm copper-brown skin, high cheekbones with natural wind-flush, dark hair slightly disheveled from the wind, a faint sun line at the forearm from a rolled-up sleeve. He stands at the open tailgate of a dark olive green SUV or pick-up, parked on a wide gravel pull-off at the edge of a mountain road — the landscape behind him is vast and blurred but unmistakably present: peaks, open sky, late afternoon light going gold and directional. He leans with both forearms resting on the lowered tailgate, a topographic map partially unfolded on the surface between his arms, one finger resting on a point on the map. He looks out at the landscape — not at camera — with the calm, specific expression of someone reading a terrain they know and trust. The vehicle behind him is partially visible: the rear section, the open tailgate with a small scuff on the bumper from real use, the edge of a packed cargo area — a dry bag, a hiking pole bungeed to the side wall, a pair of trail runners. The car's roof catches a hard line of late golden light along its entire length. Dusty tyres. Real dirt on the wheel arches. Shot on Fujifilm X-T5, 23mm, f/2.0, warm golden hour outdoor grade, slight film emulation, natural skin tones preserved. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 👨‍👩‍👧 Ángulo familiar — el auto donde pasan las cosas
+ 
+A couple, early 30s — the woman: warm medium-brown skin, dark hair in a loose ponytail, wearing a sage green linen shirt; the man: slightly taller, similar warm skin tone, plain white t-shirt, dark shorts. They stand at the open rear door of a silver family SUV parked in a residential driveway on a Saturday morning — warm diffused sun, no dramatic light, just the honest light of an ordinary weekend. A child, around 4 years old, sits on the edge of the rear seat with both feet dangling, not yet out, holding a small stuffed animal. The woman buckles the child's seatbelt — her movement practiced and automatic, her expression calm and warm. The man loads the last item into the boot — a canvas tote with a towel rolled over the top, the corner of a beach toy visible. He glances back at them over his shoulder with the half-smile of someone who has done this a hundred times and doesn't mind doing it a hundred more. The driveway around them is real: a bicycle leaning against the wall, a chalk drawing on the pavement half-washed by a recent rain. The car is clean but not showroom-clean — a small adhesive on the rear window, a slight water mark near the wheel arch. Shot on Canon R5, 35mm, f/2.5, warm domestic morning grade, gentle fill from the right. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### ⏱️ Ángulo urgencia — la decisión que no puede esperar más
+ 
+A decisive woman, late 30s, Mexican or Chilean features — warm tan skin, sharp dark eyes, strong brows, dark hair pulled back. She stands in a car dealership forecourt — a row of vehicles soft-focused behind her, shapes and colors legible but no competing brands readable. She holds her phone at chest height with both hands, screen facing her — on it, clearly visible: a financing calculator or a vehicle listing with a large "ÚLTIMAS UNIDADES" or price-drop notification, the numbers legible but not the brand. Her expression is the specific mix of recognition and decision: one eyebrow slightly raised, jaw slightly forward, the look of someone who has been thinking about this for three months and just found the reason to stop thinking. Beside her, close enough to touch: the front quarter panel of a dark red or deep blue compact SUV — the vehicle she is about to choose. Her free hand rests on the roof of the car, fingers flat — the first contact. She wears a fitted rust-orange blazer, white tee, dark jeans, white sneakers. The dealership behind her has the clean, bright lighting of a commercial forecourt — cool overhead white mixed with warm display spotlights. Shot on Nikon Z9, 35mm, f/2.0, commercial editorial grade, background desaturated to isolate subject and vehicle. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 🔄 Ángulo transformación — el cambio que ya era hora
+ 
+A man, mid-40s, West African features — deep warm-brown skin, broad jaw, calm dark eyes with slight smile lines at the corners, short natural hair with a slight fade. He stands beside a clean, late-model dark grey sedan — not a luxury car, but clearly newer and well-chosen — in a quiet residential street, early morning light from the left. Behind him, slightly out of focus but unmistakably readable: an older vehicle parked further down the street — faded paint, a dented rear bumper, visibly aged. He does not look at the old car. He looks at the new one — both hands resting on the roof, head slightly bowed, the posture of someone quietly acknowledging something they have been working toward for a long time. His expression is not triumphant — it is the specific, private satisfaction of someone whose effort has finally materialized into something real and solid. He wears a plain dark olive shirt tucked into dark work trousers, clean leather boots. The new car's roof catches the morning light in a clean, unbroken line from front to back. Shot on Sony A7IV, 40mm, f/2.2, warm split morning grade — warm on the new car side, slightly cooler and more desaturated on the background where the old vehicle sits. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+### 🤲 Ángulo sensorial — el detalle que justifica todo
+ 
+Extreme close-up: the interior of a premium vehicle, shot from the passenger side at a low angle looking toward the driver's seat. The focus pulls between three elements in the same shallow plane: the stitched leather of the steering wheel — double-stitched in contrasting thread, the texture of the grain clearly visible, a slight sheen from the interior ambient light; the gear selector — a solid brushed aluminum knob, its surface catching a single point of warm light from the dashboard; and a hand — a man's right hand, warm medium-brown skin, resting naturally on the gear selector, thumb slightly hooked over the top, the way a hand rests on something it knows. His nails are clean, cut short, a plain silver band on the ring finger. The dashboard beyond is soft-focus but present: a thin strip of ambient interior lighting in warm white, the edge of a digital instrument cluster glowing softly, the texture of the dash surface — matte dark material with a fine grain. Through the windshield, entirely blurred: golden hour light and the suggestion of a road. The interior smells implicit — leather, warmth, stillness. Shot on Canon 100mm macro L, f/2.8, extremely shallow DOF, warm interior practical lighting supplemented by a single Profoto strip softbox from camera-left, premium automotive grade. Subject and product on right side only. Left half must remain completely clean for pre-rendered text.
+ 
+---
+ 
+*Prompts optimizados para Gemini Imagen — énfasis en hiperrealismo humano, gestualidad auténtica y referencia técnica fotográfica.*
+*Segmentos cubiertos: Autos 0km — Autos usados / seminuevos — Accesorios y repuestos — Servicios (taller, seguro, financiación)*
+*Posicionamiento: Premium / aspiracional*
 
 ## Guía de construcción de prompts — referencia rápida
 

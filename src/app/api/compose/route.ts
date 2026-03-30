@@ -16,8 +16,9 @@ import { compose, composeWithAutoLayout, composeWithSmartUsage, composeWithPrese
 
 import { composeWithProductIA } from "@/services/product-composer";
 import { composeWithTemplateBeta } from "@/services/product-composer/composeWithTemplateBeta"; // ← AGREGAR
-import { generateBackground, analyzeCreativeQuality, generateImageBriefGemini, expandSceneBrief, generateSceneWithPlaceholder } from "@/lib/ai/gemini";
+import { generateBackground, analyzeCreativeQuality, generateImageBriefGemini, expandSceneBrief, generateSceneWithPlaceholder, editCreativeWithGemini } from "@/lib/ai/gemini";
 import { generateTemplateCopyOpenAI, analyzeCreativeReference, generateSequenceCopy } from "@/lib/ai/openai";
+import { extractProductInfoFromText } from "@/lib/ai/productExtractor";
 import type { ImageBriefType } from "@/lib/ai/promptLibrary";
 import { getSceneLibrarySection } from "@/lib/ai/promptLibrary";
 import { composePipelineV2 } from "@/lib/meta/pipeline/v2";
@@ -210,6 +211,10 @@ if (debugInfo.productBytes === 0 && requestedMode !== "TEMPLATE_BETA") {
   const avatarFormFile = formData.get("avatarFile") as File | null;
   const avatarBuffer = avatarFormFile ? Buffer.from(await avatarFormFile.arrayBuffer()) : undefined;
 
+  // Reference buffer (for narrative sequence consistency — previous slide's scene)
+  const referenceFormFile = formData.get("referenceImage") as File | null;
+  const referenceBuffer = referenceFormFile ? Buffer.from(await referenceFormFile.arrayBuffer()) : undefined;
+
   return {
     request: {
       mode: (config.mode as ComposeMode) || "STANDARD",
@@ -232,6 +237,7 @@ if (debugInfo.productBytes === 0 && requestedMode !== "TEMPLATE_BETA") {
       logoLightBase64: logoLightBase64 ?? undefined,
       logoLightMimeType: logoLightMimeType ?? undefined,
       avatarBuffer,
+      referenceBuffer,
       productIAOptions: config.productIAOptions as ComposeRequest["productIAOptions"],
       templateBetaOptions: config.templateBetaOptions as any,
     },
@@ -589,6 +595,7 @@ export async function POST(request: NextRequest) {
                     defaultBackgroundPrompt: copyTemplateMeta.defaultBackgroundPrompt,
                     defaultProductPrompt: copyTemplateMeta.defaultProductPrompt,
                     textSide: copyTemplateMeta.textSide,
+                    charLimits: copyTemplateMeta.charLimits,
                   }
                 : undefined,
             }),
@@ -672,16 +679,20 @@ export async function POST(request: NextRequest) {
 
           // Extract prompt metadata from copy result (non-enumerable properties attached by openai.ts)
           const _r = copyResult as any;
-          const copyPromptUsed    = _r._promptUsed   ?? `Schema: ${fullSchema.join(", ")}`;
-          const copySystemPrompt  = _r._systemPrompt ?? null;
-          const copyUserPrompt    = _r._userPrompt   ?? null;
+          const copyPromptUsed      = _r._promptUsed          ?? `Schema: ${fullSchema.join(", ")}`;
+          const copySystemPrompt    = _r._systemPrompt        ?? null;
+          const copyUserPrompt      = _r._userPrompt          ?? null;
+          const copyRawOutput       = _r._copyRawOutput       ?? null;
+          const imageSystemPrompt   = _r._imageSystemPrompt   ?? null;
+          const imageUserPrompt     = _r._imageUserPrompt     ?? null;
+          const imageRawOutput      = _r._imageRawOutput      ?? null;
 
           // Extract sceneAction — always generated (synthesis of sceneLibrary + defaultProductPrompt)
           const generatedSceneAction: string | null = Array.isArray(result)
             ? ((result[0] as any)?.sceneAction as string ?? null)
             : ((result as any)?.sceneAction as string ?? null);
 
-          return NextResponse.json({ success: true, data: { copy: result, sceneAction: generatedSceneAction, sceneExample: sceneExample || null, promptUsed: copyPromptUsed, systemPrompt: copySystemPrompt, userPrompt: copyUserPrompt, imageBriefLog } });
+          return NextResponse.json({ success: true, data: { copy: result, sceneAction: generatedSceneAction, sceneExample: sceneExample || null, promptUsed: copyPromptUsed, systemPrompt: copySystemPrompt, userPrompt: copyUserPrompt, copyRawOutput, imageSystemPrompt, imageUserPrompt, imageRawOutput, imageBriefLog } });
         } catch (err) {
           const message = err instanceof Error ? err.message : "Unknown error";
           return NextResponse.json({ success: false, error: message }, { status: 500 });
@@ -695,6 +706,7 @@ export async function POST(request: NextRequest) {
       const body = await clone.json().catch(() => ({}));
       if (body.mode === "GENERATE_SEQUENCE_COPY") {
         try {
+          const seqTemplateMeta = body.templateId ? getTemplateMeta(body.templateId) : undefined;
           const result = await generateSequenceCopy({
             product: body.product ?? "",
             offer: body.offer ?? "",
@@ -705,9 +717,28 @@ export async function POST(request: NextRequest) {
             slideCount: body.slideCount ?? 3,
             sceneWithProduct: body.sceneWithProduct === true,
             businessProfile: body.businessProfile,
+            templateMeta: seqTemplateMeta ? {
+              id: seqTemplateMeta.id,
+              name: seqTemplateMeta.name,
+              description: seqTemplateMeta.description,
+              copyZone: seqTemplateMeta.copyZone,
+              copySchema: seqTemplateMeta.copySchema,
+              compositionMode: seqTemplateMeta.compositionMode,
+              rawBackgroundPrompt: seqTemplateMeta.rawBackgroundPrompt,
+              rawProductPrompt: seqTemplateMeta.rawProductPrompt,
+              hyperRealisticPrompts: seqTemplateMeta.hyperRealisticPrompts,
+              sceneFullBleed: seqTemplateMeta.sceneFullBleed,
+              personScene: seqTemplateMeta.personScene,
+              personOnly: seqTemplateMeta.personOnly,
+              recommendedFor: seqTemplateMeta.recommendedFor,
+              defaultBackgroundPrompt: seqTemplateMeta.defaultBackgroundPrompt,
+              defaultProductPrompt: seqTemplateMeta.defaultProductPrompt,
+              textSide: seqTemplateMeta.textSide,
+              charLimits: seqTemplateMeta.charLimits,
+            } : undefined,
           });
           if (cachedUserTokens) await consumeTokensWithData(cachedUserTokens, tokensNeeded, operation);
-          return NextResponse.json({ success: true, data: { slides: result } });
+          return NextResponse.json({ success: true, data: { slides: result.slides, debug: result.debug } });
         } catch (err) {
           const message = err instanceof Error ? err.message : "Unknown error";
           return NextResponse.json({ success: false, error: message }, { status: 500 });
@@ -813,6 +844,31 @@ export async function POST(request: NextRequest) {
       const clone = request.clone();
       const body = await clone.json().catch(() => ({}));
 
+      if (body.mode === "EDIT_CREATIVE") {
+        try {
+          const creative = Buffer.from(body.creativeBase64 ?? "", "base64");
+          const instruction = (body.instruction as string) ?? "";
+          if (!instruction.trim()) {
+            return NextResponse.json({ success: false, error: "instruction is required" }, { status: 400 });
+          }
+          const reference = body.referenceBase64
+            ? Buffer.from(body.referenceBase64 as string, "base64")
+            : undefined;
+          const edited = await editCreativeWithGemini({
+            creativePng: creative,
+            instruction,
+            referencePng: reference,
+            aspectRatio: (body.aspectRatio as string) ?? "1:1",
+            apiKeys: userGeminiKeys,
+          });
+          const dataUrl = `data:image/png;base64,${edited.toString("base64")}`;
+          return NextResponse.json({ success: true, data: { editedImage: dataUrl } });
+        } catch (err) {
+          const message = err instanceof Error ? err.message : "Unknown error";
+          return NextResponse.json({ success: false, error: message }, { status: 500 });
+        }
+      }
+
       if (body.mode === "ANALYZE_CREATIVE") {
         try {
           const creative = Buffer.from(body.creativeBase64 ?? "", "base64");
@@ -841,6 +897,16 @@ export async function POST(request: NextRequest) {
           });
           if (cachedUserTokens) await consumeTokensWithData(cachedUserTokens, tokensNeeded, operation);
           return NextResponse.json({ success: true, data: { analysis: result } });
+        } catch (err) {
+          const message = err instanceof Error ? err.message : "Unknown error";
+          return NextResponse.json({ success: false, error: message }, { status: 500 });
+        }
+      }
+
+      if (body.mode === "EXTRACT_PRODUCT_INFO") {
+        try {
+          const result = await extractProductInfoFromText(body.text ?? "");
+          return NextResponse.json({ success: true, data: result });
         } catch (err) {
           const message = err instanceof Error ? err.message : "Unknown error";
           return NextResponse.json({ success: false, error: message }, { status: 500 });

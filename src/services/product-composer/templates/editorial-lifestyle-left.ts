@@ -39,7 +39,7 @@ export function buildEditorialLifestyleLeftLayout(
   // Longer headlines scale down so they don't overflow into the subheadline area.
   const headlineWords  = (copy.headline ?? "").trim().split(/\s+/).filter(Boolean).length;
   const HEADLINE_FONT  = Math.round(
-    CW * (headlineWords <= 4 ? 0.090 : headlineWords <= 6 ? 0.076 : 0.065)
+    CW * (headlineWords <= 4 ? 0.072 : headlineWords <= 6 ? 0.062 : 0.054)
   );
   const HEADLINE_W    = Math.round(CW * 0.46);
   const HEADLINE_X    = isRight

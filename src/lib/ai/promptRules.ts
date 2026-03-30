@@ -2,6 +2,26 @@
  * Shared prompt rules — single source of truth.
  * Import these constants in composeWithProductIA.ts and gemini.ts.
  * NEVER copy-paste these rules inline in other files.
+ *
+ * ─── REFACTORED 2026-03-21 ───────────────────────────────────────────────────
+ * Changes:
+ * 1. ABSOLUTE_RULES_ANATOMY: compressed from ~180 tokens to ~65 tokens.
+ *    Removed micro-anatomical details Gemini can't control (iris fibers, limbal ring,
+ *    caruncle, cephalic veins, lunula, cuticles, dorsal veins, tricep/bicep detail).
+ *    Added camera language ("85mm lens"), depth of field, contact shadows, and
+ *    color temperature matching — per Google's official Gemini prompting docs.
+ *
+ * 2. NEW: PROTECTED_ZONES — single-line text preservation rule.
+ *    Replaces verbose ABSOLUTE_RULES_TEXT_PRESERVATION in buildScenePrompt.
+ *    ABSOLUTE_RULES_TEXT_PRESERVATION kept for backward compat in other consumers.
+ *
+ * 3. ABSOLUTE_RULES_SCENE: now composes ANATOMY + BACKGROUND only (no TEXT_PRESERVATION).
+ *    buildScenePrompt uses PROTECTED_ZONES at the top instead, eliminating the
+ *    triple-mention of text preservation that existed before.
+ *
+ * 4. NEW: COMPOSITING_RULES — unified block replacing scattered duplicate rules
+ *    for opacity, lighting match, and contact shadows in buildScenePrompt.
+ * ─────────────────────────────────────────────────────────────────────────────
  */
 
 // ─── Zone percentages ─────────────────────────────────────────────────────────
@@ -178,34 +198,31 @@ THIS OVERRIDES the creative brief if there is any conflict.
 ================================================================================`;
 }
 
+// ─── Prompt rule blocks ───────────────────────────────────────────────────────
+
+/**
+ * Single-line text preservation rule for buildScenePrompt.
+ * Use this at the TOP of the Gemini prompt to avoid triple-mentioning text rules.
+ */
+export const PROTECTED_ZONES = `PROTECTED ZONES: All existing text, badges, logos, icons, and graphic elements must remain pixel-perfect — never overlap, erase, or modify them.`;
+
+/**
+ * @deprecated in buildScenePrompt — use PROTECTED_ZONES instead.
+ * Kept for backward compat in buildAvatarWithProductPrompt and other consumers.
+ */
 export const ABSOLUTE_RULES_TEXT_PRESERVATION = `ABSOLUTE RULES — violation is not acceptable:
 - All pre-existing text, badges, labels, stars, icons, and graphic elements
   must remain perfectly intact and legible — do NOT erase, cover, blur,
   distort, or modify them in any way.`;
 
 export const ABSOLUTE_RULES_ANATOMY = `
-ANATOMY & PHOTOREALISM — NON-NEGOTIABLE:
-
-LIMBS: Exactly 2 arms, 2 hands. Never extra or missing limbs. Both shoulders correctly attached.
-
-HANDS: 5 fingers each (thumb+index+middle+ring+pinky — count before finalizing). Taper naturally,
-visible knuckles, tendons, palm creases, lunula, cuticles, dorsal veins, loose skin at joints.
-No sausage fingers, fused/extra digits, or featureless backs.
-
-ARMS: Subtle muscle volume (bicep, tricep, forearm). Visible tendons at wrist, organic body hair,
-cephalic/basilic veins. Elbow with natural loose skin. Consistent tone/texture wrist-to-hand.
-No rubbery cylinders, plastic skin, or wrist discontinuity.
-
-SKIN: DSLR-portrait realism. Visible pores, micro-imperfections, slight facial asymmetry, subsurface
-scattering (translucent/warm under light), natural undertones. No airbrushed/plastic/uniform texture.
-
-HAIR: Strand-by-strand. Flyaways, root-to-tip gradient, gravity-driven flow, individual hairs at
-hairline. Texture matches ethnicity/style. No wig uniformity, plastic sheen, identical strands.
-
-EYES: Radial iris fibers, limbal ring, correct pupil dilation, catchlight, wet sclera sheen,
-caruncle pink, subtle sclera veins. Individual lashes, natural lid folds. No glassy/cartoon eyes.
-
-FINAL BAR: Indistinguishable from a DSLR portrait. Correct proportions for age and ethnicity.
+PHOTOREALISM — NON-NEGOTIABLE:
+Exactly 2 arms, 2 hands with 5 fingers each. DSLR portrait quality shot on 85mm lens:
+visible skin pores, natural micro-imperfections, subsurface scattering under light,
+strand-level hair with flyaways, slight facial asymmetry. Shallow depth of field —
+person in sharp focus, background softly blurred. Match color temperature and shadow
+direction to the existing scene. Natural contact shadows where person meets surfaces.
+No airbrushed skin, no plastic textures, no extra limbs, no uniform hair.
 `;
 
 export const ABSOLUTE_RULES_PRODUCT = `
@@ -220,9 +237,30 @@ PRODUCT INTEGRATION — physically present in the scene:
 export const ABSOLUTE_RULES_BACKGROUND = `- DO NOT modify, alter, recolor, blur, brighten, darken,
   or change ANY part of the background. Only add the requested element.`;
 
-/** Combined ruleset for scene generation (person + product + background) */
+/**
+ * Unified compositing rules block for buildScenePrompt.
+ * Replaces 5 scattered duplicate lines (2× opacity, 2× lighting match, 1× no-text)
+ * with a single cohesive block.
+ */
+export const COMPOSITING_RULES = `COMPOSITING RULES:
+- Match the person's color temperature, white balance, and shadow direction to the background scene.
+- Person must be FULLY OPAQUE with sharp defined edges — no fading, dissolving, or transparency.
+- Add natural contact shadows where the person meets any surface.
+- Do NOT add text, logos, watermarks, or labels.
+- The scene must feel authentic and warm, not overly commercial.`;
+
+/**
+ * Combined ruleset for scene generation (person + background).
+ *
+ * CHANGED: No longer includes ABSOLUTE_RULES_TEXT_PRESERVATION.
+ * buildScenePrompt now uses PROTECTED_ZONES at the top of the prompt instead,
+ * eliminating the triple-mention that existed before.
+ *
+ * Other consumers (buildAvatarWithProductPrompt, etc.) that still need
+ * TEXT_PRESERVATION should compose it manually:
+ *   `${ABSOLUTE_RULES_TEXT_PRESERVATION}\n${ABSOLUTE_RULES_ANATOMY}\n${ABSOLUTE_RULES_BACKGROUND}`
+ */
 export const ABSOLUTE_RULES_SCENE = [
-  ABSOLUTE_RULES_TEXT_PRESERVATION,
   ABSOLUTE_RULES_ANATOMY,
   ABSOLUTE_RULES_BACKGROUND,
 ].join("\n");
@@ -233,3 +271,28 @@ export const ABSOLUTE_RULES_PRODUCT_INJECT = [
   ABSOLUTE_RULES_PRODUCT,
   ABSOLUTE_RULES_BACKGROUND,
 ].join("\n");
+
+// ─── Category-specific rules ──────────────────────────────────────────────────
+
+/**
+ * Extra rules injected into Gemini prompts based on the user's business category.
+ * Keys match the `id` values in BUSINESS_CATEGORIES.
+ * Keep each block concise — these are appended to existing prompts, not replacements.
+ */
+export const CATEGORY_RULES: Record<string, string> = {
+  "moda-indumentaria": `
+CATEGORY RULE — FASHION & APPAREL:
+If the product is sold as a pair (shoes, sneakers, boots, sandals, gloves, earrings, socks, etc.),
+the scene must show EXACTLY one or two units — no more.
+Valid representations: both items worn on the person's body, or both items held/displayed together.
+`,
+};
+
+/**
+ * Returns the category-specific rule block for a given category ID.
+ * Returns an empty string if no rules exist for that category.
+ */
+export function buildCategoryBlock(productCategory?: string): string {
+  if (!productCategory) return "";
+  return CATEGORY_RULES[productCategory] ?? "";
+}

@@ -3,9 +3,9 @@ import { renderTextOnImage } from "./textRenderer";
 import type { ComposeRequest } from "./types";
 import type { LayoutSpec } from "./layoutSpec";
 import { nanoBananaInjectProduct, generateScene, generateGenericProduct, generateSceneWithAvatarAndProduct, detectProductBoundingBox } from "@/lib/ai/gemini";
-import { ABSOLUTE_RULES_SCENE, ABSOLUTE_RULES_PRODUCT_INJECT, ABSOLUTE_RULES_ANATOMY, buildZonePlacement } from "@/lib/ai/promptRules";
+import { ABSOLUTE_RULES_SCENE, ABSOLUTE_RULES_PRODUCT_INJECT, ABSOLUTE_RULES_ANATOMY, buildZonePlacement, buildCategoryBlock } from "@/lib/ai/promptRules";
 
-function buildScenePrompt(sceneAction: string, copyZone: string, hasRealProduct = false, opts?: { fullBleed?: boolean }): string {
+function buildScenePrompt(sceneAction: string, copyZone: string, hasRealProduct = false, opts?: { fullBleed?: boolean; productCategory?: string }): string {
   const zone = copyZone as "left" | "right" | "top" | "bottom" | "center";
 
   const productRule = hasRealProduct
@@ -24,26 +24,33 @@ This is NOT a split layout — the scene is edge-to-edge. A dark overlay will be
 to ensure text legibility, so the generated image should be a clean, full-frame portrait/scene.\n`
     : "";
 
-  return `You are a professional advertising image compositor. Your task is to add a person to a background scene.
+return `You are a professional advertising image compositor. Add a person to the background image.
 
-STEP 1 — ANALYZE THE IMAGE FIRST:
-Before making any changes, examine the background image carefully and identify:
-• Where existing text, labels, badges, icons, or graphic elements are located — these are protected zones, the person must NEVER overlap them
-• Where the open, empty space is available for placing the person
-• The dominant lighting direction and color temperature of the scene
+PROTECTED ZONES: All existing text, badges, logos, icons, and graphic elements must remain pixel-perfect — never overlap, erase, or modify them.
+
+IMAGE 1 IS LOCKED — NON-NEGOTIABLE:
+Do NOT regenerate, reinterpret, recolor, or modify Image 1 in any way.
+Treat it as a printed photograph — you are placing a cutout on top of it.
+The background pixels must be IDENTICAL before and after your edit.
+
 ${fullBleedContext}
-STEP 2 — COMPOSE WITH PRECISION:
+SCENE DIRECTION:
 ${sceneAction}
+
+LIGHTING — READ FROM IMAGE 1:
+Do NOT invent a new lighting setup. Read the key light direction and color temperature directly from Image 1 and match the person exactly. No new light sources.
 
 ${buildZonePlacement(zone, "scene", { fullBleed: opts?.fullBleed })}
 
 ${ABSOLUTE_RULES_SCENE}
 ${productRule}
 ${holdingRule}
-- DO NOT add text, logos, watermarks, or labels.
-- The person must be FULLY OPAQUE and SOLIDLY VISIBLE — do NOT apply fading, dissolving, transparency, or soft disappearance to any part of the person. The person should look physically present with clear edges.
-- Lighting must match the existing background naturally.
-- The scene must feel authentic and warm, not overly commercial.`.trim();
+COMPOSITING RULES:
+- Match the person's color temperature, white balance, and shadow direction to the background scene.
+- Person must be FULLY OPAQUE with sharp defined edges — no fading, dissolving, or transparency.
+- Add natural contact shadows where the person meets any surface.
+- Do NOT add text, logos, watermarks, or labels.
+- The scene must feel authentic and warm, not overly commercial.${buildCategoryBlock(opts?.productCategory)}`.trim();
 }
 
 function buildAvatarScenePrompt(userPrompt: string, copyZone: string): string {
@@ -84,6 +91,7 @@ function buildAvatarWithProductPrompt(
   productPrompt: string,
   copyZone: string,
   rawMode: boolean,
+  productCategory?: string,
 ): string {
   const zone = copyZone as "left" | "right" | "top" | "bottom" | "center";
 
@@ -101,7 +109,7 @@ ABSOLUTE RULES — VIOLATIONS NOT ACCEPTABLE:
 - The person and product must be FULLY OPAQUE and SOLIDLY VISIBLE at 100% opacity — NEVER fading, dissolving, soft edges, or any transparency
 - Lighting must match the background scene naturally — same direction, same color temperature
 - No added text, watermarks, logos, or extra objects
-${ABSOLUTE_RULES_SCENE}`.trim();
+${ABSOLUTE_RULES_SCENE}${buildCategoryBlock(productCategory)}`.trim();
   }
 
   const zoneBodyPosition =
@@ -163,7 +171,7 @@ ABSOLUTE RULES — VIOLATIONS NOT ACCEPTABLE:
 - Lighting must match the background scene naturally — same direction, same color temperature
 - No added text, watermarks, logos, or extra objects
 - Authentic feel — genuine expression, natural posture, not stiff or stock-photo generic
-${ABSOLUTE_RULES_SCENE}`.trim();
+${ABSOLUTE_RULES_SCENE}${buildCategoryBlock(productCategory)}`.trim();
 }
 
 // ─── Main composer ───────────────────────────────────────────────────────────
@@ -213,6 +221,7 @@ const aspectRatio = `${targetW / divisor}:${targetH / divisor}`;
       req.productIAOptions?.prompt ?? "",
       copyZone,
       rawMode,
+      req.productIAOptions?.productCategory,
     );
 
     const scene = await generateSceneWithAvatarAndProduct({
@@ -222,6 +231,7 @@ const aspectRatio = `${targetW / divisor}:${targetH / divisor}`;
       prompt: avatarWithProductPrompt,
       aspectRatio,
       apiKeys: req.apiKeys,
+      referencePng: req.referenceBuffer,
     });
 
     const sceneMeta = await sharp(scene).metadata();
@@ -288,6 +298,7 @@ const aspectRatio = `${targetW / divisor}:${targetH / divisor}`;
       prompt: avatarPrompt,
       aspectRatio,
       apiKeys: req.apiKeys,
+      referencePng: req.referenceBuffer,
     });
 
     const sceneMeta = await sharp(scene).metadata();
@@ -332,7 +343,7 @@ const aspectRatio = `${targetW / divisor}:${targetH / divisor}`;
     if (hasRealProduct && req.productBuffer) {
       // El usuario subió una imagen real de producto: enviamos background + producto a Gemini
       // para que use el producto real como referencia y no invente uno propio.
-      fullPromptUsed = buildScenePrompt(sceneAction, sceneCopyZone, true, { fullBleed: sceneFullBleed });
+      fullPromptUsed = buildScenePrompt(sceneAction, sceneCopyZone, true, { fullBleed: sceneFullBleed, productCategory: req.productIAOptions?.productCategory });
       console.log(`[composeWithProductIA:sceneMode] hasRealProduct=true fullBleed=${sceneFullBleed} → usando nanoBananaInjectProduct con producto real`);
       scene = await nanoBananaInjectProduct({
         backgroundPng: bg,
@@ -340,15 +351,17 @@ const aspectRatio = `${targetW / divisor}:${targetH / divisor}`;
         prompt: fullPromptUsed,
         aspectRatio,
         apiKeys: req.apiKeys,
+        referencePng: req.referenceBuffer,
       });
     } else {
       // Sin producto: solo se envía el fondo y Gemini genera la escena con persona
-      fullPromptUsed = buildScenePrompt(sceneAction, sceneCopyZone, false, { fullBleed: sceneFullBleed });
+      fullPromptUsed = buildScenePrompt(sceneAction, sceneCopyZone, false, { fullBleed: sceneFullBleed, productCategory: req.productIAOptions?.productCategory });
       scene = await generateScene({
         backgroundPng: bg,
         prompt: fullPromptUsed,
         aspectRatio,
         apiKeys: req.apiKeys,
+        referencePng: req.referenceBuffer,
       });
     }
 
@@ -380,7 +393,7 @@ const aspectRatio = `${targetW / divisor}:${targetH / divisor}`;
     console.log("[PRODUCT_REPLACE] replacing placeholder product in scene");
   }
 
-  const prompt = buildProductIAPrompt({ userPrompt, copyZone, rawMode: rawProductPrompt, personScene: req.productIAOptions?.personScene === true, replaceExistingProduct });
+  const prompt = buildProductIAPrompt({ userPrompt, copyZone, rawMode: rawProductPrompt, personScene: req.productIAOptions?.personScene === true, replaceExistingProduct, productCategory: req.productIAOptions?.productCategory });
   console.log(`[compose:buildProductIAPrompt] copyZone=${copyZone} rawMode=${rawProductPrompt} personScene=${req.productIAOptions?.personScene} replaceExistingProduct=${replaceExistingProduct} prompt="${prompt.slice(0, 120).replace(/\n/g, " ")}..."`);
 
   // 3) NanoBanana: integrate product into background
@@ -840,6 +853,7 @@ function buildProductIAPrompt(args: {
   /** true = Image 1 already contains a placeholder product; replace it with Image 2.
    *  When false/undefined, behaviour is identical to the existing product-inject flow. */
   replaceExistingProduct?: boolean;
+  productCategory?: string;
 }) {
   // Replacement preamble — injected at the very start when Image 1 has a placeholder product.
   // Empty string when replaceExistingProduct is false/undefined → zero impact on existing behaviour.
@@ -866,14 +880,14 @@ Your task:
   if (args.rawMode && args.userPrompt) {
     return `${replacementBlock}${args.userPrompt}
 
-${ABSOLUTE_RULES_PRODUCT_INJECT}${args.personScene ? `\n${ABSOLUTE_RULES_ANATOMY}` : ""}`.trim();
+${ABSOLUTE_RULES_PRODUCT_INJECT}${args.personScene ? `\n${ABSOLUTE_RULES_ANATOMY}` : ""}${buildCategoryBlock(args.productCategory)}`.trim();
   }
 
   // ── FULL mode: template owns the entire prompt ───────────────────────────
   if (args.copyZone === "full" && args.userPrompt) {
     return `${replacementBlock}${args.userPrompt}
 
-${ABSOLUTE_RULES_PRODUCT_INJECT}${args.personScene ? `\n${ABSOLUTE_RULES_ANATOMY}` : ""}`.trim();
+${ABSOLUTE_RULES_PRODUCT_INJECT}${args.personScene ? `\n${ABSOLUTE_RULES_ANATOMY}` : ""}${buildCategoryBlock(args.productCategory)}`.trim();
   }
 
   // ── TEMPLATE-DIRECTED mode: template's defaultProductPrompt is the creative brief ──
@@ -895,7 +909,7 @@ ABSOLUTE RULES — always enforced, no exceptions:
 - No hands, fingers, arms, or body parts of any kind
 - No text, logos, watermarks, icons, sparkles, or decorative symbols
 - The product MUST NOT overlap or cover any existing text, badges, labels, or graphic elements. Place it in open space only.
-${ABSOLUTE_RULES_PRODUCT_INJECT}`.trim();
+${ABSOLUTE_RULES_PRODUCT_INJECT}${buildCategoryBlock(args.productCategory)}`.trim();
   }
 
   // ── GENERIC FALLBACK: no user prompt — use zone-based rules ─────────────
@@ -930,5 +944,5 @@ ABSOLUTE RULES:
 - No hands, fingers, arms, or body parts — the product must never be held
 - No text, logos, watermarks, icons, or decorative symbols
 - The product MUST NOT overlap any existing text or graphic elements — place it in open space only.
-${ABSOLUTE_RULES_PRODUCT_INJECT}`.trim();
+${ABSOLUTE_RULES_PRODUCT_INJECT}${buildCategoryBlock(args.productCategory)}`.trim();
 }

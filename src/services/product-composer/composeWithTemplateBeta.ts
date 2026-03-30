@@ -85,10 +85,12 @@ export async function composeWithTemplateBeta(
   let finalBuffer = rendered.buffer;
   if (selectedLogoBase64 && !meta?.noLogo) {
     const logoBuffer = Buffer.from(selectedLogoBase64, "base64");
-    const logoMaxW = Math.round(canvas.width * 0.18);
-    const logoMaxH = Math.round(canvas.height * 0.08);
-    const resizedLogo = await sharp(logoBuffer)
-      .resize(logoMaxW, logoMaxH, { fit: "inside", withoutEnlargement: true })
+    // Trim transparent padding from the normalized canvas so resize uses actual content dimensions
+    const logoTrimmed = await sharp(logoBuffer).trim({ threshold: 1 }).toBuffer().catch(() => logoBuffer);
+    const logoTargetH = Math.round(canvas.height * 0.055);
+    const logoSafeMaxW = Math.round(canvas.width * 0.25);
+    const resizedLogo = await sharp(logoTrimmed)
+      .resize(logoSafeMaxW, logoTargetH, { fit: "inside", withoutEnlargement: true })
       .png()
       .toBuffer();
     const logoPadding = Math.round(canvas.width * 0.04);

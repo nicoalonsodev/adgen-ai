@@ -69,10 +69,9 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
       {/* Logo */}
       <div style={{ paddingBottom: 32, borderBottom: "1px solid #1F2631" }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 8 }}>
-          <Image src="/henko-logo.png" alt="Henko" width={100} height={100} priority style={{ width: 100, height: 100, objectFit: "contain" }} />
           <div>
             <div style={{ color: "#E7ECF3", fontWeight: 600, fontSize: 16, lineHeight: 1.2 }}>
-              Henko Creative Hub
+              Creative Hub
             </div>
             <div style={{ color: "#7C889A", fontSize: 12 }}>Platform</div>
           </div>
@@ -242,8 +241,7 @@ function MobileTopBar({ onMenuOpen }: { onMenuOpen: () => void }) {
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <Image src="/henko-logo.png" alt="Henko" width={36} height={36} style={{ width: 36, height: 36, objectFit: "contain" }} />
-        <span style={{ color: "#E7ECF3", fontWeight: 600, fontSize: 15 }}>Henko Creative Hub</span>
+        <span style={{ color: "#E7ECF3", fontWeight: 600, fontSize: 15 }}>Creative Hub</span>
       </div>
       <button
         type="button"

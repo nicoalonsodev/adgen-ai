@@ -297,6 +297,11 @@ copyZone: z.enum(["right", "left", "top", "bottom", "center", "full"]).default("
    * instead of adding a new one. Only set by the "scene-with-placeholder" compositionMode.
    */
   replaceExistingProduct: z.boolean().optional().default(false),
+  /**
+   * Business category ID from BUSINESS_CATEGORIES (e.g. "moda-indumentaria", "belleza-cosmetica").
+   * Used to inject category-specific prompt rules into Gemini calls.
+   */
+  productCategory: z.string().optional(),
 });
 export type ProductIAOptions = z.infer<typeof ProductIAOptionsSchema>;
 /* ═══════════════════════════════════════════════════════════════
@@ -345,6 +350,9 @@ export const ComposeRequestSchema = z
 
     /** Avatar buffer for scene templates (skips Gemini scene generation) */
     avatarBuffer: z.instanceof(Buffer).optional(),
+
+    /** Reference buffer — previous slide's scene image for visual consistency in narrative sequences */
+    referenceBuffer: z.instanceof(Buffer).optional(),
 
     /** Logo image (base64, no data: prefix) for overlay on final creative — fallback/single logo */
     logoBase64: z.string().optional(),

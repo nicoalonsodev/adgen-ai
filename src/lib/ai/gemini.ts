@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import sharp from "sharp";
-import { ABSOLUTE_RULES_SCENE, ABSOLUTE_RULES_PRODUCT_INJECT, ABSOLUTE_RULES_TEXT_PRESERVATION, ABSOLUTE_RULES_PRODUCT, ABSOLUTE_RULES_BACKGROUND, resolvePlacementZone, buildZonePlacement } from "./promptRules";
+import { ABSOLUTE_RULES_SCENE, ABSOLUTE_RULES_PRODUCT_INJECT, ABSOLUTE_RULES_TEXT_PRESERVATION, ABSOLUTE_RULES_PRODUCT, ABSOLUTE_RULES_BACKGROUND, resolvePlacementZone, buildZonePlacement, ZONE_PERCENTAGES } from "./promptRules";
 import { getLibrarySection, getSceneLibrarySection, type ImageBriefType } from "./promptLibrary";
 
 // Gemini — text generation (official Google API, same key rotation as image calls)
@@ -792,6 +792,8 @@ export async function nanoBananaInjectProduct(args: {
   prompt: string;
   aspectRatio?: string;
   apiKeys?: string[];
+  /** Optional: previous slide's scene for visual consistency in narrative sequences. */
+  referencePng?: Buffer;
 }): Promise<Buffer> {
   // 1° intento — Qwen RunPod
   try {
@@ -810,19 +812,23 @@ export async function nanoBananaInjectProduct(args: {
 
   const bgMetaIn = await sharp(args.backgroundPng).metadata();
   const prodMetaIn = await sharp(args.productPng).metadata();
-  console.log(`[nanoBananaInjectProduct:input] bg=${bgMetaIn.width}×${bgMetaIn.height} product=${prodMetaIn.width}×${prodMetaIn.height} aspect=${args.aspectRatio ?? "1:1"}`);
+  console.log(`[nanoBananaInjectProduct:input] bg=${bgMetaIn.width}×${bgMetaIn.height} product=${prodMetaIn.width}×${prodMetaIn.height} aspect=${args.aspectRatio ?? "1:1"} hasReference=${!!args.referencePng}`);
 
   // Compress before upload — reduces ~4MB total to ~250-500KB, cuts Gemini latency
   const [bg, product] = await Promise.all([
     compressBgForGemini(args.backgroundPng),
     compressProductForGemini(args.productPng, args.aspectRatio),
   ]);
+  const ref = args.referencePng ? await compressBgForGemini(args.referencePng) : null;
+
+  const REFERENCE_LABEL = "SEQUENCE CONSISTENCY REFERENCE — This is the previous slide's scene. The person you generate MUST be the same individual: identical face, hair color and length, skin tone, approximate age, and clothing style/color. Visual consistency across slides is mandatory.";
 
   console.log(`[gemini:nanoBananaInjectProduct] model=${MODEL_SCENE} prompt_chars=${args.prompt.length}\n${args.prompt.slice(0, 300)}`);
 
   const gatewayParts: Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }> = [
     toImageUrlPart(bg),
     toImageUrlPart(product),
+    ...(ref ? [{ type: "text" as const, text: REFERENCE_LABEL }, toImageUrlPart(ref)] : []),
     { type: "text", text: args.prompt },
   ];
 
@@ -834,6 +840,7 @@ export async function nanoBananaInjectProduct(args: {
         parts: [
           { inlineData: { mimeType: bg.mimeType, data: bg.data } },
           { inlineData: { mimeType: product.mimeType, data: product.data } },
+          ...(ref ? [{ text: REFERENCE_LABEL }, { inlineData: { mimeType: ref.mimeType, data: ref.data } }] : []),
           { text: args.prompt },
         ],
       },
@@ -869,30 +876,35 @@ export async function generateBackground(args: {
   aspectRatio?: string;
   apiKeys?: string[];
 }): Promise<Buffer> {
-  console.log(`[gemini:generateBackground] prompt_chars=${args.prompt.length}\n${args.prompt.slice(0, 300)}`);
+  const bgPrompt = `Generate a single photographic background scene. Pure image only — no text whatsoever.
 
-  const bgPrompt = `Generate a single photographic background scene. Shot with a Phase One IQ4 150MP digital back, Schneider Kreuznach 80mm LS f/2.8 lens.
- 
+CRITICAL — TEXT IS STRICTLY FORBIDDEN:
+This image MUST NOT contain any text, letters, words, numbers, characters, symbols, glyphs, watermarks, logos, signatures, captions, labels, or typographic elements of any kind — not in the foreground, background, bokeh, reflections, surfaces, or anywhere else in the image. If any character or symbol appears anywhere in the output, the image is considered a failure. This is the single most important constraint.
+
+CANVAS LAYOUT — NON-NEGOTIABLE:
+This is a BACKGROUND IMAGE ONLY. A separate editor will composite advertising text on top afterward.
+
+The TOP ${ZONE_PERCENTAGES.VERTICAL_COPY}% of the canvas is the TEXT SAFE ZONE (do not add any text or letter):
+- Must be visually quiet: soft tones, low contrast, no sharp edges, no dominant subjects, no strong textures
+- This zone must remain completely free of visual focal points, patterns, or detail that would compete with white text overlaid later
+- Treat it as negative space that breathes and supports the composition below, not as part of the main scene.
+- BOTTOM ${ZONE_PERCENTAGES.VERTICAL_SUBJECT}%: main visual interest lives here — textures, depth, mood, surfaces.
+Keep overall tone MUTED and DESATURATED so white text remains legible anywhere on the image.
+
 SCENE:
 ${args.prompt}
- 
-ABSOLUTE PHOTOGRAPHIC RULES:
-- Shallow depth of field: f/2.8 to f/4, foreground surface sharp, background softly blurred with natural bokeh.
-- Lighting: single dominant key light source consistent with scene description. Fill light at 2:1 ratio. No mixed color temperatures. No lens flare.
-- Color science: shot in 14-bit RAW, graded with natural skin-tone-safe LUT. Subtle color harmony, no oversaturation, no HDR look.
-- Surface: the main surface must show realistic micro-texture (grain, weave, veining, pores) visible at full resolution. No plastic, no CG smoothness.
-- Perspective: slight 15-25 degree overhead angle looking down at the surface, creating natural product placement zone in center-frame.
-- Negative space: 70% of frame is clean, usable area for product compositing. Visual interest pushed to edges and background.
- 
+
 ABSOLUTE PROHIBITIONS — ZERO TOLERANCE:
-- NO text, letters, numbers, watermarks, logos, signatures, stamps of any kind.
+- NO text added, letters, numbers, watermarks, logos, signatures, stamps, labels, captions of any kind — anywhere.
 - NO people, hands, faces, fingers, silhouettes, reflections of humans.
 - NO products, bottles, jars, tubes, packages, containers, boxes, bags.
 - NO floating objects, decorative props, or staged elements in the clean zone.
 - NO visible AI artifacts: no warped geometry, no texture repetition, no uncanny symmetry.
 - NO lens distortion, chromatic aberration, or vignetting unless specified in scene.
- 
-OUTPUT SPEC: Photorealistic, indistinguishable from a real studio photograph. Magazine-grade advertising quality. Clean enough to composite a product on top without retouching the background.`;
+
+OUTPUT SPEC: Photorealistic, indistinguishable from a real studio photograph shot on medium format digital back. Magazine-grade advertising quality. Clean enough to composite a product on top without retouching the background. Zero text — not a single character.`;
+
+  console.log(`[gemini:generateBackground] prompt_chars=${bgPrompt.length}\n${bgPrompt}`);
 
   // 1. Google GenAI (Gemini) — intento principal
   try {
@@ -938,6 +950,8 @@ export async function generateScene(args: {
   prompt: string;
   aspectRatio?: string;
   apiKeys?: string[];
+  /** Optional: previous slide's scene for visual consistency in narrative sequences. */
+  referencePng?: Buffer;
 }): Promise<Buffer> {
   // 1° intento — Qwen RunPod
   try {
@@ -954,14 +968,18 @@ export async function generateScene(args: {
   }
 
   const bgMetaIn = await sharp(args.backgroundPng).metadata();
-  console.log(`[generateScene:input] bg=${bgMetaIn.width}×${bgMetaIn.height} aspect=${args.aspectRatio ?? "1:1"}`);
+  console.log(`[generateScene:input] bg=${bgMetaIn.width}×${bgMetaIn.height} aspect=${args.aspectRatio ?? "1:1"} hasReference=${!!args.referencePng}`);
 
   const bg = await compressBgForGemini(args.backgroundPng);
+  const ref = args.referencePng ? await compressBgForGemini(args.referencePng) : null;
+
+  const REFERENCE_LABEL = "SEQUENCE CONSISTENCY REFERENCE — This is the previous slide's scene. The person you generate MUST be the same individual: identical face, hair color and length, skin tone, approximate age, and clothing style/color. Visual consistency across slides is mandatory.";
 
   console.log(`[gemini:generateScene] model=${MODEL_SCENE} prompt_chars=${args.prompt.length}\n${args.prompt.slice(0, 300)}`);
 
   const gatewayParts: Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }> = [
     toImageUrlPart(bg),
+    ...(ref ? [{ type: "text" as const, text: REFERENCE_LABEL }, toImageUrlPart(ref)] : []),
     { type: "text", text: args.prompt },
   ];
 
@@ -972,6 +990,7 @@ export async function generateScene(args: {
         role: "user",
         parts: [
           { inlineData: { mimeType: bg.mimeType, data: bg.data } },
+          ...(ref ? [{ text: REFERENCE_LABEL }, { inlineData: { mimeType: ref.mimeType, data: ref.data } }] : []),
           { text: args.prompt },
         ],
       },
@@ -1098,6 +1117,8 @@ export async function generateSceneWithAvatarAndProduct(args: {
   prompt: string;
   aspectRatio?: string;
   apiKeys?: string[];
+  /** Optional: previous slide's scene for visual consistency in narrative sequences. */
+  referencePng?: Buffer;
 }): Promise<Buffer> {
   const bgMetaIn = await sharp(args.backgroundPng).metadata();
   const prodMetaIn = await sharp(args.productPng).metadata();
@@ -1125,13 +1146,17 @@ export async function generateSceneWithAvatarAndProduct(args: {
     compressProductForGemini(args.productPng, args.aspectRatio),
     compressProductForGemini(args.avatarPng, args.aspectRatio),
   ]);
+  const ref = args.referencePng ? await compressBgForGemini(args.referencePng) : null;
 
-  console.log(`[gemini:generateSceneWithAvatarAndProduct] model=${MODEL_SCENE} prompt_chars=${args.prompt.length}\n${args.prompt.slice(0, 300)}`);
+  const REFERENCE_LABEL = "SEQUENCE CONSISTENCY REFERENCE — This is the previous slide's scene. The person you generate MUST be the same individual: identical face, hair color and length, skin tone, approximate age, and clothing style/color. Visual consistency across slides is mandatory.";
+
+  console.log(`[gemini:generateSceneWithAvatarAndProduct] model=${MODEL_SCENE} prompt_chars=${args.prompt.length} hasReference=${!!ref}\n${args.prompt.slice(0, 300)}`);
 
   const gatewayParts: Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }> = [
     toImageUrlPart(bg),
     toImageUrlPart(product),
     toImageUrlPart(avatar),
+    ...(ref ? [{ type: "text" as const, text: REFERENCE_LABEL }, toImageUrlPart(ref)] : []),
     { type: "text", text: args.prompt },
   ];
 
@@ -1144,6 +1169,7 @@ export async function generateSceneWithAvatarAndProduct(args: {
           { inlineData: { mimeType: bg.mimeType, data: bg.data } },
           { inlineData: { mimeType: product.mimeType, data: product.data } },
           { inlineData: { mimeType: avatar.mimeType, data: avatar.data } },
+          ...(ref ? [{ text: REFERENCE_LABEL }, { inlineData: { mimeType: ref.mimeType, data: ref.data } }] : []),
           { text: args.prompt },
         ],
       },
@@ -1938,4 +1964,88 @@ ${environmentInstruction}
   );
   if (!text) throw new Error("expandSceneBrief: empty response from Gemini");
   return text;
+}
+
+/**
+ * Edits a finalized advertising creative using a free-form text instruction.
+ * Sends the creative image + instruction to Gemini, which returns a modified version.
+ *
+ * Critical constraint baked into the prompt: text, headlines, badges, CTAs,
+ * logos and typographic elements must NOT be touched unless the instruction
+ * explicitly requests it.
+ */
+export async function editCreativeWithGemini(args: {
+  creativePng: Buffer;
+  instruction: string;
+  referencePng?: Buffer;
+  aspectRatio?: string;
+  apiKeys?: string[];
+}): Promise<Buffer> {
+  const creative = await compressBgForGemini(args.creativePng);
+  const reference = args.referencePng ? await compressBgForGemini(args.referencePng) : null;
+
+  const systemContext = `You are a professional photo retoucher and advertising art director.
+You will receive a finalized advertising creative and a single edit instruction.${reference ? "\nA reference image is also provided — use it as visual inspiration for the requested change." : ""}
+Your job is to apply ONLY the requested change — nothing else.
+
+ABSOLUTE PRESERVATION RULES (non-negotiable):
+- DO NOT modify, move, resize, recolor, blur, or remove ANY text element: headlines, subheadlines, badges, CTA buttons, disclaimers, labels, or any typographic content.
+- DO NOT modify, move, or remove logos, brand marks, or graphic overlays.
+- DO NOT change the overall layout, composition, or aspect ratio.
+- DO NOT add any new text, watermarks, or visual elements unless explicitly asked.
+- Preserve the advertising intent and visual hierarchy of the original.
+- Only apply the specific visual change described in the instruction.`;
+
+  const prompt = `${systemContext}
+
+EDIT INSTRUCTION:
+"${args.instruction}"
+${reference ? "\nThe reference image above shows the visual style, color palette, or element to incorporate. Use it as inspiration — do not copy it literally." : ""}
+Apply this change to the creative image. Keep everything else exactly as it is.`;
+
+  console.log(`[gemini:editCreativeWithGemini] model=${MODEL_SCENE} instruction="${args.instruction.slice(0, 100)}" hasReference=${!!reference} aspect=${args.aspectRatio ?? "1:1"}`);
+
+  const imageParts: object[] = [
+    { inlineData: { mimeType: creative.mimeType, data: creative.data } },
+  ];
+  if (reference) {
+    imageParts.push({ inlineData: { mimeType: reference.mimeType, data: reference.data } });
+  }
+  imageParts.push({ text: prompt });
+
+  const googleRequest = {
+    model: MODEL_SCENE,
+    contents: [
+      {
+        role: "user",
+        parts: imageParts,
+      },
+    ],
+    config: {
+      responseModalities: ["IMAGE", "TEXT"],
+      imageGenerationConfig: {
+        outputOptions: {
+          mimeType: "image/png",
+          imageResolution: "4K",
+        },
+      },
+    },
+  };
+
+  const response = await generateContentWithRetry(null, googleRequest, {
+    callerName: "editCreativeWithGemini",
+    maxAttempts: 2,
+    userApiKeys: args.apiKeys,
+  });
+
+  const parts = response.candidates?.[0]?.content?.parts ?? [];
+  const imgPart = (parts as any[]).find((p: any) => p.inlineData?.data);
+  if (!imgPart?.inlineData?.data) {
+    throw new Error("editCreativeWithGemini: Gemini no devolvió imagen");
+  }
+
+  const raw = Buffer.from(imgPart.inlineData.data as string, "base64");
+  const rawMeta = await sharp(raw).metadata();
+  console.log(`[editCreativeWithGemini:output] Gemini raw=${rawMeta.width}×${rawMeta.height}`);
+  return ensureTargetSize(raw, args.aspectRatio ?? "1:1");
 }

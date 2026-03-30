@@ -1,6 +1,17 @@
 import { auth } from '@/auth'
 import { supabaseAdmin } from '@/lib/supabase/server'
 import { encryptValue, decryptValue, maskKey } from '@/lib/crypto'
+import { normalizeLogo } from '@/lib/image/normalizeLogo'
+
+async function tryNormalizeLogo(base64: string): Promise<string> {
+  try {
+    const normalized = await normalizeLogo(Buffer.from(base64, 'base64'))
+    return normalized.toString('base64')
+  } catch (err) {
+    console.warn('[normalizeLogo] Failed, uploading original:', err)
+    return base64
+  }
+}
 
 export async function GET() {
   const session = await auth()
@@ -89,6 +100,12 @@ export async function POST(request: Request) {
     }
   }
 
+  const [normLogoBase64, normLogoDarkBase64, normLogoLightBase64] = await Promise.all([
+    body.logoBase64 ? tryNormalizeLogo(body.logoBase64) : Promise.resolve(null),
+    body.logoDarkBase64 ? tryNormalizeLogo(body.logoDarkBase64) : Promise.resolve(null),
+    body.logoLightBase64 ? tryNormalizeLogo(body.logoLightBase64) : Promise.resolve(null),
+  ])
+
   const payload = {
     user_id: session.user.id,
     business_name: body.nombre ?? '',
@@ -96,8 +113,8 @@ export async function POST(request: Request) {
     target_audience: body.clienteIdeal ?? null,
     business_description: body.queVendes ?? null,
     tone: body.tonos?.[0] ?? 'professional',
-    logo_url: body.logoBase64
-      ? `data:${body.logoMimeType ?? 'image/png'};base64,${body.logoBase64}`
+    logo_url: normLogoBase64
+      ? `data:image/png;base64,${normLogoBase64}`
       : null,
     metadata: {
       rubro: body.rubro,
@@ -110,11 +127,11 @@ export async function POST(request: Request) {
       palabrasSi: body.palabrasSi,
       palabrasNo: body.palabrasNo,
       coloresMarca: body.coloresMarca ?? undefined,
-      logoDark: body.logoDarkBase64
-        ? `data:${body.logoDarkMimeType ?? 'image/png'};base64,${body.logoDarkBase64}`
+      logoDark: normLogoDarkBase64
+        ? `data:image/png;base64,${normLogoDarkBase64}`
         : undefined,
-      logoLight: body.logoLightBase64
-        ? `data:${body.logoLightMimeType ?? 'image/png'};base64,${body.logoLightBase64}`
+      logoLight: normLogoLightBase64
+        ? `data:image/png;base64,${normLogoLightBase64}`
         : undefined,
     },
     updated_at: new Date().toISOString(),

@@ -6,6 +6,7 @@ import { TEMPLATE_META_LIST, buildProductIAOptions } from "@/services/product-co
 import { PromptsPanel, type PromptsUsed, type PromptLayer } from "@/components/PromptsPanel";
 import { CreativeAnalysisPanel } from "@/components/CreativeAnalysisPanel";
 import type { CreativeAnalysisResult } from "@/lib/ai/gemini";
+import { CopyReviewPanel, type CopyReviewEntry } from "@/components/CopyReviewPanel";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -160,18 +161,35 @@ function makeImageBriefLayer(log: { input: Record<string, unknown>; output: stri
   };
 }
 
+function makeImagePromptsLayer(args: {
+  systemPrompt?: string | null;
+  userPrompt?: string | null;
+  rawOutput?: string | null;
+}): PromptLayer | null {
+  if (!args.systemPrompt && !args.userPrompt && !args.rawOutput) return null;
+  return {
+    name: "Image Prompts (Gemini Stage 2)",
+    model: "gemini-2.5-flash",
+    systemPrompt: args.systemPrompt ?? undefined,
+    input: args.userPrompt ?? undefined,
+    prompt: args.rawOutput ?? undefined,
+    status: "completed",
+  };
+}
+
 function makeCopyLayer(args: {
   inputParams: Record<string, unknown>;
   copyOutput: unknown;
   systemPrompt?: string | null;
   userPrompt?: string | null;
+  rawOutput?: string | null;
 }): PromptLayer {
   return {
-    name: "Copy",
-    model: "gpt-4o-mini",
+    name: "Copy (Gemini Stage 1)",
+    model: "gemini-2.5-flash",
     systemPrompt: args.systemPrompt ?? undefined,
     input: args.userPrompt ?? JSON.stringify(args.inputParams, null, 2),
-    prompt: JSON.stringify(args.copyOutput, null, 2),
+    prompt: args.rawOutput ?? JSON.stringify(args.copyOutput, null, 2),
     status: "completed",
   };
 }
@@ -220,6 +238,7 @@ export default function FabricaDeContenido() {
   const [businessLogoDark, setBusinessLogoDark] = useState<{ base64: string; mimeType: string } | null>(null);
   const [businessLogoLight, setBusinessLogoLight] = useState<{ base64: string; mimeType: string } | null>(null);
   const [adFormat, setAdFormat] = useState<"1:1" | "9:16">("1:1");
+  const [includeLogo, setIncludeLogo] = useState(true);
 
   useEffect(() => {
     async function loadBusinessProfile() {
@@ -339,6 +358,9 @@ export default function FabricaDeContenido() {
   const [variants, setVariants] = useState<GeneratedVariant[]>([]);
   const [singleTimings, setSingleTimings] = useState<Record<string, number> | null>(null);
   const [singlePromptsUsed, setSinglePromptsUsed] = useState<PromptsUsed | null>(null);
+
+  // Copy review: holds generated copies waiting for user approval before image generation
+  const [pendingCopyData, setPendingCopyData] = useState<CopyReviewEntry[] | null>(null);
 
   // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -508,6 +530,10 @@ export default function FabricaDeContenido() {
       const _imageBriefLog: { input: Record<string, unknown>; output: string } | null = copyData.data?.imageBriefLog ?? null;
       const _copySystemPrompt: string | null = copyData.data?.systemPrompt ?? null;
       const _copyUserPrompt: string | null = copyData.data?.userPrompt ?? null;
+      const _copyRawOutput: string | null = copyData.data?.copyRawOutput ?? null;
+      const _imageSystemPrompt: string | null = copyData.data?.imageSystemPrompt ?? null;
+      const _imageUserPrompt: string | null = copyData.data?.imageUserPrompt ?? null;
+      const _imageRawOutput: string | null = copyData.data?.imageRawOutput ?? null;
       _timings["Copy"] = Date.now() - _t0;
 
       const templateDef = TEMPLATES.find((t) => t.id === primaryTemplate);
@@ -548,15 +574,15 @@ export default function FabricaDeContenido() {
 
         const fd = new FormData();
         fd.append("background", sceneBgFile);
-        if (businessLogo) {
+        if (includeLogo && businessLogo) {
           fd.append("logoBase64", businessLogo.base64);
           fd.append("logoMimeType", businessLogo.mimeType);
         }
-        if (businessLogoDark) {
+        if (includeLogo && businessLogoDark) {
           fd.append("logoDarkBase64", businessLogoDark.base64);
           fd.append("logoDarkMimeType", businessLogoDark.mimeType);
         }
-        if (businessLogoLight) {
+        if (includeLogo && businessLogoLight) {
           fd.append("logoLightBase64", businessLogoLight.base64);
           fd.append("logoLightMimeType", businessLogoLight.mimeType);
         }
@@ -614,7 +640,7 @@ export default function FabricaDeContenido() {
           };
           const promptsUsed: PromptsUsed = {
             layers: [
-              makeCopyLayer({ inputParams: copyInputLog, copyOutput: copy, systemPrompt: _copySystemPrompt, userPrompt: _copyUserPrompt }),
+              makeCopyLayer({ inputParams: copyInputLog, copyOutput: copy, systemPrompt: _copySystemPrompt, userPrompt: _copyUserPrompt, rawOutput: _copyRawOutput }),
               {
                 name: "Strategic Core",
                 model: "gpt-4.1-mini",
@@ -684,7 +710,7 @@ export default function FabricaDeContenido() {
       const templateMeta = TEMPLATES.find((t) => t.id === primaryTemplate);
       const { productIAOptions: builtProductIAOptions, compositionOrder, needsProductIA } = buildProductIAOptions(
         templateMeta!,
-        { copy, hasProductFile: !!productFile, hasAvatarFile: !!avatarFile },
+        { copy, hasProductFile: !!productFile, hasAvatarFile: !!avatarFile, productCategory: (businessProfile?.category as string) ?? undefined },
       );
       // scene-with-product: run PRODUCT_IA on clean bg first → TEMPLATE_BETA on top (prevents Gemini from erasing pre-rendered text)
       const isSceneWithProductFlow = compositionOrder === "scene-first" && needsProductIA;
@@ -693,15 +719,15 @@ export default function FabricaDeContenido() {
       const buildTemplateBetaForm = (bgInputFile: File) => {
         const fd = new FormData();
         fd.append("background", bgInputFile);
-        if (businessLogo) {
+        if (includeLogo && businessLogo) {
           fd.append("logoBase64", businessLogo.base64);
           fd.append("logoMimeType", businessLogo.mimeType);
         }
-        if (businessLogoDark) {
+        if (includeLogo && businessLogoDark) {
           fd.append("logoDarkBase64", businessLogoDark.base64);
           fd.append("logoDarkMimeType", businessLogoDark.mimeType);
         }
-        if (businessLogoLight) {
+        if (includeLogo && businessLogoLight) {
           fd.append("logoLightBase64", businessLogoLight.base64);
           fd.append("logoLightMimeType", businessLogoLight.mimeType);
         }
@@ -784,7 +810,8 @@ export default function FabricaDeContenido() {
           setSingleTimings({ ..._timings });
           const promptsUsed: PromptsUsed = {
             layers: ([
-              makeCopyLayer({ inputParams: { product: bizProduct, offer: bizOffer, audience: bizAudience, problem: bizProblem, tone: bizTone, schema: getTemplateSchema(primaryTemplate), templateId: primaryTemplate, businessProfile: businessProfile ?? undefined }, copyOutput: copy, systemPrompt: _copySystemPrompt, userPrompt: _copyUserPrompt }),
+              makeCopyLayer({ inputParams: { product: bizProduct, offer: bizOffer, audience: bizAudience, problem: bizProblem, tone: bizTone, schema: getTemplateSchema(primaryTemplate), templateId: primaryTemplate, businessProfile: businessProfile ?? undefined }, copyOutput: copy, systemPrompt: _copySystemPrompt, userPrompt: _copyUserPrompt, rawOutput: _copyRawOutput }),
+              makeImagePromptsLayer({ systemPrompt: _imageSystemPrompt, userPrompt: _imageUserPrompt, rawOutput: _imageRawOutput }),
               makeImageBriefLayer(_imageBriefLog),
               { name: "Background", model: "imagen-4.0", input: bgData.data?.promptUsed ?? bgPrompt, status: "completed" },
               { name: "Escena con Persona", model: "gemini-flash-image", input: (builtProductIAOptions as any)?.prompt ?? "", prompt: productData.data?.promptUsed, status: "completed" },
@@ -845,6 +872,7 @@ export default function FabricaDeContenido() {
             const promptsUsed: PromptsUsed = {
               layers: ([
                 makeCopyLayer({ inputParams: { product: bizProduct, offer: bizOffer, audience: bizAudience, problem: bizProblem, tone: bizTone, schema: getTemplateSchema(primaryTemplate), templateId: primaryTemplate, businessProfile: businessProfile ?? undefined }, copyOutput: copy, systemPrompt: _copySystemPrompt, userPrompt: _copyUserPrompt }),
+                makeImagePromptsLayer({ systemPrompt: _imageSystemPrompt, userPrompt: _imageUserPrompt }),
                 makeImageBriefLayer(_imageBriefLog),
                 { name: "Background", model: "imagen-4.0", input: bgData.data?.promptUsed ?? bgPrompt, status: "completed" },
                 { name: "Template", model: "resvg/sharp", input: JSON.stringify({ mode: "TEMPLATE_BETA", templateId: primaryTemplate, canvas: "1080x1080", copyFields: Object.keys(copy) }, null, 2), prompt: JSON.stringify({ templateId: primaryTemplate, copy: { headline: copy.headline, subheadline: copy.subheadline, badge: copy.badge, cta: copy.title } }, null, 2), status: "completed" },
@@ -859,7 +887,8 @@ export default function FabricaDeContenido() {
           setSingleTimings({ ..._timings });
           const promptsUsed: PromptsUsed = {
             layers: ([
-              makeCopyLayer({ inputParams: { product: bizProduct, offer: bizOffer, audience: bizAudience, problem: bizProblem, tone: bizTone, schema: getTemplateSchema(primaryTemplate), templateId: primaryTemplate, businessProfile: businessProfile ?? undefined }, copyOutput: copy, systemPrompt: _copySystemPrompt, userPrompt: _copyUserPrompt }),
+              makeCopyLayer({ inputParams: { product: bizProduct, offer: bizOffer, audience: bizAudience, problem: bizProblem, tone: bizTone, schema: getTemplateSchema(primaryTemplate), templateId: primaryTemplate, businessProfile: businessProfile ?? undefined }, copyOutput: copy, systemPrompt: _copySystemPrompt, userPrompt: _copyUserPrompt, rawOutput: _copyRawOutput }),
+              makeImagePromptsLayer({ systemPrompt: _imageSystemPrompt, userPrompt: _imageUserPrompt, rawOutput: _imageRawOutput }),
               makeImageBriefLayer(_imageBriefLog),
               { name: "Background", model: "imagen-4.0", input: bgData.data?.promptUsed ?? bgPrompt, status: "completed" },
               { name: "Template", model: "resvg/sharp", input: JSON.stringify({ mode: "TEMPLATE_BETA", templateId: primaryTemplate, canvas: "1080x1080", copyFields: Object.keys(copy) }, null, 2), prompt: JSON.stringify({ templateId: primaryTemplate, copy: { headline: copy.headline, subheadline: copy.subheadline, badge: copy.badge, cta: copy.title } }, null, 2), status: "completed" },
@@ -935,20 +964,46 @@ export default function FabricaDeContenido() {
           const imageBriefLog: { input: Record<string, unknown>; output: string } | null = copyData.data?.imageBriefLog ?? null;
           const copySystemPrompt: string | null = copyData.data?.systemPrompt ?? null;
           const copyUserPrompt: string | null = copyData.data?.userPrompt ?? null;
-          return { copies, imageBriefLog, copySystemPrompt, copyUserPrompt };
+          const copyRawOutput: string | null = copyData.data?.copyRawOutput ?? null;
+          const imageSystemPrompt: string | null = copyData.data?.imageSystemPrompt ?? null;
+          const imageUserPrompt: string | null = copyData.data?.imageUserPrompt ?? null;
+          const imageRawOutput: string | null = copyData.data?.imageRawOutput ?? null;
+          return { copies, imageBriefLog, copySystemPrompt, copyUserPrompt, copyRawOutput, imageSystemPrompt, imageUserPrompt, imageRawOutput };
         })
       );
-      const allCopies = allCopiesAndLogs.map((r) => r.copies);
-      const imageBriefLogByTemplate = new Map(
-        selectedTemplates.map((id, i) => [id, allCopiesAndLogs[i].imageBriefLog])
-      );
-      const copySystemPromptByTemplate = new Map(
-        selectedTemplates.map((id, i) => [id, allCopiesAndLogs[i].copySystemPrompt])
-      );
-      const copyUserPromptByTemplate = new Map(
-        selectedTemplates.map((id, i) => [id, allCopiesAndLogs[i].copyUserPrompt])
-      );
+      // Pause for copy review — user can approve/edit before image generation
+      const reviewEntries: CopyReviewEntry[] = selectedTemplates.map((templateId, i) => ({
+        templateId,
+        ...allCopiesAndLogs[i],
+      }));
+      setPendingCopyData(reviewEntries);
+      setVariantsProgress("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error generando ángulos de venta");
+      setVariantsProgress("");
+    } finally {
+      setVariantsGenerating(false);
+    }
+  };
 
+  const handleApproveAndGenerateImages = async (entries: CopyReviewEntry[]) => {
+    setPendingCopyData(null);
+    setVariantsGenerating(true);
+    setVariants([]);
+    setError(null);
+    setProgressPercent(0);
+    setCompletedCreatives(0);
+
+    try {
+      // Rebuild lookup maps from approved entries
+      const allCopies = entries.map((e) => e.copies);
+      const imageBriefLogByTemplate = new Map(entries.map((e) => [e.templateId, e.imageBriefLog]));
+      const copySystemPromptByTemplate = new Map(entries.map((e) => [e.templateId, e.copySystemPrompt]));
+      const copyUserPromptByTemplate = new Map(entries.map((e) => [e.templateId, e.copyUserPrompt]));
+      const copyRawOutputByTemplate = new Map(entries.map((e) => [e.templateId, e.copyRawOutput]));
+      const imageSystemPromptByTemplate = new Map(entries.map((e) => [e.templateId, e.imageSystemPrompt]));
+      const imageUserPromptByTemplate = new Map(entries.map((e) => [e.templateId, e.imageUserPrompt]));
+      const imageRawOutputByTemplate = new Map(entries.map((e) => [e.templateId, e.imageRawOutput]));
       // Step 2: Build task list — background se genera dentro de cada pipeline individual
       interface TaskItem {
         templateId: string;
@@ -957,9 +1012,9 @@ export default function FabricaDeContenido() {
         colorMode?: "light" | "dark";
       }
       const taskList: TaskItem[] = [];
-      for (let ti = 0; ti < selectedTemplates.length; ti++) {
+      for (let ti = 0; ti < entries.length; ti++) {
         for (let ai = 0; ai < allCopies[ti].length; ai++) {
-          const tId = selectedTemplates[ti];
+          const tId = entries[ti].templateId;
           const tCopy = allCopies[ti][ai];
           if (tId === "classic-editorial-right") {
             taskList.push({ templateId: tId, angleIndex: ai, copy: tCopy, colorMode: "light" });
@@ -1018,9 +1073,9 @@ export default function FabricaDeContenido() {
             const sceneBgFile = new File([sceneBlob], `v2-scene-${templateId}-${angleIndex}.png`, { type: "image/png" });
             const fd = new FormData();
             fd.append("background", sceneBgFile);
-            if (businessLogo) { fd.append("logoBase64", businessLogo.base64); fd.append("logoMimeType", businessLogo.mimeType); }
-            if (businessLogoDark) { fd.append("logoDarkBase64", businessLogoDark.base64); fd.append("logoDarkMimeType", businessLogoDark.mimeType); }
-            if (businessLogoLight) { fd.append("logoLightBase64", businessLogoLight.base64); fd.append("logoLightMimeType", businessLogoLight.mimeType); }
+            if (includeLogo && businessLogo) { fd.append("logoBase64", businessLogo.base64); fd.append("logoMimeType", businessLogo.mimeType); }
+            if (includeLogo && businessLogoDark) { fd.append("logoDarkBase64", businessLogoDark.base64); fd.append("logoDarkMimeType", businessLogoDark.mimeType); }
+            if (includeLogo && businessLogoLight) { fd.append("logoLightBase64", businessLogoLight.base64); fd.append("logoLightMimeType", businessLogoLight.mimeType); }
             fd.append("config", JSON.stringify({
               mode: "TEMPLATE_BETA",
               outputFormat: "png",
@@ -1052,8 +1107,9 @@ export default function FabricaDeContenido() {
             const v2BD = v2Data.data?.briefDebug;
             const v2SC = v2Data.data?.strategicCore;
             const promptsUsed: PromptsUsed = {
-              layers: [
-                makeCopyLayer({ inputParams: { product: bizProduct, offer: bizOffer, audience: bizAudience, problem: bizProblem, tone: bizTone, schema: getTemplateSchema(templateId) }, copyOutput: copy, systemPrompt: copySystemPromptByTemplate.get(templateId), userPrompt: copyUserPromptByTemplate.get(templateId) }),
+              layers: ([
+                makeCopyLayer({ inputParams: { product: bizProduct, offer: bizOffer, audience: bizAudience, problem: bizProblem, tone: bizTone, schema: getTemplateSchema(templateId) }, copyOutput: copy, systemPrompt: copySystemPromptByTemplate.get(templateId), userPrompt: copyUserPromptByTemplate.get(templateId), rawOutput: copyRawOutputByTemplate.get(templateId) }),
+                makeImagePromptsLayer({ systemPrompt: imageSystemPromptByTemplate.get(templateId), userPrompt: imageUserPromptByTemplate.get(templateId), rawOutput: imageRawOutputByTemplate.get(templateId) }),
                 {
                   name: "Strategic Core",
                   model: "gpt-4.1-mini",
@@ -1081,7 +1137,7 @@ export default function FabricaDeContenido() {
                   status: "completed",
                 },
                 { name: "Template", prompt: templateId, status: "completed" },
-              ],
+              ] as (PromptLayer | null)[]).filter((l): l is PromptLayer => l !== null),
             };
             const variant: GeneratedVariant = { copy, backgroundImage: v2Data.data?.backgroundImage ?? sceneDataUrl, resultImage: finalImg, template: templateId, angle: angleIndex, angleName, promptsUsed, timings: _taskTimings };
             variantAccumulator.push(variant);
@@ -1124,7 +1180,7 @@ export default function FabricaDeContenido() {
           // 2. Componer template + producto/escena
           const { productIAOptions: angleProductIAOptions, compositionOrder: angleOrder, needsProductIA: angleNeedsIA } = buildProductIAOptions(
             tplMeta!,
-            { copy, hasProductFile: !!productFile, hasAvatarFile: !!avatarFile },
+            { copy, hasProductFile: !!productFile, hasAvatarFile: !!avatarFile, productCategory: (businessProfile?.category as string) ?? undefined },
           );
           const isSceneWithProductFlowAngles = angleOrder === "scene-first" && angleNeedsIA;
 
@@ -1132,15 +1188,15 @@ export default function FabricaDeContenido() {
           const buildAngleTemplateBetaForm = (bgInputFile: File) => {
             const fd = new FormData();
             fd.append("background", bgInputFile);
-            if (businessLogo) {
+            if (includeLogo && businessLogo) {
               fd.append("logoBase64", businessLogo.base64);
               fd.append("logoMimeType", businessLogo.mimeType);
             }
-            if (businessLogoDark) {
+            if (includeLogo && businessLogoDark) {
               fd.append("logoDarkBase64", businessLogoDark.base64);
               fd.append("logoDarkMimeType", businessLogoDark.mimeType);
             }
-            if (businessLogoLight) {
+            if (includeLogo && businessLogoLight) {
               fd.append("logoLightBase64", businessLogoLight.base64);
               fd.append("logoLightMimeType", businessLogoLight.mimeType);
             }
@@ -1220,7 +1276,8 @@ export default function FabricaDeContenido() {
 
             const promptsUsed: PromptsUsed = {
               layers: ([
-                makeCopyLayer({ inputParams: { product: bizProduct, offer: bizOffer, audience: bizAudience, problem: bizProblem, tone: bizTone, schema: getTemplateSchema(templateId), templateId, numberOfVariants: numAngles, businessProfile: businessProfile ?? undefined }, copyOutput: copy, systemPrompt: copySystemPromptByTemplate.get(templateId), userPrompt: copyUserPromptByTemplate.get(templateId) }),
+                makeCopyLayer({ inputParams: { product: bizProduct, offer: bizOffer, audience: bizAudience, problem: bizProblem, tone: bizTone, schema: getTemplateSchema(templateId), templateId, numberOfVariants: numAngles, businessProfile: businessProfile ?? undefined }, copyOutput: copy, systemPrompt: copySystemPromptByTemplate.get(templateId), userPrompt: copyUserPromptByTemplate.get(templateId), rawOutput: copyRawOutputByTemplate.get(templateId) }),
+                makeImagePromptsLayer({ systemPrompt: imageSystemPromptByTemplate.get(templateId), userPrompt: imageUserPromptByTemplate.get(templateId), rawOutput: imageRawOutputByTemplate.get(templateId) }),
                 makeImageBriefLayer(imageBriefLogByTemplate.get(templateId)),
                 { name: "Background", model: "imagen-4.0", input: bgDataUrl ? bgPrompt : undefined, status: "completed" },
                 { name: "Escena con Persona", model: "gemini-flash-image", input: (angleProductIAOptions as any)?.prompt ?? "", prompt: productData.data?.promptUsed, status: "completed" },
@@ -1286,7 +1343,8 @@ export default function FabricaDeContenido() {
             finalImg = productData.data?.image || productData.data?.imageUrl || resultImg;
             const promptsUsed: PromptsUsed = {
               layers: ([
-                makeCopyLayer({ inputParams: { product: bizProduct, offer: bizOffer, audience: bizAudience, problem: bizProblem, tone: bizTone, schema: getTemplateSchema(templateId), templateId, numberOfVariants: numAngles, businessProfile: businessProfile ?? undefined }, copyOutput: copy, systemPrompt: copySystemPromptByTemplate.get(templateId), userPrompt: copyUserPromptByTemplate.get(templateId) }),
+                makeCopyLayer({ inputParams: { product: bizProduct, offer: bizOffer, audience: bizAudience, problem: bizProblem, tone: bizTone, schema: getTemplateSchema(templateId), templateId, numberOfVariants: numAngles, businessProfile: businessProfile ?? undefined }, copyOutput: copy, systemPrompt: copySystemPromptByTemplate.get(templateId), userPrompt: copyUserPromptByTemplate.get(templateId), rawOutput: copyRawOutputByTemplate.get(templateId) }),
+                makeImagePromptsLayer({ systemPrompt: imageSystemPromptByTemplate.get(templateId), userPrompt: imageUserPromptByTemplate.get(templateId), rawOutput: imageRawOutputByTemplate.get(templateId) }),
                 makeImageBriefLayer(imageBriefLogByTemplate.get(templateId)),
                 { name: "Background", model: "imagen-4.0", input: bgDataUrl ? bgPrompt : undefined, status: "completed" },
                 { name: "Template", model: "resvg/sharp", input: JSON.stringify({ mode: "TEMPLATE_BETA", templateId, canvas: "1080x1080", copyFields: Object.keys(copy) }, null, 2), prompt: JSON.stringify({ templateId, copy: { headline: copy.headline, subheadline: copy.subheadline, badge: copy.badge, cta: copy.title } }, null, 2), status: "completed" },
@@ -1303,7 +1361,8 @@ export default function FabricaDeContenido() {
           _taskTimings["Total"] = Date.now() - _tTask;
           const promptsUsedNoProduct: PromptsUsed = {
             layers: ([
-              makeCopyLayer({ inputParams: { product: bizProduct, offer: bizOffer, audience: bizAudience, problem: bizProblem, tone: bizTone, schema: getTemplateSchema(templateId), templateId, numberOfVariants: numAngles, businessProfile: businessProfile ?? undefined }, copyOutput: copy, systemPrompt: copySystemPromptByTemplate.get(templateId), userPrompt: copyUserPromptByTemplate.get(templateId) }),
+              makeCopyLayer({ inputParams: { product: bizProduct, offer: bizOffer, audience: bizAudience, problem: bizProblem, tone: bizTone, schema: getTemplateSchema(templateId), templateId, numberOfVariants: numAngles, businessProfile: businessProfile ?? undefined }, copyOutput: copy, systemPrompt: copySystemPromptByTemplate.get(templateId), userPrompt: copyUserPromptByTemplate.get(templateId), rawOutput: copyRawOutputByTemplate.get(templateId) }),
+              makeImagePromptsLayer({ systemPrompt: imageSystemPromptByTemplate.get(templateId), userPrompt: imageUserPromptByTemplate.get(templateId), rawOutput: imageRawOutputByTemplate.get(templateId) }),
               makeImageBriefLayer(imageBriefLogByTemplate.get(templateId)),
               { name: "Background", model: "imagen-4.0", input: bgDataUrl ? bgPrompt : undefined, status: "completed" },
               { name: "Template", model: "resvg/sharp", input: JSON.stringify({ mode: "TEMPLATE_BETA", templateId, canvas: "1080x1080", copyFields: Object.keys(copy) }, null, 2), prompt: JSON.stringify({ templateId, copy: { headline: copy.headline, subheadline: copy.subheadline, badge: copy.badge, cta: copy.title } }, null, 2), status: "completed" },
@@ -1333,7 +1392,6 @@ export default function FabricaDeContenido() {
       setVariantsGenerating(false);
     }
   };
-
   const handleGenerateSequence = async () => {
     const templateId =
       selectedTemplates.find((id) => TEMPLATES.find((t) => t.id === id)?.supportsSequence) ??
@@ -1357,6 +1415,7 @@ export default function FabricaDeContenido() {
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({
           mode: "GENERATE_SEQUENCE_COPY",
+          templateId,
           product: bizProduct,
           offer: bizOffer,
           targetAudience: bizAudience,
@@ -1372,6 +1431,7 @@ export default function FabricaDeContenido() {
       if (!copyRes.ok) throw new Error(copyData.error || `Error ${copyRes.status}`);
       const slides = copyData.data?.slides as Array<Record<string, unknown>>;
       if (!Array.isArray(slides) || slides.length === 0) throw new Error("No se generaron slides");
+      const copyDebug = copyData.data?.debug as { copySystemPrompt?: string; copyUserPrompt?: string; copyRawOutput?: string; imageSystemPrompt?: string; imageUserPrompt?: string; imageRawOutput?: string } | undefined;
 
       const totalTasks = slides.length;
       setTotalCreatives(totalTasks);
@@ -1379,9 +1439,12 @@ export default function FabricaDeContenido() {
 
       const variantAccumulator: GeneratedVariant[] = [];
 
-      // Step 2: For each slide in parallel: background → TEMPLATE_BETA → PRODUCT_IA
-      const tasks = slides.map((slide, slideIndex) =>
-        async (): Promise<GeneratedVariant> => {
+      // Step 2: Generate slides sequentially so each slide can pass its scene as reference to the next,
+      // guaranteeing visual consistency of the person across all slides.
+      let prevSceneDataUrl: string | undefined;
+      for (let slideIndex = 0; slideIndex < slides.length; slideIndex++) {
+        const slide = slides[slideIndex];
+        {
           const bgPrompt = resolveBgPrompt(tplDef, slide, businessProfile);
 
           // Background
@@ -1422,6 +1485,10 @@ export default function FabricaDeContenido() {
             productForm.append("background", bgFile);
             productForm.append("product", productFile ?? TRANSPARENT_PNG_FILE());
             productForm.append("avatarFile", avatarFile!);
+            if (prevSceneDataUrl) {
+              const refBlob = await fetch(prevSceneDataUrl).then((r) => r.blob());
+              productForm.append("referenceImage", new File([refBlob], "reference.png", { type: "image/png" }));
+            }
             productForm.append(
               "config",
               JSON.stringify({
@@ -1455,15 +1522,15 @@ export default function FabricaDeContenido() {
 
             const variantForm = new FormData();
             variantForm.append("background", sceneBgFile);
-            if (businessLogo) {
+            if (includeLogo && businessLogo) {
               variantForm.append("logoBase64", businessLogo.base64);
               variantForm.append("logoMimeType", businessLogo.mimeType);
             }
-            if (businessLogoDark) {
+            if (includeLogo && businessLogoDark) {
               variantForm.append("logoDarkBase64", businessLogoDark.base64);
               variantForm.append("logoDarkMimeType", businessLogoDark.mimeType);
             }
-            if (businessLogoLight) {
+            if (includeLogo && businessLogoLight) {
               variantForm.append("logoLightBase64", businessLogoLight.base64);
               variantForm.append("logoLightMimeType", businessLogoLight.mimeType);
             }
@@ -1496,27 +1563,29 @@ export default function FabricaDeContenido() {
             const templateData = await templateRes.json();
             if (!templateRes.ok) throw new Error(templateData.error || `Error ${templateRes.status}`);
             finalImg = (templateData.data?.image || templateData.data?.imageUrl || sceneDataUrl) as string;
+            prevSceneDataUrl = sceneDataUrl;
             _seqPrompts = {
               layers: [
-                { name: "Sequence Copy", model: "gpt-4o-mini", input: JSON.stringify({ mode: "GENERATE_SEQUENCE_COPY", product: bizProduct, narrative: sequenceNarrative, slideCount: sequenceCount, sceneWithProduct: true, businessProfile: businessProfile ?? undefined }, null, 2), prompt: JSON.stringify(slide, null, 2), status: "completed" },
-                { name: "Background", model: "imagen-4.0", input: bgPrompt, status: "completed" },
+                { name: "Copy — Stage 1", model: "gemini-2.5-flash", systemPrompt: copyDebug?.copySystemPrompt, input: copyDebug?.copyUserPrompt, prompt: copyDebug?.copyRawOutput, status: "completed" },
+                { name: "Copy — Stage 2 (visual)", model: "gemini-2.5-flash", systemPrompt: copyDebug?.imageSystemPrompt, input: copyDebug?.imageUserPrompt, prompt: copyDebug?.imageRawOutput, status: "completed" },
+                { name: "Background", model: "gemini-flash-image", input: bgPrompt, status: "completed" },
                 { name: "Escena con Persona", model: "gemini-flash-image", input: productPromptForSlide, prompt: productData.data?.promptUsed, status: "completed" },
-                { name: "Template", model: "resvg/sharp", input: JSON.stringify({ mode: "TEMPLATE_BETA", templateId, canvas: "1080x1080", copy: { headline: slide.headline, subheadline: slide.subheadline, badge: slide.badge } }, null, 2), prompt: templateId, status: "completed" },
+                { name: "Template", model: "resvg/sharp", input: JSON.stringify({ mode: "TEMPLATE_BETA", templateId, copy: { headline: slide.headline, subheadline: slide.subheadline, badge: slide.badge } }, null, 2), status: "completed" },
               ],
             };
           } else {
             // Default order: TEMPLATE_BETA (text on clean bg) → PRODUCT_IA (scene on text)
             const variantForm = new FormData();
             variantForm.append("background", bgFile);
-            if (businessLogo) {
+            if (includeLogo && businessLogo) {
               variantForm.append("logoBase64", businessLogo.base64);
               variantForm.append("logoMimeType", businessLogo.mimeType);
             }
-            if (businessLogoDark) {
+            if (includeLogo && businessLogoDark) {
               variantForm.append("logoDarkBase64", businessLogoDark.base64);
               variantForm.append("logoDarkMimeType", businessLogoDark.mimeType);
             }
-            if (businessLogoLight) {
+            if (includeLogo && businessLogoLight) {
               variantForm.append("logoLightBase64", businessLogoLight.base64);
               variantForm.append("logoLightMimeType", businessLogoLight.mimeType);
             }
@@ -1556,9 +1625,13 @@ export default function FabricaDeContenido() {
 
             const productForm = new FormData();
             productForm.append("background", composedBgFile);
-            productForm.append("product", TRANSPARENT_PNG_FILE());
+            productForm.append("product", productFile ?? TRANSPARENT_PNG_FILE());
             if (avatarFile) {
               productForm.append("avatarFile", avatarFile);
+            }
+            if (prevSceneDataUrl) {
+              const refBlob = await fetch(prevSceneDataUrl).then((r) => r.blob());
+              productForm.append("referenceImage", new File([refBlob], "reference.png", { type: "image/png" }));
             }
             const slideRole = ((slide.slideRole as string) ?? "").toLowerCase();
             const scenePrompt = `Photography style, editorial quality, real person.
@@ -1600,11 +1673,13 @@ Full body or 3/4 shot. Natural lighting. Hyper-realistic. No text, no objects, n
             const productData = await productRes.json();
             if (!productRes.ok) throw new Error(productData.error || `Error ${productRes.status}`);
             finalImg = (productData.data?.image || productData.data?.imageUrl || templateResultImage) as string;
+            prevSceneDataUrl = finalImg;
             _seqPrompts = {
               layers: [
-                { name: "Sequence Copy", model: "gpt-4o-mini", input: JSON.stringify({ mode: "GENERATE_SEQUENCE_COPY", product: bizProduct, narrative: sequenceNarrative, slideCount: sequenceCount, businessProfile: businessProfile ?? undefined }, null, 2), prompt: JSON.stringify(slide, null, 2), status: "completed" },
-                { name: "Background", model: "imagen-4.0", input: bgPrompt, status: "completed" },
-                { name: "Template", model: "resvg/sharp", input: JSON.stringify({ mode: "TEMPLATE_BETA", templateId, canvas: "1080x1080", copy: { headline: slide.headline, subheadline: slide.subheadline, badge: slide.badge } }, null, 2), prompt: templateId, status: "completed" },
+                { name: "Copy — Stage 1", model: "gemini-2.5-flash", systemPrompt: copyDebug?.copySystemPrompt, input: copyDebug?.copyUserPrompt, prompt: copyDebug?.copyRawOutput, status: "completed" },
+                { name: "Copy — Stage 2 (visual)", model: "gemini-2.5-flash", systemPrompt: copyDebug?.imageSystemPrompt, input: copyDebug?.imageUserPrompt, prompt: copyDebug?.imageRawOutput, status: "completed" },
+                { name: "Background", model: "gemini-flash-image", input: bgPrompt, status: "completed" },
+                { name: "Template", model: "resvg/sharp", input: JSON.stringify({ mode: "TEMPLATE_BETA", templateId, copy: { headline: slide.headline, subheadline: slide.subheadline, badge: slide.badge } }, null, 2), status: "completed" },
                 { name: "Escena/Persona", model: "gemini-flash-image", input: scenePrompt, prompt: productData.data?.promptUsed, status: "completed" },
               ],
             };
@@ -1634,15 +1709,11 @@ Full body or 3/4 shot. Natural lighting. Hyper-realistic. No text, no objects, n
             slideIndex + 1,
             _seqPrompts,
           );
-          return variant;
         }
-      );
-
-      await runWithConcurrency(tasks, 3, (completed, total) => {
-        setVariantsProgress(`Generando slides... ${completed}/${total}`);
-        setProgressPercent(Math.round((completed / total) * 100));
-        setCompletedCreatives(completed);
-      });
+        setVariantsProgress(`Generando slides... ${slideIndex + 1}/${slides.length}`);
+        setProgressPercent(Math.round(((slideIndex + 1) / slides.length) * 100));
+        setCompletedCreatives(slideIndex + 1);
+      }
 
       setVariantsProgress(`Secuencia de ${variantAccumulator.length} slides generada`);
       setProgressPercent(100);
@@ -1776,6 +1847,9 @@ Full body or 3/4 shot. Natural lighting. Hyper-realistic. No text, no objects, n
             setSorteoCondiciones={setSorteoCondiciones}
             adFormat={adFormat}
             setAdFormat={setAdFormat}
+            includeLogo={includeLogo}
+            setIncludeLogo={setIncludeLogo}
+            hasLogo={!!(businessLogo || businessLogoDark || businessLogoLight)}
           />
         )}
 
@@ -1819,7 +1893,20 @@ Full body or 3/4 shot. Natural lighting. Hyper-realistic. No text, no objects, n
           />
         )}
 
-        {step === 3 && (
+        {step === 3 && pendingCopyData && (
+          <CopyReviewPanel
+            entries={pendingCopyData}
+            templates={TEMPLATES}
+            onApprove={handleApproveAndGenerateImages}
+            onCancel={() => {
+              setPendingCopyData(null);
+              setVariantsProgress("");
+            }}
+            angleNames={ANGLE_NAMES}
+          />
+        )}
+
+        {step === 3 && !pendingCopyData && (
           <StepGenerar
             bizProduct={bizProduct}
             bizOffer={bizOffer}
@@ -1849,6 +1936,10 @@ Full body or 3/4 shot. Natural lighting. Hyper-realistic. No text, no objects, n
             sequenceCount={sequenceCount}
             singleTimings={singleTimings}
             singlePromptsUsed={singlePromptsUsed}
+            adFormat={adFormat}
+            onSaveCreativo={async (dataUrl, v) => {
+              await saveCreativo(dataUrl, v.template, v.angleName, v.copy, v.slideRole, v.slideNumber, v.promptsUsed);
+            }}
           />
         )}
       </div>
@@ -2138,6 +2229,9 @@ function StepNegocio({
   setSorteoCondiciones,
   adFormat,
   setAdFormat,
+  includeLogo,
+  setIncludeLogo,
+  hasLogo,
 }: {
   bizProduct: string;
   setBizProduct: (v: string) => void;
@@ -2173,8 +2267,52 @@ function StepNegocio({
   setSorteoCondiciones: (v: string) => void;
   adFormat: "1:1" | "9:16";
   setAdFormat: (v: "1:1" | "9:16") => void;
+  includeLogo: boolean;
+  setIncludeLogo: (v: boolean) => void;
+  hasLogo: boolean;
 }) {
   const [referenceOpen, setReferenceOpen] = useState(false);
+  const [aiInputOpen, setAiInputOpen] = useState(false);
+  const [aiInputText, setAiInputText] = useState("");
+  const [aiExtracting, setAiExtracting] = useState(false);
+  const [aiExtractError, setAiExtractError] = useState<string | null>(null);
+
+  const handleExtractWithAI = async () => {
+    if (!aiInputText.trim()) return;
+    setAiExtracting(true);
+    setAiExtractError(null);
+    try {
+      const res = await fetch("/api/compose", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: "EXTRACT_PRODUCT_INFO", text: aiInputText }),
+      });
+      const json = await res.json();
+      console.log("[extractWithAI] response:", JSON.stringify(json));
+      if (!json.success) throw new Error(json.error || "Error al procesar el texto");
+      const info = json.data;
+      if (info.product) setBizProduct(info.product);
+      if (info.offer) setBizOffer(info.offer);
+      if (info.audience) setBizAudience(info.audience);
+      if (info.problem) setBizProblem(info.problem);
+      if (info.tone) setBizTone(info.tone);
+      setAiInputOpen(false);
+    } catch (err) {
+      setAiExtractError(err instanceof Error ? err.message : "Error desconocido");
+    } finally {
+      setAiExtracting(false);
+    }
+  };
+
+  const handleAiFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setAiInputText(reader.result as string);
+    };
+    reader.readAsText(file, "utf-8");
+  };
 
   return (
     <div
@@ -2192,23 +2330,39 @@ function StepNegocio({
         <div className="grid grid-cols-3 gap-3">
           {(
             [
-              { value: "independiente" as const, label: "Independiente", sub: "Ángulos distintos" },
-              { value: "secuencia" as const, label: "Secuencia", sub: "Historia / Carrusel" },
-              { value: "sorteo" as const, label: "Sorteo", sub: "Giveaway / Colaboración" },
+              { value: "independiente" as const, label: "Independiente", sub: "Ángulos distintos", locked: false },
+              { value: "secuencia" as const, label: "Secuencia", sub: "Historia / Carrusel", locked: true },
+              { value: "sorteo" as const, label: "Sorteo", sub: "Giveaway / Colaboración", locked: true },
             ] as const
-          ).map(({ value, label, sub }) => (
+          ).map(({ value, label, sub, locked }) => (
             <button
               key={value}
               type="button"
-              onClick={() => setCreationMode(value)}
-              className="rounded-2xl p-4 text-left transition-all"
+              onClick={() => !locked && setCreationMode(value)}
+              disabled={locked}
+              className="rounded-2xl p-4 text-left transition-all relative"
               style={{
-                background: creationMode === value ? "#001F1E" : "#1C1C1E",
-                border: `2px solid ${creationMode === value ? "#00B5AD" : "#2A2A2A"}`,
+                background: locked ? "#141414" : creationMode === value ? "#001F1E" : "#1C1C1E",
+                border: `2px solid ${locked ? "#222" : creationMode === value ? "#00B5AD" : "#2A2A2A"}`,
+                opacity: locked ? 0.5 : 1,
+                cursor: locked ? "not-allowed" : "pointer",
               }}
             >
-              <div className="text-sm font-semibold">{label}</div>
-              <div className="text-xs mt-0.5" style={{ color: "#86868B" }}>{sub}</div>
+              <div className="text-sm font-semibold" style={{ color: locked ? "#555" : undefined }}>{label}</div>
+              <div className="text-xs mt-0.5" style={{ color: "#555" }}>{locked ? "Próximamente" : sub}</div>
+              {locked && (
+                <span
+                  style={{
+                    position: "absolute",
+                    top: 8,
+                    right: 8,
+                    fontSize: 13,
+                    lineHeight: 1,
+                  }}
+                >
+                  🔒
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -2453,6 +2607,86 @@ function StepNegocio({
         )}
       </div>
 
+      {/* Autocompletar con IA */}
+      <div className="mb-6 rounded-xl overflow-hidden" style={{ border: "1px solid #2A2A2A" }}>
+        <button
+          type="button"
+          onClick={() => setAiInputOpen((o) => !o)}
+          className="w-full flex items-center justify-between px-4 py-3 text-left transition-all"
+          style={{ background: "#1C1C1E" }}
+        >
+          <div>
+            <div className="text-sm font-medium">✨ Autocompletar con IA</div>
+            <div className="text-xs mt-0.5" style={{ color: "#86868B" }}>
+              Pegá texto o subí un archivo y la IA completa los campos
+            </div>
+          </div>
+          <span className="text-xs ml-4 shrink-0" style={{ color: "#86868B" }}>
+            {aiInputOpen ? "▲" : "▼"}
+          </span>
+        </button>
+
+        {aiInputOpen && (
+          <div className="px-4 pb-4 pt-3 space-y-3" style={{ background: "#141414" }}>
+            <textarea
+              value={aiInputText}
+              onChange={(e) => setAiInputText(e.target.value)}
+              rows={6}
+              placeholder="Pegá aquí la descripción de tu producto, página de ventas, brief de marca, o cualquier texto relevante sobre tu negocio..."
+              className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-all resize-none"
+              style={{ background: "#1C1C1E", border: "1px solid #2A2A2A", color: "#F5F5F7" }}
+              onFocus={(e) => (e.currentTarget.style.borderColor = "#00B5AD")}
+              onBlur={(e) => (e.currentTarget.style.borderColor = "#2A2A2A")}
+            />
+            <div className="flex items-center gap-3">
+              <label
+                className="flex items-center gap-2 px-3 py-2 rounded-xl cursor-pointer text-xs font-medium transition-all"
+                style={{ background: "#1C1C1E", border: "1px solid #2A2A2A", color: "#86868B" }}
+                onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#00B5AD")}
+                onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#2A2A2A")}
+              >
+                <input
+                  type="file"
+                  accept=".txt,.md,.csv"
+                  onChange={handleAiFileUpload}
+                  className="hidden"
+                />
+                📄 Subir archivo .txt
+              </label>
+              <span className="text-xs" style={{ color: "#3A3A3C" }}>o pegá el texto arriba</span>
+            </div>
+            {aiExtractError && (
+              <div
+                className="rounded-xl px-4 py-3 text-sm"
+                style={{ background: "#2A0A0A", color: "#FF453A", border: "1px solid #3A1010" }}
+              >
+                {aiExtractError}
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={handleExtractWithAI}
+              disabled={!aiInputText.trim() || aiExtracting}
+              className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2"
+              style={{
+                background: aiInputText.trim() && !aiExtracting ? "#00B5AD" : "#2A2A2A",
+                color: aiInputText.trim() && !aiExtracting ? "#000" : "#555",
+                cursor: aiInputText.trim() && !aiExtracting ? "pointer" : "not-allowed",
+              }}
+            >
+              {aiExtracting ? (
+                <>
+                  <Spinner />
+                  Analizando texto...
+                </>
+              ) : (
+                "✨ Completar campos con IA"
+              )}
+            </button>
+          </div>
+        )}
+      </div>
+
       <div className="space-y-5">
         <div>
           <FieldLabel>Producto o servicio *</FieldLabel>
@@ -2529,6 +2763,30 @@ function StepNegocio({
           ))}
         </div>
       </div>
+
+      {/* Logo toggle — only shown when business has a logo configured */}
+      {hasLogo && (
+        <div className="mt-6 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium">Incluir logo del negocio</p>
+            <p className="text-xs mt-0.5" style={{ color: "#86868B" }}>
+              Agrega el logo en la esquina superior de cada creativo
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIncludeLogo(!includeLogo)}
+            className="relative inline-flex h-6 w-11 flex-shrink-0 rounded-full transition-colors duration-200 ease-in-out"
+            style={{ background: includeLogo ? "#00B5AD" : "#3A3A3C" }}
+            aria-pressed={includeLogo}
+          >
+            <span
+              className="inline-block h-5 w-5 transform rounded-full bg-white shadow transition duration-200 ease-in-out"
+              style={{ margin: "2px", transform: includeLogo ? "translateX(20px)" : "translateX(0px)" }}
+            />
+          </button>
+        </div>
+      )}
 
       <NavButtons onNext={onNext} canNext={canNext} />
     </div>
@@ -3078,6 +3336,8 @@ function StepGenerar({
   sequenceCount,
   singleTimings,
   singlePromptsUsed,
+  adFormat,
+  onSaveCreativo,
 }: {
   bizProduct: string;
   bizOffer: string;
@@ -3107,6 +3367,8 @@ function StepGenerar({
   sequenceCount: number;
   singleTimings: Record<string, number> | null;
   singlePromptsUsed: PromptsUsed | null;
+  adFormat: "1:1" | "9:16";
+  onSaveCreativo?: (dataUrl: string, v: GeneratedVariant) => Promise<void>;
 }) {
   const isGenerating = autoGenerating || variantsGenerating;
   const showSingleResult = resultImage && !variantsGenerating && variants.length === 0;
@@ -3245,7 +3507,7 @@ function StepGenerar({
         )}
 
         {/* Angles generate progress */}
-        {variantsProgress && (
+        {variantsProgress && variantsGenerating && (
           <GeneratingLoader
             step={variantsProgress}
             completed={completedCreatives}
@@ -3322,36 +3584,45 @@ function StepGenerar({
           className="rounded-2xl p-6"
           style={{ background: "#141414", border: "1px solid #2A2A2A" }}
         >
-          <h3 className="font-semibold mb-4">
-            Secuencia{" "}
-            <span style={{ color: "#86868B", fontWeight: 400 }}>
-              — {variants.length} {variants.length === 1 ? "slide" : "slides"}
+          <div className="flex items-center gap-2 mb-4">
+            <h3 className="font-semibold">Secuencia</h3>
+            <span
+              className="text-xs px-2 py-0.5 rounded-full font-medium"
+              style={{ background: "rgba(0,181,173,0.1)", color: "#00B5AD", border: "1px solid rgba(0,181,173,0.2)" }}
+            >
+              {variants.length} {variants.length === 1 ? "slide" : "slides"}
             </span>
-          </h3>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {variants.map((v, idx) => (
-              <SlideCard key={idx} variant={v} productFile={productFile} />
+              <SlideCard key={idx} variant={v} productFile={productFile} adFormat={adFormat} onSave={onSaveCreativo ? (dataUrl) => onSaveCreativo(dataUrl, v) : undefined} />
             ))}
           </div>
         </div>
       )}
 
-      {/* Ángulos de venta — grouped by template (independiente mode only) */}
-      {creationMode === "independiente" && templateGroups.map((group) => (
+      {/* Ángulos de venta — grouped by template (independiente + sorteo modes) */}
+      {(creationMode === "independiente" || creationMode === "sorteo") && templateGroups.map((group) => (
         <div
           key={group.templateId}
           className="rounded-2xl p-6"
           style={{ background: "#141414", border: "1px solid #2A2A2A" }}
         >
-          <h3 className="font-semibold mb-4">
-            {group.templateName}{" "}
-            <span style={{ color: "#86868B", fontWeight: 400 }}>
-              — {group.items.length} {group.items.length === 1 ? "ángulo" : "ángulos"}
+          <div className="flex items-center gap-2 mb-4">
+            {group.templateIcon && (
+              <span className="text-lg">{group.templateIcon}</span>
+            )}
+            <h3 className="font-semibold">{group.templateName}</h3>
+            <span
+              className="text-xs px-2 py-0.5 rounded-full font-medium ml-1"
+              style={{ background: "rgba(0,181,173,0.1)", color: "#00B5AD", border: "1px solid rgba(0,181,173,0.2)" }}
+            >
+              {group.items.length} {group.items.length === 1 ? "creativo" : "creativos"}
             </span>
-          </h3>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {group.items.map((v, idx) => (
-              <AngleCard key={idx} variant={v} productFile={productFile} />
+              <AngleCard key={idx} variant={v} productFile={productFile} adFormat={adFormat} onSave={onSaveCreativo ? (dataUrl) => onSaveCreativo(dataUrl, v) : undefined} />
             ))}
           </div>
         </div>
@@ -3383,33 +3654,53 @@ function SummaryItem({
 }
 
 function TimingBar({ timings }: { timings: Record<string, number> }) {
+  const total = timings["Total"];
+  if (total == null) return null;
   const fmt = (ms: number) =>
     ms >= 60000 ? `${(ms / 60000).toFixed(1)}m` : ms >= 1000 ? `${(ms / 1000).toFixed(1)}s` : `${ms}ms`;
   return (
-    <div className="flex flex-wrap gap-1 mt-2">
-      {Object.entries(timings).map(([key, ms]) => (
-        <span
-          key={key}
-          className="text-xs px-1.5 py-0.5 rounded font-mono"
-          style={{
-            background: key === "Total" ? "rgba(52,199,89,0.08)" : "#1A1A1A",
-            color: key === "Total" ? "#34C759" : "#86868B",
-            border: `1px solid ${key === "Total" ? "rgba(52,199,89,0.2)" : "#2A2A2A"}`,
-          }}
-        >
-          {key} {fmt(ms)}
-        </span>
-      ))}
+    <div className="mt-2">
+      <span
+        className="text-xs px-1.5 py-0.5 rounded font-mono"
+        style={{
+          background: "rgba(52,199,89,0.08)",
+          color: "#34C759",
+          border: "1px solid rgba(52,199,89,0.2)",
+        }}
+      >
+        ⏱ {fmt(total)}
+      </span>
     </div>
   );
 }
 
-function AngleCard({ variant, productFile }: { variant: GeneratedVariant; productFile: File | null }) {
+function AngleCard({ variant, productFile, adFormat, onSave }: { variant: GeneratedVariant; productFile: File | null; adFormat: "1:1" | "9:16"; onSave?: (dataUrl: string) => Promise<void> }) {
   const templateMeta = TEMPLATES.find((t) => t.id === variant.template);
   const templateName = templateMeta?.name ?? variant.template;
   const downloadName = `${variant.angleName.toLowerCase().replace(/[^a-z0-9]/g, "-")}-${variant.angle + 1}.png`;
   const [analysis, setAnalysis] = useState<CreativeAnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [editedImage, setEditedImage] = useState<string | null>(null);
+  const [showOriginal, setShowOriginal] = useState(false);
+  const [showEditPanel, setShowEditPanel] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const displayImage = editedImage && !showOriginal ? editedImage : variant.resultImage;
+  const editDownloadName = `${variant.angleName.toLowerCase().replace(/[^a-z0-9]/g, "-")}-${variant.angle + 1}-editado.png`;
+  const copyPreview = String(variant.copy?.title ?? variant.copy?.headline ?? "").trim();
+
+  const handleSaveEdited = async () => {
+    if (!editedImage || !onSave) return;
+    setIsSaving(true);
+    setSaved(false);
+    try {
+      await onSave(editedImage);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleAnalyze = async () => {
     setIsAnalyzing(true);
@@ -3437,22 +3728,43 @@ function AngleCard({ variant, productFile }: { variant: GeneratedVariant; produc
       className="rounded-2xl overflow-hidden"
       style={{ background: "#1C1C1E", border: "1px solid #2A2A2A" }}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={variant.resultImage}
-        alt={variant.angleName}
-        className="w-full aspect-square object-cover"
-      />
-      <div className="p-3">
-        <div className="flex gap-1.5 mb-2.5 flex-wrap">
-          <span
-            className="text-xs px-2 py-0.5 rounded-full font-medium"
-            style={{ background: "#2A2A2A", color: "#86868B" }}
+      {/* Image with hover overlay */}
+      <div style={{ position: "relative" }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={displayImage}
+          alt={variant.angleName}
+          className="w-full object-contain block"
+          style={{ aspectRatio: adFormat === "9:16" ? "9/16" : "1/1" }}
+        />
+        {editedImage && (
+          <button
+            type="button"
+            onClick={() => setShowOriginal((v) => !v)}
+            style={{
+              position: "absolute",
+              bottom: 8,
+              left: 8,
+              background: "rgba(0,0,0,0.7)",
+              color: "#F5F5F7",
+              border: "1px solid rgba(255,255,255,0.2)",
+              borderRadius: 8,
+              fontSize: 11,
+              padding: "3px 8px",
+              cursor: "pointer",
+            }}
           >
-            {templateName}
-          </span>
+            {showOriginal ? "Ver editada" : "Ver original"}
+          </button>
+        )}
+      </div>
+
+      {/* Card body */}
+      <div className="p-3">
+        {/* Labels row */}
+        <div className="flex items-center gap-1.5 mb-2 flex-wrap">
           <span
-            className="text-xs px-2 py-0.5 rounded-full font-medium"
+            className="text-xs px-2 py-0.5 rounded-full font-semibold"
             style={{
               background: "rgba(0,181,173,0.12)",
               color: "#00B5AD",
@@ -3461,55 +3773,51 @@ function AngleCard({ variant, productFile }: { variant: GeneratedVariant; produc
           >
             {variant.angleName}
           </span>
+          <span className="text-xs" style={{ color: "#555" }}>
+            {templateName}
+          </span>
         </div>
-        <div className="flex gap-2">
-          <a
-            href={variant.resultImage}
-            download={downloadName}
-            className="flex-1 text-xs py-1.5 rounded-lg font-medium text-center transition-all"
-            style={{ background: "#2A2A2A", color: "#F5F5F7" }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "#00B5AD";
-              e.currentTarget.style.color = "#000";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "#2A2A2A";
-              e.currentTarget.style.color = "#F5F5F7";
-            }}
-          >
-            Descargar
-          </a>
-          <button
-            type="button"
-            className="flex-1 text-xs py-1.5 rounded-lg font-medium transition-all"
+
+        {/* Copy preview */}
+        {copyPreview && (
+          <p
+            className="text-xs mb-3 leading-snug"
             style={{
-              background: "transparent",
-              color: "#86868B",
-              border: "1px solid #2A2A2A",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "#00B5AD";
-              e.currentTarget.style.color = "#00B5AD";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "#2A2A2A";
-              e.currentTarget.style.color = "#86868B";
+              color: "#C8C8CA",
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
             }}
           >
-            Usar como principal
-          </button>
-        </div>
-        <div className="flex gap-2 mt-2">
+            {copyPreview}
+          </p>
+        )}
+
+        {/* Action row */}
+        <div className="flex gap-1.5">
+          <a
+            href={displayImage}
+            download={editedImage && !showOriginal ? editDownloadName : downloadName}
+            className="flex-1 text-xs py-2 rounded-lg font-semibold text-center transition-all"
+            style={{ background: "#00B5AD", color: "#000" }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "#00CFC7"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "#00B5AD"; }}
+          >
+            ↓ Descargar
+          </a>
           <button
             type="button"
             onClick={handleAnalyze}
             disabled={isAnalyzing}
-            className="w-full text-xs py-1.5 rounded-lg font-medium transition-all"
+            title="Analizar con IA"
+            className="text-xs px-3 py-2 rounded-lg font-medium transition-all"
             style={{
-              background: isAnalyzing ? "#1C1C1E" : "transparent",
+              background: "transparent",
               color: isAnalyzing ? "#555" : "#86868B",
               border: "1px solid #2A2A2A",
               cursor: isAnalyzing ? "not-allowed" : "pointer",
+              minWidth: 36,
             }}
             onMouseEnter={(e) => {
               if (!isAnalyzing) {
@@ -3524,9 +3832,58 @@ function AngleCard({ variant, productFile }: { variant: GeneratedVariant; produc
               }
             }}
           >
-            {isAnalyzing ? "Analizando..." : "🔍 Analizar con IA"}
+            {isAnalyzing ? "..." : "🔍"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowEditPanel((v) => !v)}
+            title="Retocar con IA"
+            className="text-xs px-3 py-2 rounded-lg font-medium transition-all"
+            style={{
+              background: showEditPanel ? "rgba(255,159,10,0.12)" : "transparent",
+              color: showEditPanel ? "#FF9F0A" : "#86868B",
+              border: `1px solid ${showEditPanel ? "rgba(255,159,10,0.4)" : "#2A2A2A"}`,
+              minWidth: 36,
+            }}
+            onMouseEnter={(e) => {
+              if (!showEditPanel) {
+                e.currentTarget.style.borderColor = "rgba(255,159,10,0.4)";
+                e.currentTarget.style.color = "#FF9F0A";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!showEditPanel) {
+                e.currentTarget.style.borderColor = "#2A2A2A";
+                e.currentTarget.style.color = "#86868B";
+              }
+            }}
+          >
+            ✏️
           </button>
         </div>
+        {showEditPanel && (
+          <EditPanel
+            creativeDataUrl={displayImage}
+            adFormat={adFormat}
+            onEdited={(img) => { setEditedImage(img); setShowOriginal(false); }}
+          />
+        )}
+        {editedImage && onSave && (
+          <button
+            type="button"
+            onClick={handleSaveEdited}
+            disabled={isSaving || saved}
+            className="w-full text-xs py-1.5 rounded-lg font-medium mt-2 transition-all"
+            style={{
+              background: saved ? "rgba(48,209,88,0.15)" : isSaving ? "#1C1C1E" : "rgba(0,181,173,0.1)",
+              color: saved ? "#30D158" : isSaving ? "#555" : "#00B5AD",
+              border: `1px solid ${saved ? "rgba(48,209,88,0.3)" : isSaving ? "#2A2A2A" : "rgba(0,181,173,0.3)"}`,
+              cursor: isSaving || saved ? "not-allowed" : "pointer",
+            }}
+          >
+            {saved ? "✓ Guardada" : isSaving ? "Guardando..." : "Guardar versión editada"}
+          </button>
+        )}
         {variant.promptsUsed && <PromptsPanel prompts={variant.promptsUsed} />}
         {variant.timings && <TimingBar timings={variant.timings} />}
         {analysis && <CreativeAnalysisPanel analysis={analysis} />}
@@ -3535,13 +3892,34 @@ function AngleCard({ variant, productFile }: { variant: GeneratedVariant; produc
   );
 }
 
-function SlideCard({ variant, productFile }: { variant: GeneratedVariant; productFile: File | null }) {
+function SlideCard({ variant, productFile, adFormat, onSave }: { variant: GeneratedVariant; productFile: File | null; adFormat: "1:1" | "9:16"; onSave?: (dataUrl: string) => Promise<void> }) {
   const slideNum = variant.slideNumber ?? (variant.angle + 1);
   const role = variant.slideRole ?? variant.angleName;
   const roleColor = SLIDE_ROLE_COLORS[role] ?? { bg: "#2A2A2A", text: "#86868B" };
   const downloadName = `slide-${String(slideNum).padStart(2, "0")}-${role.toLowerCase()}.png`;
   const [analysis, setAnalysis] = useState<CreativeAnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [editedImage, setEditedImage] = useState<string | null>(null);
+  const [showOriginal, setShowOriginal] = useState(false);
+  const [showEditPanel, setShowEditPanel] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const displayImage = editedImage && !showOriginal ? editedImage : variant.resultImage;
+  const editDownloadName = `slide-${String(slideNum).padStart(2, "0")}-${role.toLowerCase()}-editado.png`;
+
+  const handleSaveEdited = async () => {
+    if (!editedImage || !onSave) return;
+    setIsSaving(true);
+    setSaved(false);
+    try {
+      await onSave(editedImage);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleAnalyze = async () => {
     setIsAnalyzing(true);
@@ -3569,14 +3947,41 @@ function SlideCard({ variant, productFile }: { variant: GeneratedVariant; produc
       className="rounded-2xl overflow-hidden"
       style={{ background: "#1C1C1E", border: "1px solid #2A2A2A" }}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={variant.resultImage}
-        alt={`Slide ${slideNum} — ${role}`}
-        className="w-full aspect-square object-cover"
-      />
+      {/* Image */}
+      <div style={{ position: "relative" }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={displayImage}
+          alt={`Slide ${slideNum} — ${role}`}
+          className="w-full object-contain block"
+          style={{ aspectRatio: adFormat === "9:16" ? "9/16" : "1/1" }}
+        />
+        {editedImage && (
+          <button
+            type="button"
+            onClick={() => setShowOriginal((v) => !v)}
+            style={{
+              position: "absolute",
+              bottom: 8,
+              left: 8,
+              background: "rgba(0,0,0,0.7)",
+              color: "#F5F5F7",
+              border: "1px solid rgba(255,255,255,0.2)",
+              borderRadius: 8,
+              fontSize: 11,
+              padding: "3px 8px",
+              cursor: "pointer",
+            }}
+          >
+            {showOriginal ? "Ver editada" : "Ver original"}
+          </button>
+        )}
+      </div>
+
+      {/* Card body */}
       <div className="p-3">
-        <div className="flex gap-1.5 mb-2.5 flex-wrap items-center">
+        {/* Labels row */}
+        <div className="flex items-center gap-1.5 mb-2 flex-wrap">
           <span
             className="text-xs px-2 py-0.5 rounded-full font-bold"
             style={{ background: "#2A2A2A", color: "#F5F5F7" }}
@@ -3590,33 +3995,31 @@ function SlideCard({ variant, productFile }: { variant: GeneratedVariant; produc
             {role}
           </span>
         </div>
-        <div className="flex gap-2">
+
+        {/* Action row */}
+        <div className="flex gap-1.5">
           <a
-            href={variant.resultImage}
-            download={downloadName}
-            className="flex-1 text-xs py-1.5 rounded-lg font-medium text-center transition-all"
-            style={{ background: "#2A2A2A", color: "#F5F5F7" }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "#00B5AD";
-              e.currentTarget.style.color = "#000";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "#2A2A2A";
-              e.currentTarget.style.color = "#F5F5F7";
-            }}
+            href={displayImage}
+            download={editedImage && !showOriginal ? editDownloadName : downloadName}
+            className="flex-1 text-xs py-2 rounded-lg font-semibold text-center transition-all"
+            style={{ background: "#00B5AD", color: "#000" }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "#00CFC7"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "#00B5AD"; }}
           >
-            Descargar
+            ↓ Descargar
           </a>
           <button
             type="button"
             onClick={handleAnalyze}
             disabled={isAnalyzing}
-            className="flex-1 text-xs py-1.5 rounded-lg font-medium transition-all"
+            title="Analizar con IA"
+            className="text-xs px-3 py-2 rounded-lg font-medium transition-all"
             style={{
-              background: isAnalyzing ? "#1C1C1E" : "transparent",
+              background: "transparent",
               color: isAnalyzing ? "#555" : "#86868B",
               border: "1px solid #2A2A2A",
               cursor: isAnalyzing ? "not-allowed" : "pointer",
+              minWidth: 36,
             }}
             onMouseEnter={(e) => {
               if (!isAnalyzing) {
@@ -3631,13 +4034,218 @@ function SlideCard({ variant, productFile }: { variant: GeneratedVariant; produc
               }
             }}
           >
-            {isAnalyzing ? "Analizando..." : "🔍 Analizar"}
+            {isAnalyzing ? "..." : "🔍"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowEditPanel((v) => !v)}
+            title="Retocar con IA"
+            className="text-xs px-3 py-2 rounded-lg font-medium transition-all"
+            style={{
+              background: showEditPanel ? "rgba(255,159,10,0.12)" : "transparent",
+              color: showEditPanel ? "#FF9F0A" : "#86868B",
+              border: `1px solid ${showEditPanel ? "rgba(255,159,10,0.4)" : "#2A2A2A"}`,
+              minWidth: 36,
+            }}
+            onMouseEnter={(e) => {
+              if (!showEditPanel) {
+                e.currentTarget.style.borderColor = "rgba(255,159,10,0.4)";
+                e.currentTarget.style.color = "#FF9F0A";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!showEditPanel) {
+                e.currentTarget.style.borderColor = "#2A2A2A";
+                e.currentTarget.style.color = "#86868B";
+              }
+            }}
+          >
+            ✏️
           </button>
         </div>
+        {showEditPanel && (
+          <EditPanel
+            creativeDataUrl={displayImage}
+            adFormat={adFormat}
+            onEdited={(img) => { setEditedImage(img); setShowOriginal(false); }}
+          />
+        )}
+        {editedImage && onSave && (
+          <button
+            type="button"
+            onClick={handleSaveEdited}
+            disabled={isSaving || saved}
+            className="w-full text-xs py-1.5 rounded-lg font-medium mt-2 transition-all"
+            style={{
+              background: saved ? "rgba(48,209,88,0.15)" : isSaving ? "#1C1C1E" : "rgba(0,181,173,0.1)",
+              color: saved ? "#30D158" : isSaving ? "#555" : "#00B5AD",
+              border: `1px solid ${saved ? "rgba(48,209,88,0.3)" : isSaving ? "#2A2A2A" : "rgba(0,181,173,0.3)"}`,
+              cursor: isSaving || saved ? "not-allowed" : "pointer",
+            }}
+          >
+            {saved ? "✓ Guardada" : isSaving ? "Guardando..." : "Guardar versión editada"}
+          </button>
+        )}
         {variant.promptsUsed && <PromptsPanel prompts={variant.promptsUsed} />}
         {variant.timings && <TimingBar timings={variant.timings} />}
         {analysis && <CreativeAnalysisPanel analysis={analysis} />}
       </div>
+    </div>
+  );
+}
+
+// ─── EditPanel ────────────────────────────────────────────────────────────────
+
+function EditPanel({
+  creativeDataUrl,
+  adFormat,
+  onEdited,
+}: {
+  creativeDataUrl: string;
+  adFormat: "1:1" | "9:16";
+  onEdited: (editedDataUrl: string) => void;
+}) {
+  const [instruction, setInstruction] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [referencePreview, setReferencePreview] = useState<string | null>(null);
+  const [referenceBase64, setReferenceBase64] = useState<string | null>(null);
+
+  const handleReferenceFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      setReferencePreview(dataUrl);
+      setReferenceBase64(dataUrl.replace(/^data:[^;]+;base64,/, ""));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleEdit = async () => {
+    const trimmed = instruction.trim();
+    if (!trimmed) return;
+    setIsEditing(true);
+    setError(null);
+    try {
+      const creativeBase64 = creativeDataUrl.replace(/^data:[^;]+;base64,/, "");
+      const aspectRatio = adFormat === "9:16" ? "9:16" : "1:1";
+      const res = await fetch("/api/compose", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode: "EDIT_CREATIVE",
+          creativeBase64,
+          instruction: trimmed,
+          aspectRatio,
+          ...(referenceBase64 ? { referenceBase64 } : {}),
+        }),
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error ?? "Error al editar");
+      onEdited(data.data.editedImage as string);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al editar");
+    } finally {
+      setIsEditing(false);
+    }
+  };
+
+  return (
+    <div
+      className="mt-2 rounded-xl p-3"
+      style={{ background: "rgba(255,159,10,0.06)", border: "1px solid rgba(255,159,10,0.2)" }}
+    >
+      <p className="text-xs mb-2" style={{ color: "#FF9F0A", fontWeight: 600 }}>
+        ✏️ Retocar con IA
+      </p>
+      <p className="text-xs mb-2" style={{ color: "#86868B" }}>
+        Describí el cambio que querés aplicar. El texto, logos y composición se mantienen intactos.
+      </p>
+      <textarea
+        value={instruction}
+        onChange={(e) => setInstruction(e.target.value)}
+        placeholder="Ej: hacé el fondo más cálido, agregá más contraste, suavizá las sombras..."
+        rows={2}
+        disabled={isEditing}
+        className="w-full text-xs rounded-lg resize-none outline-none"
+        style={{
+          background: "#141414",
+          border: "1px solid #333",
+          color: "#F5F5F7",
+          padding: "8px 10px",
+          lineHeight: 1.5,
+        }}
+      />
+
+      {/* Reference image upload */}
+      <div className="mt-2">
+        {referencePreview ? (
+          <div className="flex items-center gap-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={referencePreview}
+              alt="Referencia"
+              style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 6, border: "1px solid #333", flexShrink: 0 }}
+            />
+            <div className="flex flex-col gap-1 min-w-0">
+              <span className="text-xs truncate" style={{ color: "#86868B" }}>Imagen de referencia adjunta</span>
+              <button
+                type="button"
+                onClick={() => { setReferencePreview(null); setReferenceBase64(null); }}
+                className="text-xs text-left"
+                style={{ color: "#FF453A", background: "none", border: "none", padding: 0, cursor: "pointer" }}
+              >
+                Quitar
+              </button>
+            </div>
+          </div>
+        ) : (
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              cursor: isEditing ? "not-allowed" : "pointer",
+              color: "#86868B",
+              fontSize: 11,
+              padding: "6px 8px",
+              borderRadius: 8,
+              border: "1px dashed #333",
+              background: "#141414",
+              opacity: isEditing ? 0.5 : 1,
+            }}
+          >
+            <span style={{ fontSize: 14 }}>🖼️</span>
+            <span>Adjuntar imagen de referencia (opcional)</span>
+            <input
+              type="file"
+              accept="image/*"
+              disabled={isEditing}
+              onChange={handleReferenceFile}
+              style={{ display: "none" }}
+            />
+          </label>
+        )}
+      </div>
+
+      {error && (
+        <p className="text-xs mt-1" style={{ color: "#FF453A" }}>{error}</p>
+      )}
+      <button
+        type="button"
+        onClick={handleEdit}
+        disabled={isEditing || !instruction.trim()}
+        className="w-full text-xs py-1.5 rounded-lg font-medium mt-2 transition-all"
+        style={{
+          background: isEditing || !instruction.trim() ? "#2A2A2A" : "rgba(255,159,10,0.85)",
+          color: isEditing || !instruction.trim() ? "#555" : "#000",
+          cursor: isEditing || !instruction.trim() ? "not-allowed" : "pointer",
+        }}
+      >
+        {isEditing ? "Aplicando ajuste..." : "Aplicar"}
+      </button>
     </div>
   );
 }
