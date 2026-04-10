@@ -211,10 +211,6 @@ if (debugInfo.productBytes === 0 && requestedMode !== "TEMPLATE_BETA") {
   const avatarFormFile = formData.get("avatarFile") as File | null;
   const avatarBuffer = avatarFormFile ? Buffer.from(await avatarFormFile.arrayBuffer()) : undefined;
 
-  // Reference buffer (for narrative sequence consistency — previous slide's scene)
-  const referenceFormFile = formData.get("referenceImage") as File | null;
-  const referenceBuffer = referenceFormFile ? Buffer.from(await referenceFormFile.arrayBuffer()) : undefined;
-
   return {
     request: {
       mode: (config.mode as ComposeMode) || "STANDARD",
@@ -237,7 +233,6 @@ if (debugInfo.productBytes === 0 && requestedMode !== "TEMPLATE_BETA") {
       logoLightBase64: logoLightBase64 ?? undefined,
       logoLightMimeType: logoLightMimeType ?? undefined,
       avatarBuffer,
-      referenceBuffer,
       productIAOptions: config.productIAOptions as ComposeRequest["productIAOptions"],
       templateBetaOptions: config.templateBetaOptions as any,
     },
@@ -574,6 +569,7 @@ export async function POST(request: NextRequest) {
               referenceStyle: body.referenceStyle,
               backgroundStyleGuide: body.backgroundStyleGuide,
               sorteoData: body.sorteoData,
+              funnelStage: body.funnelStage,
               sceneExample: sceneExample || undefined,
               template: copyTemplateMeta
                 ? {
@@ -714,6 +710,7 @@ export async function POST(request: NextRequest) {
             problem: body.problem ?? "",
             tone: body.tone ?? "",
             narrative: body.narrative ?? "",
+            funnelStage: body.funnelStage,
             slideCount: body.slideCount ?? 3,
             sceneWithProduct: body.sceneWithProduct === true,
             businessProfile: body.businessProfile,
@@ -738,7 +735,7 @@ export async function POST(request: NextRequest) {
             } : undefined,
           });
           if (cachedUserTokens) await consumeTokensWithData(cachedUserTokens, tokensNeeded, operation);
-          return NextResponse.json({ success: true, data: { slides: result.slides, debug: result.debug } });
+          return NextResponse.json({ success: true, data: { slides: result } });
         } catch (err) {
           const message = err instanceof Error ? err.message : "Unknown error";
           return NextResponse.json({ success: false, error: message }, { status: 500 });

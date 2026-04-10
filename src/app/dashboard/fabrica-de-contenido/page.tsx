@@ -112,6 +112,21 @@ const TONE_LABELS: Record<Tone, string> = {
   inspiracional: "Inspiracional",
 };
 
+const FUNNEL_STAGES = ["TOF", "MOF", "BOF"] as const;
+type FunnelStage = (typeof FUNNEL_STAGES)[number];
+
+const FUNNEL_STAGE_LABELS: Record<FunnelStage, string> = {
+  TOF: "Top of Funnel",
+  MOF: "Mid of Funnel",
+  BOF: "Bottom of Funnel",
+};
+
+const FUNNEL_STAGE_DESCRIPTIONS: Record<FunnelStage, string> = {
+  TOF: "Audiencia inconsciente del problema — educar y despertar",
+  MOF: "Evalúa soluciones, conoce el problema — mostrar la transformación",
+  BOF: "Lista para comprar, necesita el último empujón — cerrar con oferta",
+};
+
 const STEPS = ["Negocio", "Plantilla", "Producto", "Generar"] as const;
 
 const TRANSPARENT_PNG_FILE = (): File => {
@@ -203,6 +218,7 @@ export default function FabricaDeContenido() {
   const [bizAudience, setBizAudience] = useState("");
   const [bizProblem, setBizProblem] = useState("");
   const [bizTone, setBizTone] = useState<Tone>("emocional");
+  const [bizFunnelStage, setBizFunnelStage] = useState<FunnelStage>("MOF");
 
   // Step 2: Templates (multi-select) + angle count
   const [selectedTemplates, setSelectedTemplates] = useState<string[]>(["bebas-dynamicBg-cta"]);
@@ -520,6 +536,7 @@ export default function FabricaDeContenido() {
             const cat = (businessProfile?.category as string) ?? "";
             return (cat && tpl?.categoryBackgroundPrompts?.[cat]) ?? tpl?.defaultBackgroundPrompt ?? undefined;
           })(),
+          funnelStage: bizFunnelStage,
           sorteoData: creationMode === "sorteo" ? { premios: sorteoPremios, colaboradores: sorteoColaboradores, condiciones: sorteoCondiciones } : undefined,
         }),
       });
@@ -944,6 +961,7 @@ export default function FabricaDeContenido() {
                 const cat = (businessProfile?.category as string) ?? "";
                 return (cat && tpl?.categoryBackgroundPrompts?.[cat]) ?? tpl?.defaultBackgroundPrompt ?? undefined;
               })(),
+              funnelStage: bizFunnelStage,
               sorteoData: creationMode === "sorteo" ? { premios: sorteoPremios, colaboradores: sorteoColaboradores, condiciones: sorteoCondiciones } : undefined,
             }),
           });
@@ -1431,7 +1449,6 @@ export default function FabricaDeContenido() {
       if (!copyRes.ok) throw new Error(copyData.error || `Error ${copyRes.status}`);
       const slides = copyData.data?.slides as Array<Record<string, unknown>>;
       if (!Array.isArray(slides) || slides.length === 0) throw new Error("No se generaron slides");
-      const copyDebug = copyData.data?.debug as { copySystemPrompt?: string; copyUserPrompt?: string; copyRawOutput?: string; imageSystemPrompt?: string; imageUserPrompt?: string; imageRawOutput?: string } | undefined;
 
       const totalTasks = slides.length;
       setTotalCreatives(totalTasks);
@@ -1439,12 +1456,9 @@ export default function FabricaDeContenido() {
 
       const variantAccumulator: GeneratedVariant[] = [];
 
-      // Step 2: Generate slides sequentially so each slide can pass its scene as reference to the next,
-      // guaranteeing visual consistency of the person across all slides.
-      let prevSceneDataUrl: string | undefined;
-      for (let slideIndex = 0; slideIndex < slides.length; slideIndex++) {
-        const slide = slides[slideIndex];
-        {
+      // Step 2: For each slide in parallel: background → TEMPLATE_BETA → PRODUCT_IA
+      const tasks = slides.map((slide, slideIndex) =>
+        async (): Promise<GeneratedVariant> => {
           const bgPrompt = resolveBgPrompt(tplDef, slide, businessProfile);
 
           // Background
@@ -1485,10 +1499,6 @@ export default function FabricaDeContenido() {
             productForm.append("background", bgFile);
             productForm.append("product", productFile ?? TRANSPARENT_PNG_FILE());
             productForm.append("avatarFile", avatarFile!);
-            if (prevSceneDataUrl) {
-              const refBlob = await fetch(prevSceneDataUrl).then((r) => r.blob());
-              productForm.append("referenceImage", new File([refBlob], "reference.png", { type: "image/png" }));
-            }
             productForm.append(
               "config",
               JSON.stringify({
@@ -1563,14 +1573,12 @@ export default function FabricaDeContenido() {
             const templateData = await templateRes.json();
             if (!templateRes.ok) throw new Error(templateData.error || `Error ${templateRes.status}`);
             finalImg = (templateData.data?.image || templateData.data?.imageUrl || sceneDataUrl) as string;
-            prevSceneDataUrl = sceneDataUrl;
             _seqPrompts = {
               layers: [
-                { name: "Copy — Stage 1", model: "gemini-2.5-flash", systemPrompt: copyDebug?.copySystemPrompt, input: copyDebug?.copyUserPrompt, prompt: copyDebug?.copyRawOutput, status: "completed" },
-                { name: "Copy — Stage 2 (visual)", model: "gemini-2.5-flash", systemPrompt: copyDebug?.imageSystemPrompt, input: copyDebug?.imageUserPrompt, prompt: copyDebug?.imageRawOutput, status: "completed" },
-                { name: "Background", model: "gemini-flash-image", input: bgPrompt, status: "completed" },
+                { name: "Sequence Copy", model: "gemini-2.5-flash", input: JSON.stringify({ mode: "GENERATE_SEQUENCE_COPY", product: bizProduct, narrative: sequenceNarrative, slideCount: sequenceCount, sceneWithProduct: true, businessProfile: businessProfile ?? undefined }, null, 2), prompt: JSON.stringify(slide, null, 2), status: "completed" },
+                { name: "Background", model: "imagen-4.0", input: bgPrompt, status: "completed" },
                 { name: "Escena con Persona", model: "gemini-flash-image", input: productPromptForSlide, prompt: productData.data?.promptUsed, status: "completed" },
-                { name: "Template", model: "resvg/sharp", input: JSON.stringify({ mode: "TEMPLATE_BETA", templateId, copy: { headline: slide.headline, subheadline: slide.subheadline, badge: slide.badge } }, null, 2), status: "completed" },
+                { name: "Template", model: "resvg/sharp", input: JSON.stringify({ mode: "TEMPLATE_BETA", templateId, canvas: "1080x1080", copy: { headline: slide.headline, subheadline: slide.subheadline, badge: slide.badge } }, null, 2), prompt: templateId, status: "completed" },
               ],
             };
           } else {
@@ -1625,13 +1633,9 @@ export default function FabricaDeContenido() {
 
             const productForm = new FormData();
             productForm.append("background", composedBgFile);
-            productForm.append("product", productFile ?? TRANSPARENT_PNG_FILE());
+            productForm.append("product", TRANSPARENT_PNG_FILE());
             if (avatarFile) {
               productForm.append("avatarFile", avatarFile);
-            }
-            if (prevSceneDataUrl) {
-              const refBlob = await fetch(prevSceneDataUrl).then((r) => r.blob());
-              productForm.append("referenceImage", new File([refBlob], "reference.png", { type: "image/png" }));
             }
             const slideRole = ((slide.slideRole as string) ?? "").toLowerCase();
             const scenePrompt = `Photography style, editorial quality, real person.
@@ -1673,13 +1677,11 @@ Full body or 3/4 shot. Natural lighting. Hyper-realistic. No text, no objects, n
             const productData = await productRes.json();
             if (!productRes.ok) throw new Error(productData.error || `Error ${productRes.status}`);
             finalImg = (productData.data?.image || productData.data?.imageUrl || templateResultImage) as string;
-            prevSceneDataUrl = finalImg;
             _seqPrompts = {
               layers: [
-                { name: "Copy — Stage 1", model: "gemini-2.5-flash", systemPrompt: copyDebug?.copySystemPrompt, input: copyDebug?.copyUserPrompt, prompt: copyDebug?.copyRawOutput, status: "completed" },
-                { name: "Copy — Stage 2 (visual)", model: "gemini-2.5-flash", systemPrompt: copyDebug?.imageSystemPrompt, input: copyDebug?.imageUserPrompt, prompt: copyDebug?.imageRawOutput, status: "completed" },
-                { name: "Background", model: "gemini-flash-image", input: bgPrompt, status: "completed" },
-                { name: "Template", model: "resvg/sharp", input: JSON.stringify({ mode: "TEMPLATE_BETA", templateId, copy: { headline: slide.headline, subheadline: slide.subheadline, badge: slide.badge } }, null, 2), status: "completed" },
+                { name: "Sequence Copy", model: "gemini-2.5-flash", input: JSON.stringify({ mode: "GENERATE_SEQUENCE_COPY", product: bizProduct, narrative: sequenceNarrative, slideCount: sequenceCount, businessProfile: businessProfile ?? undefined }, null, 2), prompt: JSON.stringify(slide, null, 2), status: "completed" },
+                { name: "Background", model: "imagen-4.0", input: bgPrompt, status: "completed" },
+                { name: "Template", model: "resvg/sharp", input: JSON.stringify({ mode: "TEMPLATE_BETA", templateId, canvas: "1080x1080", copy: { headline: slide.headline, subheadline: slide.subheadline, badge: slide.badge } }, null, 2), prompt: templateId, status: "completed" },
                 { name: "Escena/Persona", model: "gemini-flash-image", input: scenePrompt, prompt: productData.data?.promptUsed, status: "completed" },
               ],
             };
@@ -1709,11 +1711,15 @@ Full body or 3/4 shot. Natural lighting. Hyper-realistic. No text, no objects, n
             slideIndex + 1,
             _seqPrompts,
           );
+          return variant;
         }
-        setVariantsProgress(`Generando slides... ${slideIndex + 1}/${slides.length}`);
-        setProgressPercent(Math.round(((slideIndex + 1) / slides.length) * 100));
-        setCompletedCreatives(slideIndex + 1);
-      }
+      );
+
+      await runWithConcurrency(tasks, 3, (completed, total) => {
+        setVariantsProgress(`Generando slides... ${completed}/${total}`);
+        setProgressPercent(Math.round((completed / total) * 100));
+        setCompletedCreatives(completed);
+      });
 
       setVariantsProgress(`Secuencia de ${variantAccumulator.length} slides generada`);
       setProgressPercent(100);
@@ -1815,6 +1821,8 @@ Full body or 3/4 shot. Natural lighting. Hyper-realistic. No text, no objects, n
             setBizProblem={setBizProblem}
             bizTone={bizTone}
             setBizTone={setBizTone}
+            bizFunnelStage={bizFunnelStage}
+            setBizFunnelStage={setBizFunnelStage}
             onNext={() => setStep(1)}
             canNext={canProceedStep1}
             referenceImage={referenceImage}
@@ -1913,6 +1921,7 @@ Full body or 3/4 shot. Natural lighting. Hyper-realistic. No text, no objects, n
             bizAudience={bizAudience}
             bizProblem={bizProblem}
             bizTone={bizTone}
+            bizFunnelStage={bizFunnelStage}
             selectedTemplates={selectedTemplates}
             numAngles={numAngles}
             productFile={productFile}
@@ -2206,6 +2215,8 @@ function StepNegocio({
   setBizProblem,
   bizTone,
   setBizTone,
+  bizFunnelStage,
+  setBizFunnelStage,
   onNext,
   canNext,
   referenceImage,
@@ -2243,6 +2254,8 @@ function StepNegocio({
   setBizProblem: (v: string) => void;
   bizTone: Tone;
   setBizTone: (v: Tone) => void;
+  bizFunnelStage: FunnelStage;
+  setBizFunnelStage: (v: FunnelStage) => void;
   onNext: () => void;
   canNext: boolean;
   referenceImage: File | null;
@@ -2330,39 +2343,23 @@ function StepNegocio({
         <div className="grid grid-cols-3 gap-3">
           {(
             [
-              { value: "independiente" as const, label: "Independiente", sub: "Ángulos distintos", locked: false },
-              { value: "secuencia" as const, label: "Secuencia", sub: "Historia / Carrusel", locked: true },
-              { value: "sorteo" as const, label: "Sorteo", sub: "Giveaway / Colaboración", locked: true },
+              { value: "independiente" as const, label: "Independiente", sub: "Ángulos distintos" },
+              { value: "secuencia" as const, label: "Secuencia", sub: "Historia / Carrusel" },
+              { value: "sorteo" as const, label: "Sorteo", sub: "Giveaway / Colaboración" },
             ] as const
-          ).map(({ value, label, sub, locked }) => (
+          ).map(({ value, label, sub }) => (
             <button
               key={value}
               type="button"
-              onClick={() => !locked && setCreationMode(value)}
-              disabled={locked}
-              className="rounded-2xl p-4 text-left transition-all relative"
+              onClick={() => setCreationMode(value)}
+              className="rounded-2xl p-4 text-left transition-all"
               style={{
-                background: locked ? "#141414" : creationMode === value ? "#001F1E" : "#1C1C1E",
-                border: `2px solid ${locked ? "#222" : creationMode === value ? "#00B5AD" : "#2A2A2A"}`,
-                opacity: locked ? 0.5 : 1,
-                cursor: locked ? "not-allowed" : "pointer",
+                background: creationMode === value ? "#001F1E" : "#1C1C1E",
+                border: `2px solid ${creationMode === value ? "#00B5AD" : "#2A2A2A"}`,
               }}
             >
-              <div className="text-sm font-semibold" style={{ color: locked ? "#555" : undefined }}>{label}</div>
-              <div className="text-xs mt-0.5" style={{ color: "#555" }}>{locked ? "Próximamente" : sub}</div>
-              {locked && (
-                <span
-                  style={{
-                    position: "absolute",
-                    top: 8,
-                    right: 8,
-                    fontSize: 13,
-                    lineHeight: 1,
-                  }}
-                >
-                  🔒
-                </span>
-              )}
+              <div className="text-sm font-semibold">{label}</div>
+              <div className="text-xs mt-0.5" style={{ color: "#86868B" }}>{sub}</div>
             </button>
           ))}
         </div>
@@ -2739,6 +2736,29 @@ function StepNegocio({
               </button>
             ))}
           </div>
+        </div>
+        <div>
+          <FieldLabel>Etapa del embudo</FieldLabel>
+          <div className="flex flex-wrap gap-2">
+            {FUNNEL_STAGES.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setBizFunnelStage(s)}
+                className="px-4 py-2 rounded-xl text-sm font-medium transition-all"
+                style={{
+                  background: bizFunnelStage === s ? "#00B5AD" : "#1C1C1E",
+                  color: bizFunnelStage === s ? "#000" : "#86868B",
+                  border: `1px solid ${bizFunnelStage === s ? "#00B5AD" : "#2A2A2A"}`,
+                }}
+              >
+                {FUNNEL_STAGE_LABELS[s]}
+              </button>
+            ))}
+          </div>
+          <p className="text-xs mt-1.5" style={{ color: "#86868B" }}>
+            {FUNNEL_STAGE_DESCRIPTIONS[bizFunnelStage]}
+          </p>
         </div>
       </div>
 
@@ -3313,6 +3333,7 @@ function StepGenerar({
   bizAudience,
   bizProblem,
   bizTone,
+  bizFunnelStage,
   selectedTemplates,
   numAngles,
   productFile,
@@ -3344,6 +3365,7 @@ function StepGenerar({
   bizAudience: string;
   bizProblem: string;
   bizTone: Tone;
+  bizFunnelStage: FunnelStage;
   selectedTemplates: string[];
   numAngles: number;
   productFile: File | null;
@@ -3436,6 +3458,7 @@ function StepGenerar({
           <SummaryItem label="Audiencia" value={bizAudience || "—"} />
           <SummaryItem label="Problema" value={bizProblem || "—"} />
           <SummaryItem label="Tono" value={TONE_LABELS[bizTone]} />
+          <SummaryItem label="Embudo" value={FUNNEL_STAGE_LABELS[bizFunnelStage]} />
           <SummaryItem label="Ángulos" value={numAngles.toString()} />
           <SummaryItem label="Plantillas" value={templateNamesList} span={2} />
           <SummaryItem
@@ -3462,14 +3485,14 @@ function StepGenerar({
           </button>
           <button
             type="button"
-            disabled={!canGenerate}
+            disabled={variantsGenerating}
             onClick={creationMode === "secuencia" ? onGenerateSequence : onGenerateAngles}
             className="flex-1 py-3 rounded-xl text-sm font-semibold transition-all"
             style={{
               background: "transparent",
-              color: canGenerate ? "#00B5AD" : "#555",
-              cursor: canGenerate ? "pointer" : "not-allowed",
-              border: `1.5px solid ${canGenerate ? "#00B5AD" : "#2A2A2A"}`,
+              color: variantsGenerating ? "#555" : "#00B5AD",
+              cursor: variantsGenerating ? "not-allowed" : "pointer",
+              border: `1.5px solid ${variantsGenerating ? "#2A2A2A" : "#00B5AD"}`,
             }}
           >
             {variantsGenerating

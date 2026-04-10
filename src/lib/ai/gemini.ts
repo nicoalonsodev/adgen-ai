@@ -792,8 +792,6 @@ export async function nanoBananaInjectProduct(args: {
   prompt: string;
   aspectRatio?: string;
   apiKeys?: string[];
-  /** Optional: previous slide's scene for visual consistency in narrative sequences. */
-  referencePng?: Buffer;
 }): Promise<Buffer> {
   // 1° intento — Qwen RunPod
   try {
@@ -812,23 +810,19 @@ export async function nanoBananaInjectProduct(args: {
 
   const bgMetaIn = await sharp(args.backgroundPng).metadata();
   const prodMetaIn = await sharp(args.productPng).metadata();
-  console.log(`[nanoBananaInjectProduct:input] bg=${bgMetaIn.width}×${bgMetaIn.height} product=${prodMetaIn.width}×${prodMetaIn.height} aspect=${args.aspectRatio ?? "1:1"} hasReference=${!!args.referencePng}`);
+  console.log(`[nanoBananaInjectProduct:input] bg=${bgMetaIn.width}×${bgMetaIn.height} product=${prodMetaIn.width}×${prodMetaIn.height} aspect=${args.aspectRatio ?? "1:1"}`);
 
   // Compress before upload — reduces ~4MB total to ~250-500KB, cuts Gemini latency
   const [bg, product] = await Promise.all([
     compressBgForGemini(args.backgroundPng),
     compressProductForGemini(args.productPng, args.aspectRatio),
   ]);
-  const ref = args.referencePng ? await compressBgForGemini(args.referencePng) : null;
-
-  const REFERENCE_LABEL = "SEQUENCE CONSISTENCY REFERENCE — This is the previous slide's scene. The person you generate MUST be the same individual: identical face, hair color and length, skin tone, approximate age, and clothing style/color. Visual consistency across slides is mandatory.";
 
   console.log(`[gemini:nanoBananaInjectProduct] model=${MODEL_SCENE} prompt_chars=${args.prompt.length}\n${args.prompt.slice(0, 300)}`);
 
   const gatewayParts: Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }> = [
     toImageUrlPart(bg),
     toImageUrlPart(product),
-    ...(ref ? [{ type: "text" as const, text: REFERENCE_LABEL }, toImageUrlPart(ref)] : []),
     { type: "text", text: args.prompt },
   ];
 
@@ -840,7 +834,6 @@ export async function nanoBananaInjectProduct(args: {
         parts: [
           { inlineData: { mimeType: bg.mimeType, data: bg.data } },
           { inlineData: { mimeType: product.mimeType, data: product.data } },
-          ...(ref ? [{ text: REFERENCE_LABEL }, { inlineData: { mimeType: ref.mimeType, data: ref.data } }] : []),
           { text: args.prompt },
         ],
       },
@@ -950,8 +943,6 @@ export async function generateScene(args: {
   prompt: string;
   aspectRatio?: string;
   apiKeys?: string[];
-  /** Optional: previous slide's scene for visual consistency in narrative sequences. */
-  referencePng?: Buffer;
 }): Promise<Buffer> {
   // 1° intento — Qwen RunPod
   try {
@@ -968,18 +959,14 @@ export async function generateScene(args: {
   }
 
   const bgMetaIn = await sharp(args.backgroundPng).metadata();
-  console.log(`[generateScene:input] bg=${bgMetaIn.width}×${bgMetaIn.height} aspect=${args.aspectRatio ?? "1:1"} hasReference=${!!args.referencePng}`);
+  console.log(`[generateScene:input] bg=${bgMetaIn.width}×${bgMetaIn.height} aspect=${args.aspectRatio ?? "1:1"}`);
 
   const bg = await compressBgForGemini(args.backgroundPng);
-  const ref = args.referencePng ? await compressBgForGemini(args.referencePng) : null;
-
-  const REFERENCE_LABEL = "SEQUENCE CONSISTENCY REFERENCE — This is the previous slide's scene. The person you generate MUST be the same individual: identical face, hair color and length, skin tone, approximate age, and clothing style/color. Visual consistency across slides is mandatory.";
 
   console.log(`[gemini:generateScene] model=${MODEL_SCENE} prompt_chars=${args.prompt.length}\n${args.prompt.slice(0, 300)}`);
 
   const gatewayParts: Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }> = [
     toImageUrlPart(bg),
-    ...(ref ? [{ type: "text" as const, text: REFERENCE_LABEL }, toImageUrlPart(ref)] : []),
     { type: "text", text: args.prompt },
   ];
 
@@ -990,7 +977,6 @@ export async function generateScene(args: {
         role: "user",
         parts: [
           { inlineData: { mimeType: bg.mimeType, data: bg.data } },
-          ...(ref ? [{ text: REFERENCE_LABEL }, { inlineData: { mimeType: ref.mimeType, data: ref.data } }] : []),
           { text: args.prompt },
         ],
       },
@@ -1117,8 +1103,6 @@ export async function generateSceneWithAvatarAndProduct(args: {
   prompt: string;
   aspectRatio?: string;
   apiKeys?: string[];
-  /** Optional: previous slide's scene for visual consistency in narrative sequences. */
-  referencePng?: Buffer;
 }): Promise<Buffer> {
   const bgMetaIn = await sharp(args.backgroundPng).metadata();
   const prodMetaIn = await sharp(args.productPng).metadata();
@@ -1146,17 +1130,13 @@ export async function generateSceneWithAvatarAndProduct(args: {
     compressProductForGemini(args.productPng, args.aspectRatio),
     compressProductForGemini(args.avatarPng, args.aspectRatio),
   ]);
-  const ref = args.referencePng ? await compressBgForGemini(args.referencePng) : null;
 
-  const REFERENCE_LABEL = "SEQUENCE CONSISTENCY REFERENCE — This is the previous slide's scene. The person you generate MUST be the same individual: identical face, hair color and length, skin tone, approximate age, and clothing style/color. Visual consistency across slides is mandatory.";
-
-  console.log(`[gemini:generateSceneWithAvatarAndProduct] model=${MODEL_SCENE} prompt_chars=${args.prompt.length} hasReference=${!!ref}\n${args.prompt.slice(0, 300)}`);
+  console.log(`[gemini:generateSceneWithAvatarAndProduct] model=${MODEL_SCENE} prompt_chars=${args.prompt.length}\n${args.prompt.slice(0, 300)}`);
 
   const gatewayParts: Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }> = [
     toImageUrlPart(bg),
     toImageUrlPart(product),
     toImageUrlPart(avatar),
-    ...(ref ? [{ type: "text" as const, text: REFERENCE_LABEL }, toImageUrlPart(ref)] : []),
     { type: "text", text: args.prompt },
   ];
 
@@ -1169,7 +1149,6 @@ export async function generateSceneWithAvatarAndProduct(args: {
           { inlineData: { mimeType: bg.mimeType, data: bg.data } },
           { inlineData: { mimeType: product.mimeType, data: product.data } },
           { inlineData: { mimeType: avatar.mimeType, data: avatar.data } },
-          ...(ref ? [{ text: REFERENCE_LABEL }, { inlineData: { mimeType: ref.mimeType, data: ref.data } }] : []),
           { text: args.prompt },
         ],
       },

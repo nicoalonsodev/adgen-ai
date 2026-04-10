@@ -231,7 +231,6 @@ const aspectRatio = `${targetW / divisor}:${targetH / divisor}`;
       prompt: avatarWithProductPrompt,
       aspectRatio,
       apiKeys: req.apiKeys,
-      referencePng: req.referenceBuffer,
     });
 
     const sceneMeta = await sharp(scene).metadata();
@@ -298,7 +297,6 @@ const aspectRatio = `${targetW / divisor}:${targetH / divisor}`;
       prompt: avatarPrompt,
       aspectRatio,
       apiKeys: req.apiKeys,
-      referencePng: req.referenceBuffer,
     });
 
     const sceneMeta = await sharp(scene).metadata();
@@ -351,7 +349,6 @@ const aspectRatio = `${targetW / divisor}:${targetH / divisor}`;
         prompt: fullPromptUsed,
         aspectRatio,
         apiKeys: req.apiKeys,
-        referencePng: req.referenceBuffer,
       });
     } else {
       // Sin producto: solo se envía el fondo y Gemini genera la escena con persona
@@ -361,7 +358,6 @@ const aspectRatio = `${targetW / divisor}:${targetH / divisor}`;
         prompt: fullPromptUsed,
         aspectRatio,
         apiKeys: req.apiKeys,
-        referencePng: req.referenceBuffer,
       });
     }
 

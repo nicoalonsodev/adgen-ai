@@ -168,18 +168,66 @@ the reader's defenses like a Trojan Horse.
 - Short punchy sentences. No academic language. No corporate speak.
 - Never use inverted punctuation (¿, ¡) — use standard punctuation only.
 
-## FIELD RESPONSIBILITIES IN STATIC ADS:
-Each field in the JSON has ONE job. Never bleed roles across fields.
-- headline (5-7 words max): HOOK + PROBLEM. Must make them stop scrolling.
-  Read it alone — does it stop a thumb mid-scroll? If not, rewrite.
-- subheadline (max 2 lines): SOLUTION + PROBABILITY. Why it works for them.
-- badge: URGENCY or SOCIAL PROOF. One compelling reason to act now. Max 30 chars.
-- bullets (if present): 3 TRANSFORMATION BENEFITS. Implicit before → after.
-  Format: emoji + verb + outcome. Never list features.
-- cta: ONE ACTION. Zero ambiguity. "Hacé click acá" beats "Descubrí más".
 
-CRITICAL SYSTEM RULE: headline and subheadline must work as a UNIT, not independently.
-Read them together — they must tell a micro-story in under 10 seconds.
+## GUION_STRUCTURE = 
+## ADVERTISING STRUCTURE (4-step script framework):
+Every creative must follow this exact sequence:
+
+### STEP 1 — HOOK (make the ideal client self-identify)
+Choose ONE of these hook subtypes based on the angle:
+
+- **Identification title**: State exactly who this is for.
+  e.g. "Dueño de empresa de desarrollo de software"
+  
+- **Affirmative question**: Questions they answer "sí, ese soy yo"
+  e.g. "¿Te cuesta conseguir desarrollos de software nuevos?"
+  
+- **If→Then**: "Si tenés X condición mínima, entonces puedo darte Y resultado específico"
+  e.g. "Si tenés una empresa que facturó mínimo $50k en los últimos 6 meses, 
+       entonces puedo agregarte $30k a tu facturación mensual."
+  RULE: Always include a qualifying condition AND a specific measurable result.
+  
+- **Ridiculous result**: Specific shocking outcome + the ONE thing that caused it.
+  e.g. "Este dueño de agencia redujo un 90% su costo por llamada calificada 
+       gracias a dejar de utilizar Calendly."
+  RULE: Always name ONE specific cause, not a generic method.
+
+### STEP 2 — PROBLEM / PAIN (make them feel understood)
+This step MUST appear between the hook and the solution. It exposes:
+- What hurts them TODAY specifically
+- What they are LOSING right now by not having the solution
+- The RISK of staying the same (where they'll end up)
+
+Use this formula: **Cuándo (past/present/future) + Quién (who sees it) + Cuál (what pain)**
+- Past: "errors you already paid for"
+- Present: "what you're losing right now"  
+- Future: "where you'll end up if nothing changes"
+
+Examples by segment:
+- Software agency: "No saber si vas a poder pagar los sueldos a fin de mes"
+- Restaurant: "Si seguís igual, vas a tener que cerrar tu restaurante"
+- Online agency: "Mes a mes tu calendario se vacía mientras tus costos suben"
+
+CRITICAL: Make them feel UNDERSTOOD, not sold to. Never skip this step.
+
+### STEP 3 — INTEREST / SOLUTION (make them see a huge gap between value and cost)
+Answer "por qué tienen que estar interesados" by hitting ALL of these:
+- **Desired result**: What transformation does the client achieve?
+- **Nightmare / Opposite**: What are they avoiding?
+- **Perceived probability of success**: Why trust you? (social proof, credentials, guarantees)
+- **Time delay**: How fast is the benefit? Show how slow their current path is.
+- **Effort and sacrifice**: What do they currently suffer to get results? Show how you eliminate it.
+- **Status**: How do their clients, partners, or competitors see them after?
+
+Formula: Cuál + Quién + Cuándo = "why they should be interested"
+e.g. "Como tus competidores (quién) van a ver mes a mes (cuándo) 
+     su número de llamadas disminuir sin saber por qué (cuál)."
+
+### STEP 4 — CALL TO ACTION (simple and direct)
+- Never clever. Never vague.
+- Tell them EXACTLY what to do: "Click en este botón", "Andá acá", "Hacé esto"
+- Optional: tie it to the specific benefit — "Si querés saber más sobre X, hacé click acá"
+
 
 ## PAIN/PROBLEM PRINCIPLES:
 - Expose what hurts TODAY specifically
@@ -219,16 +267,12 @@ Read them together — they must tell a micro-story in under 10 seconds.
 - Never list features — always translate to life benefits
 - Create urgency without desperation
 - The reader should feel: "This person gets me exactly"
+- PUNCTUATION — ABSOLUTE RULES (violations = INVALID output):
+  1. NEVER end any field with a period (.). Headlines, subheadlines, badges, bullets — none end in "."
+  2. NEVER use inverted punctuation: no "¿", no "¡" — use "?" and "!" only at the END of a sentence, never at the start
 `;
 
 // Add GUION_STRUCTURE definition (based on the context, it should be a string describing the advertising script structure)
-const PRE_CONDITION_RULES = `
-PRE-CONDITION — THESE RULES APPLY TO EVERY SINGLE FIELD WITHOUT EXCEPTION:
-1. NEVER end any field with "." — no headlines, badges, bullets, subheadlines, CTAs. None.
-2. NEVER use inverted punctuation: "¿" and "¡" are FORBIDDEN. Use only "?" and "!" at the END of sentences.
-3. These are output validation rules. Violating them = invalid output regardless of content quality.
-`.trim();
-
 const GUION_STRUCTURE = `
 ## ADVERTISING STRUCTURE — 4-STEP GUION FRAMEWORK
 Every creative must follow this exact sequence. Never skip or reorder steps.
@@ -312,12 +356,15 @@ Rule: CTA must name one action. Tie it to the specific benefit of Step 3.
       The objection removal line must feel like a friend talking, not a marketer.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
+PUNCTUATION — ABSOLUTE RULES (apply to EVERY field in EVERY step):
+1. NEVER end any field with a period (.) — no headlines, no subheadlines, no badges, no bullets end in "."
+2. NEVER use inverted punctuation: "¿" and "¡" are FORBIDDEN — use only standard "?" and "!" at the END of sentences
 `;
 
 function buildSystemInstruction(includeAndromeda: boolean = true): string {
-  const base = `${PRE_CONDITION_RULES}\n\n---\n\n${GUION_STRUCTURE}\n\n---\n\n${EXPERT_COPYWRITER_SYSTEM_PROMPT}`;
+  const base = `${GUION_STRUCTURE}\n\n---\n\n${EXPERT_COPYWRITER_SYSTEM_PROMPT}`;
   return includeAndromeda
-    ? `${base}\n\n---\n\n${ANDROMEDA_KNOWLEDGE}`
+    ? `${ANDROMEDA_KNOWLEDGE}\n\n---\n\n${base}`
     : base;
 }
 
@@ -365,6 +412,7 @@ CRITICAL SEQUENCE RULES:
 - slideRole must be exactly the role name specified above (HOOK, PROBLEMA, AGITACION, SOLUCION, PRUEBA, or CTA)
 - Each slide's copy must match its role's emotional register (see role definitions above)
 - Write in Argentine Spanish throughout (vos/tenés/podés)
+- PUNCTUATION — ABSOLUTE: never end any field with ".". Never use "¿" or "¡"
 
 Return a JSON object with key "variants" containing an array of ${n} objects, each with: ${fieldsWithRole}. No markdown, no explanation, only the JSON object.`;
 }
@@ -430,7 +478,55 @@ type GenerateCopyArgs = {
   sequenceSlideRoles?: string[];
   /** User-provided narrative direction for the sequence (e.g. "primero el dolor, luego la solución"). */
   narrativeContext?: string;
+  /** Funnel stage for this creative. Shapes the copy objective, emotional register, and CTA direction. */
+  funnelStage?: 'TOF' | 'MOF' | 'BOF';
 };
+
+// ── buildFunnelStageBlock ─────────────────────────────────────────────────────
+// Injects a mandatory behavioral constraint block into the copy prompt based on
+// where in the funnel this creative will be shown. When undefined, no block is added.
+function buildFunnelStageBlock(stage: 'TOF' | 'MOF' | 'BOF' | undefined): string {
+  if (!stage) return '';
+  const FUNNEL_INSTRUCTIONS: Record<'TOF' | 'MOF' | 'BOF', string> = {
+    TOF: `
+FUNNEL STAGE: TOP OF FUNNEL (TOF) — Audience is UNAWARE of the problem
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OBJECTIVE: Educate. Surface a latent problem the audience doesn't yet know they have.
+- DO NOT mention the product or brand explicitly. No sales language.
+- Hook must create curiosity or reveal a surprising risk/statistic.
+- Use "Sabías que...", unexpected data, or a relatable hidden pain framing.
+- Emotional register: DISCOVERY / CONCERN. Plant the seed of awareness.
+- CTA should drive to learn more — never to buy.
+- The reader must think: "I didn't know this was a problem. I need to find out more."
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`,
+    MOF: `
+FUNNEL STAGE: MIDDLE OF FUNNEL (MOF) — Audience KNOWS the problem, evaluating solutions
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OBJECTIVE: Position this product category as the answer. Show the transformation.
+- Acknowledge the pain point directly — they already feel it.
+- Show the before/after: chaos without the solution vs. peace with it.
+- Highlight probability of success: real results, social proof, guarantees.
+- Emotional register: HOPE / POSSIBILITY. They're comparing options.
+- CTA should drive comparison, demos, or exploring your specific solution.
+- The reader must think: "This could actually work for me."
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`,
+    BOF: `
+FUNNEL STAGE: BOTTOM OF FUNNEL (BOF) — Audience is READY TO BUY, removing last friction
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OBJECTIVE: Close the sale. Eliminate the final objections: price, trust, speed.
+- Lead directly with the offer. Be specific: discounts, guarantees, free shipping.
+- Address objections explicitly: "sin interés", "envío gratis", "garantía de devolución".
+- Social proof here is risk removal, not persuasion — they're already sold on the category.
+- Emotional register: URGENCY / CERTAINTY. Remove every reason to postpone.
+- CTA must be singular and frictionless: "Comprá ahora", "Pedí el tuyo hoy", "Aprovechá hoy".
+- The reader must think: "I have no reason to wait any longer."
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`,
+  };
+  return `\n${FUNNEL_INSTRUCTIONS[stage]}\n`;
+}
 
 // ── VISUAL_PROMPT_FIELDS ──────────────────────────────────────────────────────
 // Fields that belong exclusively to Stage 2 (image prompt generation).
@@ -579,12 +675,13 @@ ${args.templateHint}`
 Output a JSON object with EXACTLY these fields: ${copySchema.join(", ")}
 CRITICAL: Do NOT add any field not listed above. Do NOT generate image prompts, backgroundPrompt, sceneAction, or any visual description. Only text copy fields.
 ${charLimitsBlock}
-${templateHintBlock}${templateContextBlock}${brandContextBlock}${sorteoBlock}${referenceBlock}${sceneContextForCopyBlock}USER INFO:
+${templateHintBlock}${templateContextBlock}${brandContextBlock}${sorteoBlock}${referenceBlock}${sceneContextForCopyBlock}${buildFunnelStageBlock(args.funnelStage)}USER INFO:
 - Product: ${args.product}
 - Main offer: ${args.offer}
 - Target audience: ${args.targetAudience}
 - Problem it solves: ${args.problem}
 - Tone: ${args.tone}
+- Funnel stage: ${args.funnelStage ?? 'not specified'}
 
 ${variantInstructions}`;
 
@@ -755,9 +852,7 @@ ${ABSOLUTE_RULES_BACKGROUND}`
   [3] Emotional state: specific feeling matching the headline's angle — not generic ("happy") but precise ("quiet relief, corners of mouth lifted 3mm")
   [4] Lighting on person: direction, color temperature, shadow quality on face/body
   [5] Camera: framing (bust/waist-up/full body), lens feel, depth
-  ${args.sequenceSlideRoles
-        ? "Each slide MUST show the SAME PERSON ARCHETYPE — vary only emotional state, micro-expression, and body language to match the slideRole."
-        : "Each variant MUST use a COMPLETELY DIFFERENT person, pose, and emotional state."}
+  Each variant MUST use a COMPLETELY DIFFERENT person, pose, and emotional state.
   Target: 50–80 words. End with: "4K photorealistic. No text, no logos."${tpl?.compositionMode === "scene-with-product" ? "\n  The person MUST be ACTIVELY HOLDING or USING the product." : ""}`
       : `- sceneAction: CRITICAL: Write this entire field in ENGLISH only.
 
@@ -834,8 +929,7 @@ backgroundPrompt and sceneAction represent the SAME photograph. Follow this proc
   // This is the core of the two-stage architecture: inject the generated copy
   // so the visual prompts are semantically aligned with the messaging.
   const buildCopyContextBlock = (copy: Record<string, unknown>, variantIndex?: number): string => {
-    const role = typeof copy.slideRole === "string" ? ` — ${copy.slideRole}` : "";
-    const label = variantIndex !== undefined ? `Slide ${variantIndex + 1}${role}` : "Generated copy";
+    const label = variantIndex !== undefined ? `Variant ${variantIndex + 1}` : "Generated copy";
     const relevantFields = Object.entries(copy)
       .filter(([k]) => !VISUAL_PROMPT_FIELDS.has(k))
       .map(([k, v]) => `- ${k}: ${JSON.stringify(v)}`)
@@ -961,24 +1055,17 @@ ${templateVisualDirectionBlock}${hyperRealisticBlock}${backgroundStyleGuideBlock
 - Tone: ${args.tone}
 
 ${args.sequenceSlideRoles
-      ? `NARRATIVE SEQUENCE — visual coherence rules:
-This is a sequential narrative arc — the ${args.sequenceSlideRoles.length} slides must feel like a single story told through consecutive frames, not disconnected product shots.
-${args.narrativeContext ? `NARRATIVE DIRECTION FROM USER: ${args.narrativeContext}\n` : ""}
-VISUAL CONTINUITY — MANDATORY across all slides:
-- Same person archetype: identical age range, general appearance, clothing style, and skin tone
-- Same environment type: same kind of space (e.g. kitchen, gym, office) — not necessarily identical props
-- Same lighting quality and color temperature (warm/cool, hard/soft)
-- Same camera feel (lens compression, framing style)
-
-PER-ROLE VISUAL DIRECTION — match the scene's emotional world to the slideRole shown in each copy context block:
-- HOOK: person in their everyday environment, unaware or just noticing something — neutral to curious. The scene shows their world BEFORE the problem is named. Environment is familiar and relatable.
-- PROBLEMA: person visibly affected by the pain point — tense posture, tight expression, situational friction visible in the scene (messy counter, piled-up task, awkward moment). The environment itself shows the problem.
-- AGITACION: heightened tension — the stakes are visible. Person looks caught in the worst version of the situation. The scene amplifies consequences, not just discomfort.
-- SOLUCION: the turning point — person encounters or uses the product. Posture opens, micro-expression shifts to relief or focus. The scene shows the solution entering their world.
-- PRUEBA: confidence and validation — person in a "after" state, comfortable and in control. Product is naturally integrated, not posed. The scene communicates earned result.
-- CTA: person making direct eye contact or gesturing toward the viewer/offer. Energy is decisive and inviting. The scene is clean and action-oriented.
-
-Match scene composition, lighting mood, and environmental details to the specific copy visible in each Slide copy context above.`
+      ? `NARRATIVE SEQUENCE — sceneAction coherence rules:
+Show the SAME PERSON ARCHETYPE (same age range, same general look) across all slides in a CONSISTENT visual world.
+Maintain: same lighting style, same character appearance, same general environment type.
+VARY only the emotional state and body language to match each slide's slideRole (visible in copy context above):
+- HOOK: curious, slightly intrigued, open posture
+- PROBLEMA: concerned, brow furrowed, closed/tense posture
+- AGITACION: visibly stressed, anxious body language
+- SOLUCION: relief emerging, shoulders relaxing, hopeful
+- PRUEBA: confident, proud, presenting result naturally
+- CTA: energized, direct eye contact, decisive posture
+Match each scene's emotional intensity to the slideRole in the corresponding copy context above.`
       : `CRITICAL FOR sceneAction: Each variant MUST use a COMPLETELY DIFFERENT scenario/setting/location. If one variant uses a bathroom, NONE of the others can. Think of ${n} different LOCATIONS.
 Match each variant's visual mood to its corresponding copy angle above.`}
 No markdown, no explanation, only the JSON object.`;
@@ -1280,26 +1367,18 @@ export async function generateSequenceCopy(args: {
   sceneWithProduct?: boolean;
   businessProfile?: GenerateCopyArgs["businessProfile"];
   templateMeta?: GenerateCopyArgs["template"];
-}): Promise<{
-  slides: Array<{
+  funnelStage?: GenerateCopyArgs["funnelStage"];
+}): Promise<
+  Array<{
     headline: string;
     subheadline: string;
     badge: string;
     backgroundColorHint: string;
-    backgroundPrompt?: string;
     sceneAction: string;
     slideRole: string;
     productPrompt?: string;
-  }>;
-  debug: {
-    copySystemPrompt: string;
-    copyUserPrompt: string;
-    copyRawOutput: string;
-    imageSystemPrompt: string;
-    imageUserPrompt: string;
-    imageRawOutput: string;
-  };
-}> {
+  }>
+> {
   const slideRolesByCount: Record<number, string[]> = {
     3: ["HOOK", "PROBLEMA", "CTA"],
     4: ["HOOK", "PROBLEMA", "SOLUCION", "CTA"],
@@ -1347,22 +1426,13 @@ export async function generateSequenceCopy(args: {
     template: args.templateMeta,
     sequenceSlideRoles: slideRoles,
     narrativeContext: args.narrative || undefined,
+    funnelStage: args.funnelStage,
     sceneExample: args.businessProfile?.category
       ? getSceneLibrarySection(args.businessProfile.category)
       : undefined,
   });
 
   const variants = Array.isArray(result) ? result : [result];
-
-  // Extract debug metadata from non-enumerable properties attached by generateTemplateCopyOpenAI
-  const debug = {
-    copySystemPrompt: (result as any)._systemPrompt ?? "",
-    copyUserPrompt: (result as any)._userPrompt ?? "",
-    copyRawOutput: (result as any)._copyRawOutput ?? "",
-    imageSystemPrompt: (result as any)._imageSystemPrompt ?? "",
-    imageUserPrompt: (result as any)._imageUserPrompt ?? "",
-    imageRawOutput: (result as any)._imageRawOutput ?? "",
-  };
 
   console.log(JSON.stringify({
     tag: "[sequence:generateSequenceCopy:COMPLETE]",
@@ -1371,19 +1441,16 @@ export async function generateSequenceCopy(args: {
     slideRoles: variants.map((v) => (v as any).slideRole),
   }, null, 2));
 
-  return {
-    slides: variants.map((v, i) => ({
-      headline: (v.headline as string) ?? "",
-      subheadline: (v.subheadline as string) ?? "",
-      badge: (v.badge as string) ?? "",
-      backgroundColorHint: (v.backgroundColorHint as string) ?? "",
-      ...(v.backgroundPrompt ? { backgroundPrompt: v.backgroundPrompt as string } : {}),
-      sceneAction: (v.sceneAction as string) ?? "",
-      slideRole: (v.slideRole as string) ?? slideRoles[i] ?? "HOOK",
-      ...(args.sceneWithProduct && v.productPrompt
-        ? { productPrompt: v.productPrompt as string }
-        : {}),
-    })),
-    debug,
-  };
+  return variants.map((v, i) => ({
+    headline: (v.headline as string) ?? "",
+    subheadline: (v.subheadline as string) ?? "",
+    badge: (v.badge as string) ?? "",
+    backgroundColorHint: (v.backgroundColorHint as string) ?? "",
+    sceneAction: (v.sceneAction as string) ?? "",
+    // Fallback to the forced role in case Stage 1 deviated
+    slideRole: (v.slideRole as string) ?? slideRoles[i] ?? "HOOK",
+    ...(args.sceneWithProduct && v.productPrompt
+      ? { productPrompt: v.productPrompt as string }
+      : {}),
+  }));
 }

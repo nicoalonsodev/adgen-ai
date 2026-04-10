@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
+import { signOut } from "next-auth/react";
 
 // ─── Nav items ────────────────────────────────────────────────────────────────
 
@@ -12,6 +13,7 @@ const NAV_ITEMS = [
   { href: "/dashboard/fabrica-de-contenido", icon: "factory", label: "Fábrica de Creativos", highlight: true },
   { href: "/dashboard/mis-creativos", icon: "gallery", label: "Mis Creativos", highlight: false },
   { href: "/dashboard/mi-negocio", icon: "building", label: "Mi ADN", highlight: false },
+  { href: "/dashboard/admin", icon: "admin", label: "Admin", highlight: false },
 ] as const;
 
 type NavIconName = (typeof NAV_ITEMS)[number]["icon"];
@@ -38,6 +40,17 @@ function NavIcon({ name, highlight }: { name: NavIconName; highlight?: boolean }
     );
   }
 
+  if (name === "admin") {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+      </svg>
+    );
+  }
+
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <rect x="3" y="4" width="18" height="16" rx="2" />
@@ -53,6 +66,7 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
   const pathname = usePathname();
   const { data: session } = useSession();
   const userName = session?.user?.name ?? session?.user?.email ?? null;
+  const isAdmin = (session?.user as { plan?: string } | undefined)?.plan === 'admin';
 
   return (
     <div
@@ -81,7 +95,7 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
       {/* Nav links */}
       <nav style={{ paddingTop: 20, flex: 1 }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          {NAV_ITEMS.map(({ href, icon, label, highlight }) => {
+          {NAV_ITEMS.filter(({ href }) => href !== '/dashboard/admin' || isAdmin).map(({ href, icon, label, highlight }) => {
             const isActive = pathname === href || pathname.startsWith(href + "/");
 
             if (highlight) {
@@ -218,8 +232,31 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
             </div>
           </div>
         )}
-        <div style={{ textAlign: "center" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span style={{ color: "#667386", fontSize: 11 }}>Beta v0.1</span>
+          <button
+            onClick={() => signOut({ callbackUrl: "/login" })}
+            title="Cerrar sesión"
+            style={{
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              color: "#667386",
+              display: "flex",
+              alignItems: "center",
+              padding: 4,
+              borderRadius: 6,
+              transition: "color 150ms ease",
+            }}
+            onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.color = "#F87171")}
+            onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.color = "#667386")}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+          </button>
         </div>
       </div>
     </div>

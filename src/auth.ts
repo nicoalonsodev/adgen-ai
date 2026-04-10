@@ -72,7 +72,21 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       if (user) {
         token.id = user.id
         token.plan = (user as any).plan
+        token.bannedCheckedAt = 0 // forzar verificación en el primer load
       }
+
+      // Verificar ban cada 30 segundos — si está baneado, retornar null cierra la sesión
+      const now = Date.now()
+      const lastCheck = (token.bannedCheckedAt as number) ?? 0
+      if (token.id && now - lastCheck > 30_000) {
+        const { data } = await supabaseAdmin.auth.admin.getUserById(token.id as string)
+        const bannedUntil = data?.user?.banned_until
+        if (bannedUntil && new Date(bannedUntil) > new Date()) {
+          return null // NextAuth v5: null invalida la sesión y redirige a login
+        }
+        token.bannedCheckedAt = now
+      }
+
       return token
     },
     async session({ session, token }) {

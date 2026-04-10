@@ -351,9 +351,6 @@ export const ComposeRequestSchema = z
     /** Avatar buffer for scene templates (skips Gemini scene generation) */
     avatarBuffer: z.instanceof(Buffer).optional(),
 
-    /** Reference buffer — previous slide's scene image for visual consistency in narrative sequences */
-    referenceBuffer: z.instanceof(Buffer).optional(),
-
     /** Logo image (base64, no data: prefix) for overlay on final creative — fallback/single logo */
     logoBase64: z.string().optional(),
 

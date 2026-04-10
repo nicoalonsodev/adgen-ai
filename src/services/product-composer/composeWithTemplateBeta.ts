@@ -97,7 +97,7 @@ export async function composeWithTemplateBeta(
 
     // Centrar logo horizontalmente para templates que lo requieren en el centro
     const logoMeta = await sharp(resizedLogo).metadata();
-    const logoW = logoMeta.width ?? logoSafeMaxW;
+    const logoW = logoMeta.width ?? logoMaxW;
     const logoLeft = meta?.logoPosition === "center"
       ? Math.round((canvas.width - logoW) / 2)
       : logoPadding;
