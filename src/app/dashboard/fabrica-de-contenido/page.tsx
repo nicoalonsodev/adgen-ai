@@ -2343,23 +2343,26 @@ function StepNegocio({
         <div className="grid grid-cols-3 gap-3">
           {(
             [
-              { value: "independiente" as const, label: "Independiente", sub: "Ángulos distintos" },
-              { value: "secuencia" as const, label: "Secuencia", sub: "Historia / Carrusel" },
-              { value: "sorteo" as const, label: "Sorteo", sub: "Giveaway / Colaboración" },
+              { value: "independiente" as const, label: "Independiente", sub: "Ángulos distintos", disabled: false },
+              { value: "secuencia" as const, label: "Secuencia", sub: "Historia / Carrusel", disabled: false },
+              { value: "sorteo" as const, label: "Sorteo", sub: "Giveaway / Colaboración", disabled: true },
             ] as const
-          ).map(({ value, label, sub }) => (
+          ).map(({ value, label, sub, disabled }) => (
             <button
               key={value}
               type="button"
-              onClick={() => setCreationMode(value)}
-              className="rounded-2xl p-4 text-left transition-all"
+              disabled={disabled}
+              onClick={() => !disabled && setCreationMode(value)}
+              className="rounded-2xl p-4 text-left transition-all relative"
               style={{
-                background: creationMode === value ? "#001F1E" : "#1C1C1E",
-                border: `2px solid ${creationMode === value ? "#00B5AD" : "#2A2A2A"}`,
+                background: disabled ? "#141414" : creationMode === value ? "#001F1E" : "#1C1C1E",
+                border: `2px solid ${disabled ? "#1E1E1E" : creationMode === value ? "#00B5AD" : "#2A2A2A"}`,
+                opacity: disabled ? 0.45 : 1,
+                cursor: disabled ? "not-allowed" : "pointer",
               }}
             >
-              <div className="text-sm font-semibold">{label}</div>
-              <div className="text-xs mt-0.5" style={{ color: "#86868B" }}>{sub}</div>
+              <div className="text-sm font-semibold" style={{ color: disabled ? "#555" : undefined }}>{label}</div>
+              <div className="text-xs mt-0.5" style={{ color: "#86868B" }}>{disabled ? "Próximamente" : sub}</div>
             </button>
           ))}
         </div>
